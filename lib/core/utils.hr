@@ -40,9 +40,7 @@ def macro nil?
     @example
     if (abc.nil?) ...
     @end example ~
-{
-  { nil?(?val:expr) } -> { ?val == nil }
-}
+  | « nil?(?val:expr) » -> « ?val == nil »
 
 
 def macro enforce
@@ -71,74 +69,56 @@ def macro enforce
     foo().enforce("foo() failed").bar
     foo().enforce.bar
     @end example ~
-{
-  { enforce(?val:expr, ?msg:expr) } -> {
-                                         {
-                                           let tmp = ?val
-                                           if (tmp.nil?)
-                                             NilException(?msg).raise
-                                           else
-                                             tmp
-                                         }
-                                       }
-  { enforce(?val:expr) }            -> {
-                                         {
-                                           let tmp = ?val
-                                           if (tmp.nil?)
-                                             NilException(?"val" + " failed").raise
-                                           else
-                                             tmp
-                                         }
-                                       }
-}
+  | « enforce(?val:expr, ?msg:expr) » -> « {
+                                             let tmp = ?val
+                                             if (tmp.nil?)
+                                               NilException(?msg).raise
+                                             else
+                                               tmp
+                                           } »
+  | « enforce(?val:expr) »            -> « {
+                                             let tmp = ?val
+                                             if (tmp.nil?)
+                                               NilException(?"val" + " failed").raise
+                                             else
+                                               tmp
+                                           } »
 
 
 def macro saferef
-{
-  { saferef(?val:expr, ?default:expr) } -> {
-                                             {
-                                               let tmp = ?val
-                                               if (tmp.nil?)
-                                                 default
-                                               else
-                                                 tmp
-                                             }
-                                           }
-}
+  | « saferef(?val:expr, ?default:expr) » -> « {
+                                                 let tmp = ?val
+                                                 if (tmp.nil?)
+                                                   default
+                                                 else
+                                                   tmp
+                                               } »
 
 
 def macro max
     ~ Returns the larger of two values @var{one} and @var{two}.  Both
     parameters are evaluated once only. ~
-{
-  { max(?one:expr, ?two:expr) } -> {
-                                     {
-                                       let tmp1 = ?one
-                                       let tmp2 = ?two
-                                       if (tmp1 > tmp2)
-                                         tmp1
-                                       else
-                                         tmp2
-                                     }
-                                   }
-}
+  | « max(?one:expr, ?two:expr) » -> « {
+                                         let tmp1 = ?one
+                                         let tmp2 = ?two
+                                         if (tmp1 > tmp2)
+                                           tmp1
+                                         else
+                                           tmp2
+                                       } »
 
 
 def macro min
     ~ Returns the smaller of two values @var{one} and @var{two}.  Both
     parameters are evaluated once only. ~
-{
-  { min(?one:expr, ?two:expr) } -> {
-                                     {
-                                       let tmp1 = ?one
-                                       let tmp2 = ?two
-                                       if (tmp1 < tmp2)
-                                         tmp1
-                                       else
-                                         tmp2
-                                     }
-                                   }
-}
+  | « min(?one:expr, ?two:expr) » -> « {
+                                         let tmp1 = ?one
+                                         let tmp2 = ?two
+                                         if (tmp1 < tmp2)
+                                           tmp1
+                                         else
+                                           tmp2
+                                       } »
 
 
 -- end of utils

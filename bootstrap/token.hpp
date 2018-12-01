@@ -148,6 +148,8 @@ namespace herschel
     kLiteralArrayOpen,
     kMacroOpen,
     kMacroClose,
+    kMacroOpen2,  // ascii alternative to kMacroOpen
+    kMacroClose2,  // ascii alternative to kMacroClose
 
     // kLitExpr
     kString,

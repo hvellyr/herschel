@@ -67,8 +67,10 @@ String tokenTypeToString(TokenType type)
   case kBraceClose: return String("}");
   case kGenericOpen: return String("<");
   case kGenericClose: return String(">");
-  case kMacroOpen: return String("\343\200\214");   // U+300C
-  case kMacroClose: return String("\343\200\215");  // U+300D
+  case kMacroOpen: return String("\302\253");   // U+00AB / left guillemet
+  case kMacroClose: return String("\302\273");  // U+00BB / right guillemet
+  case kMacroOpen2: return String("?(");
+  case kMacroClose2: return String(")?");
   case kComma: return String(",");
   case kSemicolon: return String(";");
   case kColon: return String(":");
@@ -835,6 +837,8 @@ ExprType Token::type() const
   case kGenericClose:
   case kMacroOpen:
   case kMacroClose:
+  case kMacroOpen2:
+  case kMacroClose2:
   case kComma:
   case kSemicolon:
   case kColon:

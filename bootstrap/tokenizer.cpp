@@ -704,18 +704,25 @@ Token Tokenizer::nextTokenImpl()
     case '\v': nextChar(); continue;
 
     case '(': return makeTokenAndNext(srcpos(), kParanOpen);
-    case ')': return makeTokenAndNext(srcpos(), kParanClose);
+    case ')':
+      nextChar();
+      if (fCC == '?') {
+        nextChar();
+        return Token(beginSrcpos, kMacroClose2);
+      }
+      return Token(beginSrcpos, kParanClose);
+
     case '[': return makeTokenAndNext(srcpos(), kBracketOpen);
     case ']': return makeTokenAndNext(srcpos(), kBracketClose);
     case '{': return makeTokenAndNext(srcpos(), kBraceOpen);
     case '}':
       return makeTokenAndNext(srcpos(), kBraceClose);
 
-      // utf8: e3 80 8c | 343 200 214
-    case 0x300c:
+      // utf8: c2 ab | \302\253 | left guillemet
+    case 0x00ab:
       return makeTokenAndNext(srcpos(), kMacroOpen);
-      // utf8: e3 80 8d | 343 200 215
-    case 0x300d: return makeTokenAndNext(srcpos(), kMacroClose);
+      // utf8: c2 bb | \302\273 | right guillemet
+    case 0x00bb: return makeTokenAndNext(srcpos(), kMacroClose);
 
     case ',': return makeTokenAndNext(srcpos(), kComma);
     case ';': return makeTokenAndNext(srcpos(), kSemicolon);
@@ -786,6 +793,10 @@ Token Tokenizer::nextTokenImpl()
         }
 
         return param;
+      }
+      else if (fCC == '(') {
+        nextChar();
+        return Token(beginSrcpos, kMacroOpen2);
       }
       return readIdentifier(beginSrcpos, String(), kMacroParam, !K(acceptGenerics));
 

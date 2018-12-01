@@ -2146,8 +2146,8 @@ Token FirstPass::parseWhen(bool isTopLevel)
       inclAlternate = false;
     }
     else {
-      errorf(fToken.srcpos(), E_UnexpectedToken,
-             "only 'ignore' or 'include' are valid symbols here");
+      error(fToken.srcpos(), E_UnexpectedToken,
+            String("only 'ignore' or 'include' are valid symbols here: ") + fToken);
       errorf(fToken.srcpos(), E_UnexpectedToken, "assume 'ignore'");
 
       inclConsequent = false;
@@ -3159,55 +3159,61 @@ bool FirstPass::parseMacroComponent(TokenVector* component, TokenType beginToken
 }
 
 
+static bool isMacroOpen(const Token& token)
+{
+  return token == kMacroOpen || token == kMacroOpen2;
+}
+
+
+static TokenType macroEndToken(TokenType beginTokenType)
+{
+  if (beginTokenType == kMacroOpen)
+    return kMacroClose;
+  else if (beginTokenType == kMacroOpen2)
+    return kMacroClose2;
+  return beginTokenType;
+}
+
+
 bool FirstPass::parseMacroPatterns(MacroPatternVector* patterns)
 {
-  SrcPos startPos = fToken.srcpos();
+  while (fToken == kPipe) {
+    nextToken();
 
-  while (true) {
-    TokenType beginTokenType = kBraceOpen;
-    TokenType endTokenType = kBraceClose;
-
-    if (fToken == kEOF)
-      break;
-
-    if (fToken == kBraceOpen) {
-      beginTokenType = kBraceOpen;
-      endTokenType = kBraceClose;
-    }
-    else if (fToken == kMacroOpen) {
-      beginTokenType = kMacroOpen;
-      endTokenType = kMacroClose;
-    }
-    else {
-      errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{' or '\343\200\214'");
+    if (!isMacroOpen(fToken)) {
+      error(fToken.srcpos(), E_MissingBraceOpen,
+            String("expected '\302\253' or '?(', found: ") + fToken);
       scanUntilTopExprAndResume();
       return false;
     }
+
+    TokenType beginTokenType = fToken.tokenType();
     nextToken();
 
     SrcPos patternPos = fToken.srcpos();
     TokenVector pattern;
     TokenVector replacement;
-    if (parseMacroComponent(&pattern, beginTokenType, endTokenType)) {
+    if (parseMacroComponent(&pattern, beginTokenType, macroEndToken(beginTokenType))) {
       if (fToken == kMapTo) {
         nextToken();
 
-        if (fToken == kBraceOpen || fToken == kMacroOpen) {
-          TokenType beginTT = fToken.tokenType();
-          TokenType endTT = beginTT == kBraceOpen ? kBraceClose : kMacroClose;
-          nextToken();
-          SrcPos pos = fToken.srcpos();
-          if (parseMacroComponent(&replacement, beginTT, endTT)) {
-            patterns->push_back(MacroPattern(patternPos, pattern, replacement));
-          }
-          else {
-            errorf(pos, E_BadMacroReplcment, "bad macro replacement");
-            scanUntilTopExprAndResume();
-            return false;
-          }
+        if (!isMacroOpen(fToken)) {
+          error(fToken.srcpos(), E_MissingBraceOpen,
+                String("expected '\302\253' or '?(', found: ") + fToken);
+          scanUntilTopExprAndResume();
+          return false;
+        }
+
+        TokenType beginReplaceType = fToken.tokenType();
+        nextToken();
+
+        SrcPos pos = fToken.srcpos();
+        if (parseMacroComponent(&replacement, beginReplaceType,
+                                macroEndToken(beginReplaceType))) {
+          patterns->push_back(MacroPattern(patternPos, pattern, replacement));
         }
         else {
-          errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+          errorf(pos, E_BadMacroReplcment, "bad macro replacement");
           scanUntilTopExprAndResume();
           return false;
         }
@@ -3223,28 +3229,6 @@ bool FirstPass::parseMacroPatterns(MacroPatternVector* patterns)
       scanUntilTopExprAndResume();
       return false;
     }
-
-    if (fToken == kBraceOpen || fToken == kMacroOpen)
-      continue;
-    else if (fToken != kBraceClose) {
-      errorf(fToken.srcpos(), E_UnexpectedToken, "expected '{', '\343\200\214' or '}'");
-      scanUntilTopExprAndResume();
-      return false;
-    }
-    else if (fToken == kBraceClose)
-      break;
-  }
-
-  if (fToken == kBraceClose) {
-    nextToken();
-  }
-  else {
-    errorf(fToken.srcpos(), E_UnexpectedToken, "expected '}'");
-
-    if (startPos != fToken.srcpos())
-      errorf(startPos, E_MissingBraceClose, "beginning '{' was here");
-    scanUntilTopExprAndResume();
-    return false;
   }
 
   return true;
@@ -3266,13 +3250,10 @@ Token FirstPass::parseMacroDef(const Token& defToken)
 
   Token docString = parseOptDocString();
 
-  if (fToken != kBraceOpen) {
-    errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+  if (fToken != kPipe) {
+    errorf(fToken.srcpos(), E_MissingPipe, "expected '|'");
     return scanUntilTopExprAndResume();
   }
-
-  SrcPos bracePos = fToken.srcpos();
-  nextToken();
 
   MacroPatternVector patterns;
   if (parseMacroPatterns(&patterns)) {

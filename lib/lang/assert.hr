@@ -21,24 +21,19 @@ def config NDEBUG = "true"
 when (NDEBUG == "true")
 {
   def macro assert
-  {
-    { assert(?expr:expr) } -> { if (not ?expr) {
-                                  exit(1)
-                                  -- even though we never come here, keep
-                                  -- the type checker calm
-                                  false
-                                }
-                                else {
-                                  true
-                                }
-                              }
-  }
+    | « assert(?expr:expr) » -> « if (not ?expr) {
+                                    exit(1)
+                                    -- even though we never come here, keep
+                                    -- the type checker calm
+                                    false
+                                  }
+                                  else {
+                                    true
+                                  } »
 }
 else {
   def macro assert
-  {
-    { assert(?expr:expr) } -> { true }
-  }
+    | « assert(?expr:expr) » -> « true »
 }
 
 -- end of assert.hr

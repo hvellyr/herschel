@@ -524,11 +524,11 @@ TEST_CASE("Tokenizer macro vars", "[tokenize][macros]")
 }
 
 
-TEST_CASE("Tokenizer special macro brackets", "[tokenize][macros]")
+TEST_CASE("Tokenizer macro brackets", "[tokenize][macros]")
 {
   SrcPos sp;
 
-  static zstring test = "\343\200\214 xyz \343\200\215 ";
+  static zstring test = "\302\253 xyz \302\273 ";
   Tokenizer tnz(
       std::make_shared<CharPort>(std::make_shared<DataPort>((Octet*)test, strlen(test))),
       String("n.n."));
@@ -537,6 +537,26 @@ TEST_CASE("Tokenizer special macro brackets", "[tokenize][macros]")
     REQUIRE(tnz.nextToken() == Token(sp, kMacroOpen));
     REQUIRE(tnz.nextToken() == Token(sp, kSymbol, "xyz"));
     REQUIRE(tnz.nextToken() == Token(sp, kMacroClose));
+  }
+  catch (const Exception& ne) {
+    logf(kError, StrHelper(ne.message()));
+  }
+}
+
+
+TEST_CASE("Tokenizer alternative macro brackets", "[tokenize][macros]")
+{
+  SrcPos sp;
+
+  static zstring test = "?( xyz )? ";
+  Tokenizer tnz(
+      std::make_shared<CharPort>(std::make_shared<DataPort>((Octet*)test, strlen(test))),
+      String("n.n."));
+
+  try {
+    REQUIRE(tnz.nextToken() == Token(sp, kMacroOpen2));
+    REQUIRE(tnz.nextToken() == Token(sp, kSymbol, "xyz"));
+    REQUIRE(tnz.nextToken() == Token(sp, kMacroClose2));
   }
   catch (const Exception& ne) {
     logf(kError, StrHelper(ne.message()));

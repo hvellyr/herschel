@@ -35,40 +35,32 @@ export public(incr!, post-incr!,
               decr!, post-decr!)
 
 def macro incr!
-{
-  { incr!(?place:expr) }               -> { ?place = ?place + 1 }
-  { incr!(?place:expr, ?amount:expr) } -> { ?place = ?place + ?amount }
-}
+  | « incr!(?place:expr) »               -> « ?place = ?place + 1 »
+  | « incr!(?place:expr, ?amount:expr) » -> « ?place = ?place + ?amount »
 
 
 def macro post-incr!
-{
-  { post-incr!(?place:expr) }          -> { { let tmp = ?place
-                                              ?place.incr!
-                                              tmp } }
-  { post-incr!(?place:expr,
-               ?amount:expr) }         -> { { let tmp = ?place
-                                              ?place.incr!(?amount)
-                                              tmp } }
-}
+  | « post-incr!(?place:expr) »          -> « { let tmp = ?place
+                                                ?place.incr!
+                                                tmp } »
+  | « post-incr!(?place:expr,
+                 ?amount:expr) »         -> « { let tmp = ?place
+                                                ?place.incr!(?amount)
+                                                tmp } »
 
 
 def macro decr!
-{
-  { decr!(?place:expr) }               -> { ?place = ?place - 1 }
-  { decr!(?place:expr, ?amount:expr) } -> { ?place = ?place - ?amount }
-}
+  | « decr!(?place:expr) »               -> « ?place = ?place - 1 »
+  | « decr!(?place:expr, ?amount:expr) » -> « ?place = ?place - ?amount »
 
 
 def macro post-decr!
-{
-  { post-decr!(?place:expr) }          -> { { let tmp = ?place
-                                              ?place.decr!
-                                              tmp } }
-  { post-decr!(?place:expr,
-               ?amount:expr) }         -> { { let tmp = ?place
-                                              ?place.decr!(?amount)
-                                              tmp } }
-}
+  | « post-decr!(?place:expr) »          -> « { let tmp = ?place
+                                                ?place.decr!
+                                                tmp } »
+  | « post-decr!(?place:expr,
+                 ?amount:expr) »         -> « { let tmp = ?place
+                                                ?place.decr!(?amount)
+                                                tmp } »
 
 -- end of incr

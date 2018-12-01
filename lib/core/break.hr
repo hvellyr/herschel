@@ -41,40 +41,35 @@ def class BreakSignal(val)
 
 
 def macro with-break
-{
-  { with-break() ?body:expr } -> {
-    {
-      on signal (break-signal : BreakSignal) {
-        break-signal.return-value
-      }
-      let break(retval) {
-        BreakSignal(retval).raise
-      }
-      ?body
-    }
-  }
-  { with-break(?break:name) ?body:expr } -> {
-    {
-      on signal (break-signal : BreakSignal) {
-        break-signal.return-value
-      }
-      let ?break(retval) {
-        BreakSignal(retval).raise
-      }
-      ?body
-    }
-  }
-  { with-break(?break:name = ?func:expr) ?body:expr } -> {
-    {
-      on signal (break-signal : BreakSignal) {
-        break-signal.return-value
-      }
-      let ?break(retval) {
-        BreakSignal(?func (retval)).raise
-      }
-      ?body
-    }
-  }
-}
+  | « with-break() ?body:expr »
+    -> « {
+           on signal (break-signal : BreakSignal) {
+             break-signal.return-value
+           }
+           let break(retval) {
+             BreakSignal(retval).raise
+           }
+           ?body
+         } »
+  | « with-break(?break:name) ?body:expr »
+    -> « {
+           on signal (break-signal : BreakSignal) {
+             break-signal.return-value
+           }
+           let ?break(retval) {
+             BreakSignal(retval).raise
+           }
+           ?body
+         } »
+  | « with-break(?break:name = ?func:expr) ?body:expr »
+    -> « {
+           on signal (break-signal : BreakSignal) {
+             break-signal.return-value
+           }
+           let ?break(retval) {
+             BreakSignal(?func (retval)).raise
+           }
+           ?body
+         } »
 
 -- end of break

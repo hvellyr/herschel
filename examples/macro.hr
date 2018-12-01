@@ -1,0 +1,13 @@
+def enum Colors ( yellow = 0, green = 1, red = 2 )
+
+def macro co-sel
+  | « co-sel(?v:expr) »               -> « ?v + 1 »
+  | « co-sel(?v:expr, ?amount:expr) » -> « ?v + ?amount »
+
+def macro co-sel-2
+  | ?( co-sel-2(?v:expr) )?               -> ?( ?v + 1 )?
+  | ?( co-sel-2(?v:expr, ?amount:expr) )? -> ?( ?v + ?amount )?
+
+
+def m = co-sel(Colors.green)
+def m2 = co-sel-2(Colors.red)
