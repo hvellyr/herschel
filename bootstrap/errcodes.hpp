@@ -48,6 +48,7 @@ enum ErrCodes {
   E_OrphanedRestInd = 0x010c,
   E_MisplacedThenWhile = 0x010d,
   E_TypeHasNoBraces = 0x010e,
+  E_UnexpectedRootedSymbol = 0x010f,
 
   E_SymbolExpected = 0x1001,
   E_StringExpected = 0x1002,

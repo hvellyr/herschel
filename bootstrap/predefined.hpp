@@ -77,167 +77,167 @@ namespace herschel {
 
 //--------------------------------------------------------------------------
 // names of predefined types
-#define MID_core_ns "lang"
+#define MID_core_ns ".lang"
 
-#define MID_clang_ns "clang"
+#define MID_clang_ns ".clang"
 
 #define MID_AnyTypeName \
-  MID_core_ns "|"       \
+  MID_core_ns "."       \
               "Any"
 
 #define MID_BoolTypeName \
-  MID_core_ns "|"        \
+  MID_core_ns "."        \
               "Bool"
 #define MID_CharTypeName \
-  MID_core_ns "|"        \
+  MID_core_ns "."        \
               "Char"
 
 #define MID_ObjectTypeName \
-  MID_core_ns "|"          \
+  MID_core_ns "."          \
               "Object"
 #define MID_RecordTypeName \
-  MID_core_ns "|"         \
+  MID_core_ns "."         \
               "Record"
 
 #define MID_NumberTypeName \
-  MID_core_ns "|"          \
+  MID_core_ns "."          \
               "Number"
 #define MID_ComplexTypeName \
-  MID_core_ns "|"           \
+  MID_core_ns "."           \
               "Complex"
 #define MID_RationalTypeName \
-  MID_core_ns "|"            \
+  MID_core_ns "."            \
               "Rational"
 #define MID_IntegerTypeName \
-  MID_core_ns "|"           \
+  MID_core_ns "."           \
               "Integer"
 
 #define MID_Float32TypeName \
-  MID_core_ns "|"           \
+  MID_core_ns "."           \
               "Float32"
 #define MID_Float64TypeName \
-  MID_core_ns "|"           \
+  MID_core_ns "."           \
               "Float64"
 #define MID_Float128TypeName \
-  MID_core_ns "|"            \
+  MID_core_ns "."            \
               "Float128"
 
 #define MID_EofTypeName \
-  MID_core_ns "|"       \
+  MID_core_ns "."       \
               "Eof"
 #define MID_NilTypeName \
-  MID_core_ns "|"       \
+  MID_core_ns "."       \
               "Nil"
 #define MID_UnspecifiedTypeName \
-  MID_core_ns "|"               \
+  MID_core_ns "."               \
               "Unspecified"
 
 #define MID_KeywordTypeName \
-  MID_core_ns "|"           \
+  MID_core_ns "."           \
               "Keyword"
 #define MID_StringTypeName \
-  MID_core_ns "|"          \
+  MID_core_ns "."          \
               "String"
 
 #define MID_Int8TypeName \
-  MID_core_ns "|"        \
+  MID_core_ns "."        \
               "Int8"
 #define MID_UInt8TypeName \
-  MID_core_ns "|"         \
+  MID_core_ns "."         \
               "UInt8"
 #define MID_Int16TypeName \
-  MID_core_ns "|"         \
+  MID_core_ns "."         \
               "Int16"
 #define MID_UInt16TypeName \
-  MID_core_ns "|"          \
+  MID_core_ns "."          \
               "UInt16"
 #define MID_Int32TypeName \
-  MID_core_ns "|"         \
+  MID_core_ns "."         \
               "Int32"
 #define MID_UInt32TypeName \
-  MID_core_ns "|"          \
+  MID_core_ns "."          \
               "UInt32"
 #define MID_Int64TypeName \
-  MID_core_ns "|"         \
+  MID_core_ns "."         \
               "Int64"
 #define MID_UInt64TypeName \
-  MID_core_ns "|"          \
+  MID_core_ns "."          \
               "UInt64"
 
 #define MID_SliceableTypeName \
-  MID_core_ns "|"             \
+  MID_core_ns "."             \
               "Sliceable"
 #define MID_SliceableXTypeName \
-  MID_core_ns "|"              \
+  MID_core_ns "."              \
               "Sliceable!"
 
 #define MID_RangeTypeName \
-  MID_core_ns "|"         \
+  MID_core_ns "."         \
               "Range"
 #define MID_CollectionTypeName \
-  MID_core_ns "|"              \
+  MID_core_ns "."              \
               "Collection"
 #define MID_OrderedCollectionTypeName \
-  MID_core_ns "|"                     \
+  MID_core_ns "."                     \
               "OrderedCollection"
 #define MID_SequenceTypeName \
-  MID_core_ns "|"            \
+  MID_core_ns "."            \
               "Sequence"
 #define MID_VectorTypeName \
-  MID_core_ns "|"          \
+  MID_core_ns "."          \
               "Vector"
 #define MID_AssocCollectionTypeName \
-  MID_core_ns "|"                   \
+  MID_core_ns "."                   \
               "AssocCollection"
 #define MID_AssocTypeName \
-  MID_core_ns "|"         \
+  MID_core_ns "."         \
               "Assoc"
 #define MID_MapTypeName \
-  MID_core_ns "|"       \
+  MID_core_ns "."       \
               "Map"
 
 #define MID_clang_IntTypeName \
-  MID_clang_ns "|"            \
+  MID_clang_ns "."            \
                "int"
 #define MID_clang_CharTypeName \
-  MID_clang_ns "|"             \
+  MID_clang_ns "."             \
                "char"
 
 
 //--------------------------------------------------------------------------
 // names of predefined functions
 #define MID_lang_return \
-  MID_core_ns "|"       \
+  MID_core_ns "."       \
               "return"
 #define MID_lang_slice \
-  MID_core_ns "|"      \
+  MID_core_ns "."      \
               "slice"
 #define MID_lang_sliceX \
-  MID_core_ns "|"       \
+  MID_core_ns "."       \
               "slice!"
 #define MID_lang_unspecified \
-  MID_core_ns "|"            \
+  MID_core_ns "."            \
               "unspecified"
 #define MID_lang_allocate \
-  MID_core_ns "|"         \
+  MID_core_ns "."         \
               "allocate"
 #define MID_lang_allocate_array \
-  MID_core_ns "|"               \
+  MID_core_ns "."               \
               "allocate*"
 #define MID_lang_nil \
-  MID_core_ns "|"    \
+  MID_core_ns "."    \
               "nil"
 
-#define MID_lang_equal_q MID_core_ns "|" MID_equalq
-#define MID_lang_greater_q MID_core_ns "|" MID_greaterq
-#define MID_lang_less_q MID_core_ns "|" MID_lessq
-#define MID_lang_less_equal_q MID_core_ns "|" MID_lessequalq
-#define MID_lang_greater_equal_q MID_core_ns "|" MID_greaterequalq
-#define MID_lang_unequal_q MID_core_ns "|" MID_unequalq
-#define MID_lang_compare MID_core_ns "|" MID_compare
-#define MID_lang_concat MID_core_ns "|" MID_concat
+#define MID_lang_equal_q MID_core_ns "." MID_equalq
+#define MID_lang_greater_q MID_core_ns "." MID_greaterq
+#define MID_lang_less_q MID_core_ns "." MID_lessq
+#define MID_lang_less_equal_q MID_core_ns "." MID_lessequalq
+#define MID_lang_greater_equal_q MID_core_ns "." MID_greaterequalq
+#define MID_lang_unequal_q MID_core_ns "." MID_unequalq
+#define MID_lang_compare MID_core_ns "." MID_compare
+#define MID_lang_concat MID_core_ns "." MID_concat
 
-#define MID_app_main "app|main"
+#define MID_app_main ".app.main"
 
 
 class Names {

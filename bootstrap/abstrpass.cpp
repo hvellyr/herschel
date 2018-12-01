@@ -29,11 +29,18 @@ String AbstractPass::currentModuleName() const
 }
 
 
+String AbstractPass::setCurrentModuleName(const String& name, bool setName)
+{
+  fCurrentModuleName = setName ? name : qualifyId(fCurrentModuleName, name);
+  return fCurrentModuleName;
+}
+
+
 void AbstractPass::pushModule(const String& name, bool setName)
 {
   fModuleNameStack.push_front(fCurrentModuleName);
 
-  fCurrentModuleName = setName ? name : qualifyId(fCurrentModuleName, name);
+  setCurrentModuleName(name, setName);
 }
 
 

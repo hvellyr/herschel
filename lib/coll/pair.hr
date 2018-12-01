@@ -62,11 +62,11 @@ def pair-cell-to-string(node @ Pair<'L, 'R>, port,
 }
 
 
-def lang|to-string(self @ Pair<'L, 'R>) -> String {
+def lang.to-string(self @ Pair<'L, 'R>) -> String {
   if (self.car.nil? and self.cdr.nil?)
     "()"
   else {
-    let port = io|StringPort()
+    let port = io.StringPort()
     let printer(p : Pair<'L, 'R>) -> Unspecified {
       port.writes(p.car.to-string)
 
@@ -96,7 +96,7 @@ def class PairIterator<T, Accessor<T>>(_root, acc)
 }
 
 
-def core|next(self @ PairIterator<'Elt, 'AccType>) -> 'Elt {
+def core.next(self @ PairIterator<'Elt, 'AccType>) -> 'Elt {
    if (self.more?) {
      let value = self.accessor(self.current)
      self.current = self.current.cdr
@@ -107,7 +107,7 @@ def core|next(self @ PairIterator<'Elt, 'AccType>) -> 'Elt {
 }
 
 
-def core|more?(pair @ PairIterator<'Elt, 'AccType>) -> Bool {
+def core.more?(pair @ PairIterator<'Elt, 'AccType>) -> Bool {
    not pair.current.nil? and pair.current.kind-of?(Pair)
 }
 

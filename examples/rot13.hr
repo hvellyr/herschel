@@ -5,10 +5,9 @@ def rot13(buffer : Char[]) : Char[]
 
   for (i in 0 .. buffer.num-items - 1) {
     let c = buffer[i]
-    t[i] = select(c) {
+    t[i] = select(c)
              | \a .. \m -> c + 13
              | \n .. \z -> c - 13
              | else c
-           }
   }
   t

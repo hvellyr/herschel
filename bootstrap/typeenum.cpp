@@ -96,9 +96,9 @@ Token BoolTypeEnumMaker::nextEnumItem(const SrcPos& srcpos, const Token& enumIte
     return Token(srcpos, kSymbol, String(_value));                               \
   }
 
-SIMPLE_TYPE_ENUM_MAKE(Eof, "lang|eof")
-SIMPLE_TYPE_ENUM_MAKE(Nil, "lang|nil")
-SIMPLE_TYPE_ENUM_MAKE(Unspecified, "lang|unspecified")
+SIMPLE_TYPE_ENUM_MAKE(Eof, ".lang.eof")
+SIMPLE_TYPE_ENUM_MAKE(Nil, ".lang.nil")
+SIMPLE_TYPE_ENUM_MAKE(Unspecified, ".lang.unspecified")
 
 
 #define STRING_TYPE_ENUM_MAKE(_TypeName, _kind)                                    \

@@ -159,7 +159,7 @@ TEST_CASE("Token is qualified ID", "[token]")
   SECTION("Qualified names")
   {
     SrcPos sp;
-    Token t = Token(sp, kSymbol, "io|File");
+    Token t = Token(sp, kSymbol, "io.File");
     REQUIRE(t.isQualifiedId());
     REQUIRE(t.baseName() == String("File"));
     REQUIRE(t.nsName() == String("io"));
@@ -169,10 +169,10 @@ TEST_CASE("Token is qualified ID", "[token]")
   SECTION("Multi qualified names")
   {
     SrcPos sp;
-    Token t = Token(sp, kSymbol, "core|rubitz|packs|Package");
+    Token t = Token(sp, kSymbol, "core.rubitz.packs.Package");
     REQUIRE(t.isQualifiedId());
     REQUIRE(t.baseName() == String("Package"));
-    REQUIRE(t.nsName() == String("core|rubitz|packs"));
+    REQUIRE(t.nsName() == String("core.rubitz.packs"));
   }
 }
 

@@ -81,6 +81,8 @@ private:
 
   enum ParamType { kPositional, kNamed, kRest };
 
+  TokenVector parseQualifiedName(bool acceptLeadingDot);
+
   TokenVector parseTop();
   Token parseModule();
   Token parseExport();
@@ -107,7 +109,7 @@ private:
                      bool hasRest);
 
   Token parseTypeSpec(bool onlyNestedConstraints, bool needParans);
-  Token parseSimpleType(const Token& baseType, bool nextIsParsedYet = false);
+  Token parseSymbolOrSimpleType(const Token& baseType);
   Token parseUnionType();
   Token parseGroupType();
   Token parseFunctionType();

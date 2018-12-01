@@ -13,6 +13,7 @@
 #include "predefined.hpp"
 #include "str.hpp"
 #include "strbuf.hpp"
+#include "token.hpp"
 
 #include "stdio.h"
 
@@ -22,33 +23,39 @@ namespace herschel {
 
 String qualifyId(const String& ns, const String& name)
 {
-  if (isQualified(name) || ns.isEmpty())
+  if (!name.isEmpty() && name.indexOf('.', 0) == 0) {
     return name;
+  }
+  else if (ns.isEmpty()) {
+    return String(".") + name;
+  }
 
-  return ns + "|" + name;
+  return ns + "." + name;
 }
 
 
 bool isQualified(const String& sym)
 {
-  return (sym.lastIndexOf('|') >= 0);
+  return sym.lastIndexOf('.') >= 0;
 }
 
 
 String baseName(const String& sym)
 {
-  int idx = sym.lastIndexOf('|');
+  int idx = sym.lastIndexOf('.');
   if (idx >= 0)
     return sym.part(idx + 1, sym.length());
+
   return sym;
 }
 
 
 String nsName(const String& sym)
 {
-  int idx = sym.lastIndexOf('|');
+  int idx = sym.lastIndexOf('.');
   if (idx >= 0)
     return sym.part(0, idx);
+
   return String();
 }
 
@@ -105,7 +112,7 @@ String mangleToC(const String& qualId)
 
   String tmp = qualId;
   String ns;
-  while (tmp.split('|', ns, tmp) >= 0) {
+  while (tmp.split('.', ns, tmp) >= 0) {
     fastMangleSymPart(result, ns);
   }
   if (!tmp.isEmpty()) {
@@ -113,6 +120,31 @@ String mangleToC(const String& qualId)
   }
 
   return result.toString();
+}
+
+
+String qualifyId(const std::vector<Token>& tokens)
+{
+  StringBuffer result;
+
+  for (const auto& t : tokens) {
+    if (t == kDot)
+      result << ".";
+    else if (t == kSymbol)
+      result << t.idValue();
+  }
+
+  return result.toString();
+}
+
+
+String deroot(const String& str)
+{
+  if (str.length() > 1 && str.indexOf('.', 0) == 0) {
+    return str.part(1, str.length());
+  }
+
+  return str;
 }
 
 }  // namespace herschel

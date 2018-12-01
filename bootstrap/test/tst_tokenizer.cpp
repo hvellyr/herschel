@@ -449,7 +449,8 @@ TEST_CASE("Tokenizer generics", "[tokenize][generics]")
     REQUIRE(tnz.nextToken() == Token(sp, kAs));
     REQUIRE(tnz.nextToken() == Token(sp, String("Octet")));
 
-    REQUIRE(tnz.nextToken() == Token(sp, String("|abc")));
+    REQUIRE(tnz.nextToken() == Token(sp, kPipe));
+    REQUIRE(tnz.nextToken() == Token(sp, String("abc")));
     REQUIRE(tnz.nextToken() == Token(sp, String("->abc")));
   }
   catch (const Exception& ne) {
@@ -469,11 +470,15 @@ TEST_CASE("Tokenizer namespaces", "[tokenize][namespaces]")
       String("n.n."));
 
   try {
-    REQUIRE(tnz.nextToken() == Token(sp, String("io|File")));
+    REQUIRE(tnz.nextToken() == Token(sp, String("io")));
+    REQUIRE(tnz.nextToken() == Token(sp, kPipe));
+    REQUIRE(tnz.nextToken() == Token(sp, String("File")));
 
     REQUIRE(tnz.nextToken() == Token(sp, String("self")));
     REQUIRE(tnz.nextToken() == Token(sp, kDot));
-    REQUIRE(tnz.nextToken() == Token(sp, String("io|val")));
+    REQUIRE(tnz.nextToken() == Token(sp, String("io")));
+    REQUIRE(tnz.nextToken() == Token(sp, kPipe));
+    REQUIRE(tnz.nextToken() == Token(sp, String("val")));
     REQUIRE(tnz.nextToken() == Token(sp, kDot));
     REQUIRE(tnz.nextToken() == Token(sp, String("display")));
 

@@ -151,7 +151,7 @@ public:
   //! Rewrite \p old to a new typeref taking the typename \p name.
   static Type makeTypeRef(const String& name, const Type& old);
 
-  //! Creates a new lang|Record<'T> type instance with 'T being \p type.
+  //! Creates a new lang.Record<'T> type instance with 'T being \p type.
   static Type makeRecordOf(const Type& type, bool isValue = true);
 
   //! Creates a new 'T[] array type with \p base being the array base type
@@ -159,30 +159,30 @@ public:
   //! essential part of an array type in herschel.
   static Type makeArray(const Type& base, int sizeIndicator, bool isValue);
 
-  //! Creates a new lang|Any type instance.
+  //! Creates a new lang.Any type instance.
   static Type makeAny(bool isValue = true);
 
-  //! Creates a new lang|Int32 type instance.
+  //! Creates a new lang.Int32 type instance.
   static Type makeInt32(bool isValue = true);
-  //! Creates a new lang|UInt32 type instance.
+  //! Creates a new lang.UInt32 type instance.
   static Type makeUInt32(bool isValue = true);
 
-  //! Creates a new lang|IntX type instance with X being the bitwidth.
+  //! Creates a new lang.IntX type instance with X being the bitwidth.
   static Type makeInt(int bitwidth, bool isValue = true);
-  //! Creates a new lang|UIntX type instance with X being the bitwidth.
+  //! Creates a new lang.UIntX type instance with X being the bitwidth.
   static Type makeUInt(int bitwidth, bool isValue = true);
 
-  //! Creates a new lang|Rational type instance.
+  //! Creates a new lang.Rational type instance.
   static Type makeRational(bool isValue = true);
-  //! Creates a new lang|Float32 type instance.
+  //! Creates a new lang.Float32 type instance.
   static Type makeFloat32(bool isValue = true);
-  //! Creates a new lang|String type instance.
+  //! Creates a new lang.String type instance.
   static Type makeString(bool isValue = true);
-  //! Creates a new lang|Bool type instance.
+  //! Creates a new lang.Bool type instance.
   static Type makeBool(bool isValue = true);
-  //! Creates a new lang|Keyword type instance.
+  //! Creates a new lang.Keyword type instance.
   static Type makeKeyword(bool isValue = true);
-  //! Creates a new lang|Char type instance.
+  //! Creates a new lang.Char type instance.
   static Type makeChar(bool isValue = true);
 
   //! Creates a new Type type instance named \p name.  This represents a
@@ -259,7 +259,7 @@ public:
   bool isAny() const;
   bool isClangAtom() const;
 
-  //! indicates whether the type is a generic lang|Integer type.
+  //! indicates whether the type is a generic lang.Integer type.
   bool isInteger() const;
 
   bool isInt32() const;
@@ -284,7 +284,7 @@ public:
   //! Indicates whether the receiver is a signed number.
   bool isSigned() const;
 
-  //! Indicates whether the receiver is a lang|Record<'T> type instance.
+  //! Indicates whether the receiver is a lang.Record<'T> type instance.
   bool isRecordOf() const;
 
   bool isImaginary() const;

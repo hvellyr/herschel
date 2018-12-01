@@ -20,8 +20,8 @@ namespace herschel {
 TEST_CASE("Symbol mangling", "[symbol]")
 {
   REQUIRE(String("__QN13hello/2dworld") == mangleToC(String("hello-world")));
-  REQUIRE(String("__QN3app4main") == mangleToC(Names::kAppMain));
-  REQUIRE(String("__QN4core2io12/2astdout/2a") == mangleToC(String("core|io|*stdout*")));
+  REQUIRE(String("__QN03app4main") == mangleToC(Names::kAppMain));
+  REQUIRE(String("__QN4core2io12/2astdout/2a") == mangleToC(String("core.io.*stdout*")));
   REQUIRE(String("__QN9call/2fcc") == mangleToC(String("call/cc")));
 }
 

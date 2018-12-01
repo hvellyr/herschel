@@ -64,7 +64,7 @@ public:
 };
 
 
-//! TypeProperty implementation for the clang|char type.
+//! TypeProperty implementation for the clang.char type.
 class ClangCharTypeProperty : public TypeProperty {
 public:
   ClangCharTypeProperty() {}

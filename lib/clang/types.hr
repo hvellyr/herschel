@@ -12,18 +12,18 @@ export public (*)
 import "lang/numbers.hr"
 
 
-def alias int = lang|Int32
-def alias char = lang|Int8
-def alias short = lang|Int16
-def alias long = lang|Int32
-def alias unsigned-int = lang|UInt32
-def alias unsigned-char = lang|UInt8
-def alias unsigned-short = lang|UInt16
-def alias unsigned-long = lang|UInt32
+def alias int = lang.Int32
+def alias char = lang.Int8
+def alias short = lang.Int16
+def alias long = lang.Int32
+def alias unsigned-int = lang.UInt32
+def alias unsigned-char = lang.UInt8
+def alias unsigned-short = lang.UInt16
+def alias unsigned-long = lang.UInt32
 
 def type void
-def alias float = lang|Float32
-def alias double = lang|Float64
+def alias float = lang.Float32
+def alias double = lang.Float64
 
 def type int*
 def type char*

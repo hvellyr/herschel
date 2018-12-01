@@ -131,8 +131,9 @@ void Scope::registerScopeItem(const ScopeName& name, std::shared_ptr<ScopeItem> 
     return;
   }
 
-  ScopeName base(name.fDomain, herschel::baseName(name.fName));
-  String ns(herschel::nsName(name.fName));
+  auto src_name = deroot(name.fName);
+  ScopeName base(name.fDomain, herschel::baseName(src_name));
+  String ns(herschel::nsName(src_name));
 
   NsScopeMap::iterator it = fMap.find(base);
   if (it != fMap.end())
@@ -153,12 +154,13 @@ Scope::LookupResult Scope::lookupItemLocalImpl(const SrcPos& srcpos,
                                                const ScopeName& name, bool showError,
                                                bool doAutoMatch) const
 {
-  ScopeName base(name.fDomain, herschel::baseName(name.fName));
-  ScopeName ns(name.fDomain, herschel::nsName(name.fName));
+  auto src_name = deroot(name.fName);
+  ScopeName base(name.fDomain, herschel::baseName(src_name));
+  ScopeName ns(name.fDomain, herschel::nsName(src_name));
 
   NsScopeMap::const_iterator it = fMap.find(base);
   if (it != fMap.end()) {
-    if (doAutoMatch && !isQualified(name.fName)) {
+    if (doAutoMatch && !isQualified(src_name)) {
       if (it->second.size() == 1) {
         return LookupResult(it->second.begin()->second.get(), !K(inOuterFunc));
       }
@@ -187,7 +189,6 @@ Scope::LookupResult Scope::lookupItemLocalImpl(const SrcPos& srcpos,
     if (lv.fItem)
       return lv;
   }
-
 
   return LookupResult();
 }

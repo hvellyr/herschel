@@ -1,4 +1,4 @@
-def enum Color : lang|Ordinal (
+def enum Color : lang.Ordinal (
   yellow,
   orange = 3,
   red = 1 << 2,

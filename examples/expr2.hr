@@ -1,0 +1,5 @@
+def enum abc.xyz.Color ( green = 1, red = 99 )
+
+def foo(a : Int) {
+  a = .abc.xyz.Color.red
+}

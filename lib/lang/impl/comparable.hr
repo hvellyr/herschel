@@ -11,8 +11,8 @@ import "lang/comparable.hr"
 
 
 -- Default implementations for the standard compare operators in terms of
--- the designated @fun{lang|compare} function of @type{lang|Comparable}.
--- So types have to implement the @fun{lang|compare} function only to
+-- the designated @fun{lang.compare} function of @type{lang.Comparable}.
+-- So types have to implement the @fun{lang.compare} function only to
 -- implement the full set of compare functions.
 
 def equal?(one @ Comparable, two @ Comparable) -> Bool

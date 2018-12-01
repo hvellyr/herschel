@@ -40,7 +40,7 @@ import "coll/collection"
 
 ---------------------------------------------------------------------------
 
-def lang|to-string(self @ Assoc<'K, 'V>) -> String
+def lang.to-string(self @ Assoc<'K, 'V>) -> String
   concat(self.key, "->", self.value)
 
 
@@ -49,7 +49,7 @@ def generic key?(self @ Triple<'K, 'V, 'T>, other : 'K) -> Bool
   self.key == other
 }
 
-def lang|to-string(self @ Triple<'K, 'V, 'T>) -> String
+def lang.to-string(self @ Triple<'K, 'V, 'T>) -> String
 {
   concat(self.key, "->", self.value)
 }
@@ -82,7 +82,7 @@ def empty!(self @ HashMap<'K, 'T>) -> HashMap<'K, 'T>
   self
 }
 
-def core|octet-size(self @ HashMap<'K, 'T>) -> Ordinal
+def core.octet-size(self @ HashMap<'K, 'T>) -> Ordinal
 
   self.table.size
 
@@ -313,7 +313,7 @@ def deepen(self @ HashMap<'K, 'T>) -> HashMap<'K, 'T>
 --       -- TODO
 --    -1
 
-def lang|to-string(map @ HashMap<'K, 'T>) -> String
+def lang.to-string(map @ HashMap<'K, 'T>) -> String
     ~ Returns a string representation of @var{map}. ~
 {
   -- let sb = StringBuffer()

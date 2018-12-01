@@ -25,6 +25,7 @@ public:
   AbstractPass(Compiler& compiler, std::shared_ptr<Scope> scope);
 
   String currentModuleName() const;
+  String setCurrentModuleName(const String& name, bool setName = true);
   void pushModule(const String& name, bool setName);
   void popModule();
 

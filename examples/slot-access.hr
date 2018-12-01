@@ -1,0 +1,17 @@
+-- def record Foo (
+--   abc,
+--   xyz
+-- )
+
+
+module ixwick {
+module io {
+def foo() {
+  let f : Foo
+  f.abc = 1
+  f.xyz.gaz
+  f.abc[0].gaz
+}
+
+}
+}

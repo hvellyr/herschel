@@ -27,21 +27,21 @@ std::shared_ptr<Scope> type::newRootScope(bool forUnitTests)
   SrcPos sp;
 
   if (forUnitTests) {
-    //-------- lang|Any
+    //-------- lang.Any
     root->registerType(sp, Names::kAnyTypeName, Type::makeAny(K(isValue)));
 
-    //-------- lang|Object
+    //-------- lang.Object
     root->registerType(sp, Names::kObjectTypeName,
                        Type::makeType(Names::kObjectTypeName, TypeVector(), Type()));
 
 
-    //-------- lang|Bool
+    //-------- lang.Bool
     root->registerType(
         sp, Names::kBoolTypeName,
         Type::makeType(Names::kBoolTypeName, TypeVector(),
                        Type::makeTypeRef(Names::kObjectTypeName, K(isValue))));
 
-    //-------- lang|Char
+    //-------- lang.Char
     root->registerType(
         sp, Names::kCharTypeName,
         Type::makeType(Names::kCharTypeName, TypeVector(),
@@ -98,20 +98,20 @@ std::shared_ptr<Scope> type::newRootScope(bool forUnitTests)
   root->registerType(sp, Names::kUnspecifiedTypeName, unspecifiedType);
 
 
-  auto eof = makeVardefNode(sp, String("lang|eof"), kNormalVar, !K(isLocal), eofType,
+  auto eof = makeVardefNode(sp, String(".lang.eof"), kNormalVar, !K(isLocal), eofType,
                             makeApplyNode(sp, makeSymbolNode(sp, Names::kEofTypeName)));
-  root->registerVar(sp, String("lang|eof"), eof);
+  root->registerVar(sp, String(".lang.eof"), eof);
 
 
-  auto nil = makeVardefNode(sp, String("lang|nil"), kNormalVar, !K(isLocal), nilType,
+  auto nil = makeVardefNode(sp, String(".lang.nil"), kNormalVar, !K(isLocal), nilType,
                             makeApplyNode(sp, makeSymbolNode(sp, Names::kNilTypeName)));
-  root->registerVar(sp, String("lang|nil"), nil);
+  root->registerVar(sp, String(".lang.nil"), nil);
 
 
   auto unspecified = makeVardefNode(
-      sp, String("lang|unspecified"), kNormalVar, !K(isLocal), unspecifiedType,
+      sp, String(".lang.unspecified"), kNormalVar, !K(isLocal), unspecifiedType,
       makeApplyNode(sp, makeSymbolNode(sp, Names::kUnspecifiedTypeName)));
-  root->registerVar(sp, String("lang|unspecified"), unspecified);
+  root->registerVar(sp, String(".lang.unspecified"), unspecified);
 
 
   //------------------------------ builtin functions

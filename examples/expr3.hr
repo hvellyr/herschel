@@ -1,0 +1,10 @@
+def record Foo ( name, prof )
+
+def first-name(fs @ ^Foo[]) {
+  f[0].name
+}
+
+
+def first-proc(p @ Function() -> ^Foo) {
+  p().name
+}

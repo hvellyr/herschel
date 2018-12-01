@@ -48,6 +48,14 @@ Token ExprPass::doApply(const Token& src)
 
 //----------------------------------------------------------------------------
 
+static Token qualifyIdToken(const TokenVector& qSymbol)
+{
+  return !qSymbol.empty() ? Token(qSymbol[0].srcpos(), qualifyId(qSymbol)) : Token();
+}
+
+
+//----------------------------------------------------------------------------
+
 FirstPass::FirstPass(Compiler& compiler, const Token& currentToken,
                      std::shared_ptr<Scope> scope)
     : AbstractPass(compiler, std::move(scope))
@@ -203,6 +211,53 @@ void FirstPass::parseChoiceSequence(ParseFunctor functor, TokenType choiceToken,
 
 //----------------------------------------------------------------------------
 
+TokenVector FirstPass::parseQualifiedName(bool acceptLeadingDot)
+{
+  TokenVector result;
+
+  if (fToken == kSymbol || fToken == kDot) {
+    if (fToken == kSymbol) {
+      result.push_back(fToken);
+      nextToken();
+    }
+    else if (fToken == kDot) {
+      if (!acceptLeadingDot) {
+        nextToken();
+
+        if (fToken == kSymbol) {
+          errorf(fToken.srcpos(), E_UnexpectedRootedSymbol,
+                 "Rooted qualified name not allowed in this postion");
+
+          result.push_back(fToken);
+          nextToken();
+        }
+        else {
+          errorf(fToken.srcpos(), E_UnexpectedToken, "unexpected dot");
+          return TokenVector();
+        }
+      }
+    }
+
+    while (fToken == kDot) {
+      result.push_back(fToken);
+      nextToken();
+
+      if (fToken == kSymbol) {
+        result.push_back(fToken);
+        nextToken();
+      }
+      else {
+        errorf(fToken.srcpos(), E_SymbolExpected, "qualified name ends in '.'");
+      }
+    }
+  }
+
+  return result;
+}
+
+
+//----------------------------------------------------------------------------
+
 struct ModuleParser {
   bool operator()(FirstPass* pass, Token& result)
   {
@@ -222,12 +277,11 @@ Token FirstPass::parseModule()
 
   Token modExpr;
 
-  if (fToken == kSymbol) {
-    Token modName = fToken;
+  auto qSymbol = parseQualifiedName(false);
+  if (!qSymbol.empty()) {
+    Token modName = qualifyIdToken(qSymbol);
 
     modExpr = Token() << tagToken << modName;
-
-    nextToken();
 
     Token docString = parseOptDocString();
     if (docString.isSet())
@@ -248,7 +302,7 @@ Token FirstPass::parseModule()
     }
     else {
       fScope = makeScope(kScopeL_Module, fScope);
-      fCurrentModuleName = qualifyId(fCurrentModuleName, modName.idValue());
+      setCurrentModuleName(modName.idValue(), !K(set));
     }
   }
 
@@ -438,24 +492,35 @@ struct TypeParser {
 };
 
 
-Token FirstPass::parseSimpleType(const Token& baseToken, bool nextIsParsedYet)
+Token FirstPass::parseSymbolOrSimpleType(const Token& baseToken)
 {
-  hr_assert(baseToken == kSymbol || baseToken == kQuote);
+  hr_assert(baseToken == kSymbol || baseToken == kQuote || baseToken == kDot);
 
   Token typeName = baseToken;
-  if (baseToken == kQuote) {
+
+  if (baseToken == kSymbol || baseToken == kDot) {
+    auto qSymbol = parseQualifiedName(true);
+
+    if (qSymbol.empty()) {
+      errorf(baseToken.srcpos(), E_UnexpectedQuote, "Unexpected quote");
+      return Token();
+    }
+
+    typeName = qualifyIdToken(qSymbol);
+  }
+  else if (baseToken == kQuote) {
     Token t = baseToken;
     nextToken();
 
-    if (fToken != kSymbol) {
+    auto qSymbol = parseQualifiedName(true);
+    if (qSymbol.empty()) {
       errorf(t.srcpos(), E_UnexpectedQuote, "Unexpected quote");
       return Token();
     }
 
-    typeName = Token() << t << fToken;
+    typeName = Token() << t << qualifyIdToken(qSymbol);
   }
-
-  if (!nextIsParsedYet)
+  else
     nextToken();
 
   if (fToken == kGenericOpen) {
@@ -634,8 +699,8 @@ Token FirstPass::parseTypeSpec(bool onlyNestedConstraints, bool needParans)
   do {
     tryNext = false;
 
-    if (fToken == kSymbol) {
-      auto typeNode = parseArrayExtend(parseSimpleType(fToken));
+    if (fToken == kSymbol || fToken == kDot) {
+      auto typeNode = parseArrayExtend(parseSymbolOrSimpleType(fToken));
       retval = onlyNestedConstraints ? typeNode : parseConstraintExtend(typeNode);
     }
     else if (fToken == kFUNCTIONId) {
@@ -1161,37 +1226,19 @@ Token FirstPass::parseAccess(const Token& expr)
     return parseAccess(parseSlice(expr));
   }
   else if (fToken == kDot) {
+    Token dotToken = fToken;
+
     nextToken();
+
     if (fToken != kSymbol) {
       errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
       return scanUntilTopExprAndResume();
     }
+
     Token symToken = fToken;
-
     nextToken();
 
-    TokenVector args = makeVector(expr);
-    if (fToken == kParanOpen) {
-      nextToken();
-      return parseAccess(parseParamCall(symToken, args, K(shouldParseParams)));
-    }
-    else if (fToken == kBracketOpen || fToken == kDot)
-      return parseAccess(parseParamCall(symToken, args, !K(shouldParseParams)));
-    else
-      return parseParamCall(symToken, args, !K(shouldParseParams));
-  }
-  else if (fToken == kReference) {
-    Token refToken = fToken;
-    nextToken();
-    if (fToken != kSymbol) {
-      errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL for slot reference");
-      return scanUntilTopExprAndResume();
-    }
-    Token symToken = fToken;
-
-    nextToken();
-
-    return parseAccess(Token() << expr << refToken << symToken);
+    return parseAccess(Token() << expr << dotToken << symToken);
   }
 
   return expr;
@@ -1724,7 +1771,8 @@ Token FirstPass::parseAtomicExpr()
   case kLetId: errorf(fToken.srcpos(), E_UnexpectedToken, "Unexpected let token"); break;
 
   case kSymbol:
-  case kQuote: return parseAccess(parseSimpleType(fToken));
+  case kDot:
+  case kQuote: return parseAccess(parseSymbolOrSimpleType(fToken));
 
   case kLiteralVectorOpen: return parseAccess(parseLiteralVector());
 
@@ -2214,13 +2262,13 @@ Token FirstPass::parseExtend()
   Token moduleToken = fToken;
   nextToken();
 
-  if (fToken != kSymbol) {
+  auto qSymbol = parseQualifiedName(false);
+  if (qSymbol.empty()) {
     errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
     return scanUntilTopExprAndResume();
   }
 
-  Token modNameToken = fToken;
-  nextToken();
+  Token modNameToken = qualifyIdToken(qSymbol);
 
   if (fToken != kBraceOpen) {
     errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
@@ -2294,13 +2342,12 @@ TokenVector FirstPass::parseVarDef(const Token& defToken, const Token& tagToken,
 
   nextToken();
 
-  if (fToken != kSymbol) {
+  auto qSymbol = parseQualifiedName(true);
+  if (qSymbol.empty()) {
     errorf(fToken.srcpos(), E_MissingDefName, "Missing name");
     return scanUntilTopExprAndResume().toTokenVector();
   }
-  Token symbolToken = fToken;
-
-  nextToken();
+  Token symbolToken = qualifyIdToken(qSymbol);
 
   return parseVarDef2(defToken, keepTagToken, symbolToken, isLocal, Token());
 }
@@ -2608,6 +2655,7 @@ Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
     result << linkage;
   if (tagToken.isSet())
     result << tagToken;
+
   result << symToken;
 
   TokenVector params;
@@ -2675,9 +2723,16 @@ Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
 TokenVector FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal,
                                              const Token& linkage)
 {
-  hr_assert(fToken == kSymbol);
+  hr_assert(fToken == kSymbol || fToken == kDot);
 
-  Token symToken = fToken;
+  Token firstToken = fToken;
+  auto qSymbol = parseQualifiedName(true);
+  if (qSymbol.empty()) {
+    errorf(firstToken.srcpos(), E_MissingDefName, "Missing name");
+    return TokenVector();
+  }
+
+  Token symToken = qualifyIdToken(qSymbol);
 
   const Macro* macro =
       fScope->lookupMacro(symToken.srcpos(), symToken.idValue(), K(showAmbiguousSymDef));
@@ -2697,7 +2752,6 @@ TokenVector FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal
     // the macro is silently ignored here
   }
 
-  nextToken();
   if (fToken == kParanOpen)
     return parseFunctionDef(defToken, Token(), symToken, linkage).toTokenVector();
 
@@ -2716,13 +2770,14 @@ Token FirstPass::parseGenericFunctionDef(const Token& defToken, bool isLocal)
     tagToken = fToken;
 
   nextToken();
-  if (fToken != kSymbol) {
+
+  auto qSymbol = parseQualifiedName(true);
+  if (qSymbol.empty()) {
     errorf(fToken.srcpos(), E_MissingDefName, "expected function name");
     return scanUntilTopExprAndResume();
   }
-  Token symToken = fToken;
+  Token symToken = qualifyIdToken(qSymbol);
 
-  nextToken();
   if (fToken != kParanOpen) {
     errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
     return scanUntilTopExprAndResume();
@@ -2739,12 +2794,12 @@ Token FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
   Token tagToken = fToken;
   nextToken();
 
-  if (fToken != kSymbol) {
+  auto qSymbol = parseQualifiedName(true);
+  if (qSymbol.empty()) {
     errorf(fToken.srcpos(), E_MissingDefName, "expected alias name");
     return scanUntilTopExprAndResume();
   }
-  Token symToken = fToken;
-  nextToken();
+  Token symToken = qualifyIdToken(qSymbol);
 
   Token generics;
   if (fToken == kGenericOpen) {
@@ -2816,12 +2871,12 @@ Token FirstPass::parseTypeDef(const Token& defToken, bool isRecord, bool isLocal
     tagToken = fToken;
   nextToken();
 
-  if (fToken != kSymbol) {
+  auto qSymbol = parseQualifiedName(true);
+  if (qSymbol.empty()) {
     errorf(fToken.srcpos(), E_MissingDefName, "expected alias name");
     return scanUntilTopExprAndResume();
   }
-  Token symToken = fToken;
-  nextToken();
+  Token symToken = qualifyIdToken(qSymbol);
 
   Token generics;
   if (fToken == kGenericOpen) {
@@ -2934,12 +2989,12 @@ Token FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
   Token tagToken = fToken;
   nextToken();
 
-  if (fToken != kSymbol) {
+  auto qSymbol = parseQualifiedName(true);
+  if (qSymbol.empty()) {
     errorf(fToken.srcpos(), E_MissingDefName, "expected enum name");
     return scanUntilTopExprAndResume();
   }
-  Token enumToken = fToken;
-  nextToken();
+  Token enumToken = qualifyIdToken(qSymbol);
 
   Token colonToken;
   Token isaType;
@@ -2984,7 +3039,9 @@ MacroType FirstPass::dertermineMacroPatternType(const Token& macroName,
     if (pattern[0] == macroName)
       return kMacro_Any;
 
-    errorf(pattern[1].srcpos(), E_PatternNameMismatch, "macro name and pattern mismatch");
+    error(pattern[1].srcpos(), E_PatternNameMismatch,
+          String("macro name and pattern mismatch.  Expected: ") + macroName +
+              " found: " + pattern[0]);
     return kMacro_Invalid;
   }
   else if (pattern.size() > 1) {
@@ -2992,15 +3049,17 @@ MacroType FirstPass::dertermineMacroPatternType(const Token& macroName,
       if (pattern[1] == macroName)
         return kMacro_Def;
 
-      errorf(pattern[1].srcpos(), E_PatternNameMismatch,
-             "macro name and pattern mismatch");
+      error(pattern[1].srcpos(), E_PatternNameMismatch,
+            String("macro name and pattern mismatch.  Expected: ") + macroName +
+                " found: " + pattern[1]);
       return kMacro_Invalid;
     }
 
     TokenVector::const_iterator it = pattern.begin();
     if (*it != macroName) {
-      errorf(pattern[1].srcpos(), E_PatternNameMismatch,
-             "macro name and pattern mismatch");
+      error(pattern[1].srcpos(), E_PatternNameMismatch,
+            String("macro name and pattern mismatch.  Expected: ") + macroName +
+                " found: " + *it);
       return kMacro_Invalid;
     }
     it++;
@@ -3198,12 +3257,12 @@ Token FirstPass::parseMacroDef(const Token& defToken)
   Token tagToken = fToken;
   nextToken();
 
-  if (fToken != kSymbol) {
+  auto qSymbol = parseQualifiedName(true);
+  if (qSymbol.empty()) {
     errorf(fToken.srcpos(), E_MissingDefName, "expected macro name");
     return scanUntilTopExprAndResume();
   }
-  Token macroNameToken = fToken;
-  nextToken();
+  Token macroNameToken = qualifyIdToken(qSymbol);
 
   Token docString = parseOptDocString();
 
@@ -3218,7 +3277,8 @@ Token FirstPass::parseMacroDef(const Token& defToken)
   MacroPatternVector patterns;
   if (parseMacroPatterns(&patterns)) {
     if (fEvaluateExprs) {
-      MacroType mType = determineMacroType(macroNameToken, patterns);
+      MacroType mType = determineMacroType(
+          Token(macroNameToken.srcpos(), macroNameToken.baseName()), patterns);
 
       String fullMacroName = qualifyId(currentModuleName(), macroNameToken.idValue());
 
@@ -3332,7 +3392,7 @@ TokenVector FirstPass::parseDef(bool isLocal)
              "Unsupported linkage for macro definition ignored");
     return parseMacroDef(defToken).toTokenVector();
   }
-  else if (fToken == kSymbol) {
+  else if (fToken == kSymbol || fToken == kDot) {
     return parseFunctionOrVarDef(defToken, isLocal, linkage);
   }
   else {

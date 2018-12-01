@@ -88,7 +88,7 @@ std::shared_ptr<AstNode> SecondPass::parseModule(const Token& expr)
   }
   else {
     fScope = makeScope(kScopeL_Module, fScope);
-    fCurrentModuleName = qualifyId(fCurrentModuleName, modName);
+    setCurrentModuleName(modName, !K(set));
   }
 
   return nullptr;
@@ -1229,7 +1229,7 @@ std::shared_ptr<AstNode> SecondPass::parseEnumDef(const Token& expr, size_t ofs,
       sym = baseName(sym);
     }
 
-    auto fullSymName = (isLocal ? sym : qualifyId(currentModuleName(), sym));
+    auto fullSymName = (isLocal ? sym : qualifyId(fullEnumName, sym));
     if (fScope->checkForRedefinition(enumVal.srcpos(), Scope::kNormal, fullSymName))
       return nullptr;
 
@@ -2217,7 +2217,7 @@ void SecondPass::transformCollForClause(const Token& token, NodeList* loopDefine
   loopDefines->push_back(loopDefNode);
 
 
-  // ------------------------------ let name = lang|unspecified
+  // ------------------------------ let name = lang.unspecified
   Token stepSym = token[0].isSeq() ? token[0][0] : token[0];
   hr_assert(stepSym == kSymbol);
   Type stepType;  // TODO
@@ -2738,7 +2738,7 @@ std::shared_ptr<AstNode> SecondPass::parseTypeExpr(const Token& expr, bool inArr
 std::shared_ptr<AstNode> SecondPass::parseSlotAccess(const Token& expr)
 {
   hr_assert(expr.count() == 3);
-  hr_assert(expr[1] == kReference);
+  hr_assert(expr[1] == kDot);
   hr_assert(expr[2] == kSymbol);
 
   auto baseExpr = singletonNodeListOrNull(parseExpr(expr[0]));
@@ -2830,7 +2830,8 @@ NodeList SecondPass::parseSeq(const Token& expr)
     else if (expr[1] == kRange) {
       return makeNodeList(parseBinary(expr));
     }
-    else if (expr[1] == kReference && expr[2] == kSymbol) {
+    else if (expr[1] == kDot && expr[2] == kSymbol) {
+      // TODO(ns)
       return makeNodeList(parseSlotAccess(expr));
     }
     else {
@@ -3061,7 +3062,9 @@ std::shared_ptr<AstNode> SecondPass::parseRealNumber(const Token& expr)
 NodeList SecondPass::parseExpr(const Token& expr)
 {
   switch (expr.type()) {
-  case kId: {
+  case kId:  //
+  {
+    // if the id refers to a enum value inline the enum value directly
     auto var = fScope->lookupVar(expr.idValue(), K(showAmbiguousSymDef));
     auto vardef = dynamic_cast<const VardefNode*>(var);
     if (vardef && vardef->isEnum() && vardef->initExpr()) {

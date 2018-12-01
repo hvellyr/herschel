@@ -104,7 +104,7 @@ def OPGF unequal?(Keyword, <>, Keyword)
 def macro compute-integer-1
 {
   { compute-integer-1(?retv:name, ?lhs:name, ?other:name, ?op:operator) } ->
-    { match (?other) {
+    { match (?other)
         | j : Int8   -> ?retv = ?lhs ?op j
         | j : Int16  -> ?retv = ?lhs ?op j
         | j : Int32  -> ?retv = ?lhs ?op j
@@ -116,7 +116,6 @@ def macro compute-integer-1
         | j : UInt64 -> ?retv = ?lhs ?op j
 
         |   : Any -> 0         -- raise TypeException
-      }
     }
 }
 
@@ -125,8 +124,8 @@ def macro compute-integer
   { compute-integer(?lvalue:name, ?op:operator, ?rvalue:name) } ->
     { {
         let t : Integer = 0
-        match (?lvalue) {
-        | i : Int8  -> compute-integer-1(t, i, ?rvalue, ?op)
+        match (?lvalue)
+          | i : Int8  -> compute-integer-1(t, i, ?rvalue, ?op)
           | i : Int16 -> compute-integer-1(t, i, ?rvalue, ?op)
           | i : Int32 -> compute-integer-1(t, i, ?rvalue, ?op)
           | i : Int64 -> compute-integer-1(t, i, ?rvalue, ?op)
@@ -137,7 +136,6 @@ def macro compute-integer
           | i : UInt64 -> compute-integer-1(t, i, ?rvalue, ?op)
 
           |   : Any -> 0                        -- raise TypeException
-        }
         t
     } }
 }
@@ -157,28 +155,26 @@ def multiply(one @ Integer, two @ Integer) -> Integer
 def macro compare-integer-1
 {
   { compare-integer-1(?retv:name, ?lhs:name, ?other:name, ?op:operator) } ->
-    { match (?other) {
+    { match (?other)
         | j : Int8   -> ?retv = ?lhs ?op j
         | j : Int16  -> ?retv = ?lhs ?op j
         | j : Int32  -> ?retv = ?lhs ?op j
         | j : Int64  -> ?retv = ?lhs ?op j
 
         |   : Any -> 0         -- raise TypeException
-      }
     }
 }
 
 def macro compare-integer-2
 {
   { compare-integer-2(?retv:name, ?lhs:name, ?other:name, ?op:operator) } ->
-    { match (?other) {
+    { match (?other)
         | j : UInt8  -> ?retv = ?lhs ?op j
         | j : UInt16 -> ?retv = ?lhs ?op j
         | j : UInt32 -> ?retv = ?lhs ?op j
         | j : UInt64 -> ?retv = ?lhs ?op j
 
         |   : Any -> 0         -- raise TypeException
-      }
     }
 }
 
@@ -187,8 +183,8 @@ def macro compare-integer
   { compare-integer(?lvalue:name, ?op:operator, ?rvalue:name) } ->
     { {
         let t : Int = 0
-        match (?lvalue) {
-        | i : Int8  -> compare-integer-1(t, i, ?rvalue, ?op)
+        match (?lvalue)
+          | i : Int8  -> compare-integer-1(t, i, ?rvalue, ?op)
           | i : Int16 -> compare-integer-1(t, i, ?rvalue, ?op)
           | i : Int32 -> compare-integer-1(t, i, ?rvalue, ?op)
           | i : Int64 -> compare-integer-1(t, i, ?rvalue, ?op)
@@ -199,7 +195,6 @@ def macro compare-integer
           | i : UInt64 -> compare-integer-2(t, i, ?rvalue, ?op)
 
           |   : Any -> 0                        -- raise TypeException
-        }
         t
     } }
 }

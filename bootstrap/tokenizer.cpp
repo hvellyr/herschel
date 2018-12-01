@@ -79,7 +79,7 @@ bool Tokenizer::isAlpha(Char c) const
 bool Tokenizer::isAlphaSpec(Char c) const
 {
   return (c == '-' || c == '_' || c == '*' || c == '+' || c == '%' || c == '?' ||
-          c == '!' || c == '/' || c == '|');
+          c == '!' || c == '/');
 }
 
 
@@ -93,7 +93,7 @@ bool Tokenizer::isDelimiter(Char c) const
 {
   return (isWhitespace(c) || c == '"' || c == '\'' || c == '(' || c == ')' || c == '[' ||
           c == ']' || c == '{' || c == '}' || c == 0x300c || c == 0x300d || c == '.' ||
-          c == ',' || c == ';' || c == '#' || c == '@' || c == '^');
+          c == ',' || c == ';' || c == '#' || c == '@' || c == '^' || c == '|');
 }
 
 
@@ -110,7 +110,7 @@ int Tokenizer::nextChar()
 
   try {
     int c = fPort->read();
-    if (c == '\n' || c == '\r')
+    if (isEOL(c))
       fLineCount++;
     fCC = c;
   }
@@ -719,17 +719,9 @@ Token Tokenizer::nextTokenImpl()
 
     case ',': return makeTokenAndNext(srcpos(), kComma);
     case ';': return makeTokenAndNext(srcpos(), kSemicolon);
-
     case ':': return makeTokenAndNext(srcpos(), kColon);
     case '@': return makeTokenAndNext(srcpos(), kAt);
-
-    case '|':
-      nextChar();
-      if (isSymbolChar(fCC))
-        return readIdentifier(beginSrcpos, String("|"), kSymbol, K(acceptGenerics));
-      else
-        return Token(beginSrcpos, kPipe);
-
+    case '|': return makeTokenAndNext(srcpos(), kPipe);
     case '\'': return makeTokenAndNext(srcpos(), kQuote);
     case '^': return makeTokenAndNext(srcpos(), kReference);
 

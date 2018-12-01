@@ -67,13 +67,13 @@ const String Names::kLangUnspecified = String(MID_lang_unspecified);
 const String Names::kLangAllocate = String(MID_lang_allocate);
 const String Names::kLangAllocateArray = String(MID_lang_allocate_array);
 const String Names::kLangNil = String(MID_lang_nil);
-const String Names::kLangInitFunctor = String(MID_core_ns "|"
+const String Names::kLangInitFunctor = String(MID_core_ns "."
                                                           "init-functor");
-const String Names::kLangEndp = String(MID_core_ns "|"
+const String Names::kLangEndp = String(MID_core_ns "."
                                                    "end?");
-const String Names::kLangNext = String(MID_core_ns "|"
+const String Names::kLangNext = String(MID_core_ns "."
                                                    "next");
-const String Names::kLangNumItems = String(MID_core_ns "|"
+const String Names::kLangNumItems = String(MID_core_ns "."
                                                        "num-items");
 
 const String Names::kLangEqualQ = String(MID_lang_equal_q);
@@ -85,19 +85,19 @@ const String Names::kLangGreaterEqualQ = String(MID_lang_greater_equal_q);
 const String Names::kLangCompare = String(MID_lang_compare);
 const String Names::kLangConcat = String(MID_lang_concat);
 
-const String Names::kLangIsaQ = String(MID_core_ns "|" MID_isaQ);
-const String Names::kLangToChar = String(MID_core_ns "|to-char");
+const String Names::kLangIsaQ = String(MID_core_ns "." MID_isaQ);
+const String Names::kLangToChar = String(MID_core_ns ".to-char");
 
-const String Names::kLangAdd = String(MID_core_ns "|" MID_add);
-const String Names::kLangSubtract = String(MID_core_ns "|" MID_subtract);
-const String Names::kLangMultiply = String(MID_core_ns "|" MID_multiply);
-const String Names::kLangDivide = String(MID_core_ns "|" MID_divide);
+const String Names::kLangAdd = String(MID_core_ns "." MID_add);
+const String Names::kLangSubtract = String(MID_core_ns "." MID_subtract);
+const String Names::kLangMultiply = String(MID_core_ns "." MID_multiply);
+const String Names::kLangDivide = String(MID_core_ns "." MID_divide);
 
 const String Names::kAppMain = String(MID_app_main);
 
 const String Names::kClangIntTypeName = String(MID_clang_IntTypeName);
 const String Names::kClangCharTypeName = String(MID_clang_CharTypeName);
-const String Names::kClangAtomTypeName = String(MID_clang_ns "|ATOM");
+const String Names::kClangAtomTypeName = String(MID_clang_ns ".ATOM");
 
 const String Names::kExitKeyword = String(MID_exitKeyword);
 const String Names::kSignalKeyword = String(MID_signalKeyword);

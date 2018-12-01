@@ -19,10 +19,9 @@ def type OrdinalOrEof : &(Ordinal, Eof)
     looks like
 
     @example
-    match (port.read(buffer, 0)) @{
+    match (port.read(buffer, 0))
       | e : Eof -> outln("reading done")
       | n : Ordinal -> outln("%d items read" % #[n])
-    @}
     @end example ~
 
 
@@ -31,10 +30,9 @@ def type CharOrEof : &(Char, Eof)
     the end of the resource.  A typical usage looks like
 
     @example
-    match (port.read) @{
+    match (port.read)
       | e : Eof -> outln("reading done")
       | n : Char -> outln("read: %c" % #[n])
-    @}
     @end example ~
 
 

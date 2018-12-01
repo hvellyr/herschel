@@ -7,11 +7,10 @@ def outln(port = *stdout*(), msgs ...) -> Int ...
 
 def bottles(n : Int)
   for (i in n .. 0 by -1) {
-    let number-str = select (i) {
+    let number-str = select (i)
                        | 0 -> "No more bottles"
                        | 1 -> "One bottle"
                        | else "%d bottles" % i
-                     }
     outln("%s of beer on the wall" % number-str)
     outln("%s of beer" % number-str)
     outln("Take one down, pass it around")
@@ -19,7 +18,7 @@ def bottles(n : Int)
     outln()
   }
 
-def app|main()
+def .app.main()
   bottles(99)
 
 -- end of 99beer

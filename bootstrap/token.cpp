@@ -1334,7 +1334,7 @@ bool Token::isQualifiedId() const
 {
   if (fType != kSymbol)
     throw NotSupportedException(__FUNCTION__);
-  return idValue().indexOf('|') != -1;
+  return herschel::isQualified(idValue());
 }
 
 

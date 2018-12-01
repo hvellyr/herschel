@@ -71,7 +71,7 @@ public:
 };
 
 
-//! TypeProperty implementation for the clang|int type.  TODO: shouldn't
+//! TypeProperty implementation for the clang.int type.  TODO: shouldn't
 //! this be 32/64 depending on host platform?
 class ClangIntTypeProperty
     : public BaseIntTypeProperty<Int32TypeEnumMaker, 32, K(issigned)  // ,

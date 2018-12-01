@@ -1,0 +1,5 @@
+def abc.xyz.bar = 42
+
+def foo(a : Int) {
+  a = .abc.xyz.bar
+}

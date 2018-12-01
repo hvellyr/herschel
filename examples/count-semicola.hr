@@ -40,7 +40,7 @@ def macro with-input-file
   { with-input-file(?fname:expr, ?cc:name) ?body:expr } ->
     {
       {
-        let f = io|CharPort(io|FilePort(file: ?fname,
+        let f = io.CharPort(io.FilePort(file: ?fname,
                                         mode: FilePortType.read))
         on exit(rv) {
           f.close
@@ -67,8 +67,8 @@ def count-semicola(fname : String) -> Ordinal
 }
 
 
-def app|main(args @ String[])
-  select (args.num-items) {
+def .app.main(args @ String[])
+  select (args.num-items)
     | 2 -> {
              let file = args[1]
              outln("%s: %d" % #[file, count-semicola(file)])
@@ -77,6 +77,5 @@ def app|main(args @ String[])
              outln(port: io|stderr,
                    "Usage: count-semicola.hr FILE")
            }
-  }
 
 -- end of count-semicola.hr
