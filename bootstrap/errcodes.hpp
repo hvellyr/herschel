@@ -49,6 +49,7 @@ enum ErrCodes {
   E_MisplacedThenWhile = 0x010d,
   E_TypeHasNoBraces = 0x010e,
   E_UnexpectedRootedSymbol = 0x010f,
+  E_InconsistentGroupType = 0x0110,
 
   E_SymbolExpected = 0x1001,
   E_StringExpected = 0x1002,
@@ -100,6 +101,7 @@ enum ErrCodes {
   E_UnknownType = 0x4041,
   E_SlotRefToNonClass = 0x4042,
   E_UnknownSlot = 0x4043,
+  E_UnknownSeqTypeOperator = 0x4044,
 
   // enums
   E_BadEnumItemList = 0x4050,

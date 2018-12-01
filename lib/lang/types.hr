@@ -13,7 +13,7 @@ export public (*)
 ------------------------------------------------------------------------------
 
 when ignore {
-def type OrdinalOrEof : &(Ordinal, Eof)
+def type OrdinalOrEof : (Ordinal | Eof)
     ~ A union type as typically used to either return the number of
     successful processed items or the end of the resource.  A typical usage
     looks like
@@ -25,7 +25,7 @@ def type OrdinalOrEof : &(Ordinal, Eof)
     @end example ~
 
 
-def type CharOrEof : &(Char, Eof)
+def type CharOrEof : (Char | Eof)
     ~ A union type as typically used to either return a read character or
     the end of the resource.  A typical usage looks like
 
@@ -36,7 +36,7 @@ def type CharOrEof : &(Char, Eof)
     @end example ~
 
 
-def type OrdinalOrFalse : &(Ordinal, Bool == false)
+def type OrdinalOrFalse : (Ordinal | Bool == false)
     ~ A union type as typically used by find or lookup functions to either
     return the index of an element or indicate failure.~
 }

@@ -29,8 +29,6 @@ TEST_CASE("Token simple tokens", "[token]")
   REQUIRE(Token(sp, kDefId) == Token(sp, kDefId));
   REQUIRE(Token(sp, kRational, Rational(7, 4)) == Token(sp, kRational, Rational(7, 4)));
 
-  REQUIRE(Token(sp, kUnionOpen).type() == kPunct);
-
   REQUIRE(Token() == Token());
   REQUIRE(Token(sp, kParanOpen, kParanClose) == Token(sp, kParanOpen, kParanClose));
   REQUIRE(Token(sp, kMacroOpen, kMacroClose) == Token(sp, kMacroOpen, kMacroClose));

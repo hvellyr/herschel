@@ -168,7 +168,7 @@ TEST_CASE("Tokenizer function defs", "[tokenize][functions]")
 {
   SrcPos sp;
 
-  static zstring test = "def f(args : &(String, Uri, Boolean)[] ...) ...\n"
+  static zstring test = "def f(args : (String, Uri, Boolean)[] ...) ...\n"
                         "  ~ Some function f, does not contain \\~ or similar Spuk.~\n"
                         "def f(arg: _x = 0 .. 20 by 2)\n"
                         "def g(a @ ^'T)\n"
@@ -183,7 +183,7 @@ TEST_CASE("Tokenizer function defs", "[tokenize][functions]")
     REQUIRE(tnz.nextToken() == Token(sp, kParanOpen));
     REQUIRE(tnz.nextToken() == Token(sp, String("args")));
     REQUIRE(tnz.nextToken() == Token(sp, kColon));
-    REQUIRE(tnz.nextToken() == Token(sp, kUnionOpen));
+    REQUIRE(tnz.nextToken() == Token(sp, kParanOpen));
     REQUIRE(tnz.nextToken() == Token(sp, String("String")));
     REQUIRE(tnz.nextToken() == Token(sp, kComma));
     REQUIRE(tnz.nextToken() == Token(sp, String("Uri")));
@@ -255,7 +255,7 @@ TEST_CASE("Tokenizer keyword static container", "[tokenize]")
   static zstring test = "#abc #delft\n"
                         "#[1, 2] #[]\n"
                         "#(1 -> 2) #()\n"
-                        "&(1, 2)\n";
+                        "(1, 2)\n";
   Tokenizer tnz(
       std::make_shared<CharPort>(std::make_shared<DataPort>((Octet*)test, strlen(test))),
       String("n.n."));
@@ -282,7 +282,7 @@ TEST_CASE("Tokenizer keyword static container", "[tokenize]")
     REQUIRE(tnz.nextToken() == Token(sp, kLiteralVectorOpen));
     REQUIRE(tnz.nextToken() == Token(sp, kParanClose));
 
-    REQUIRE(tnz.nextToken() == Token(sp, kUnionOpen));
+    REQUIRE(tnz.nextToken() == Token(sp, kParanOpen));
     REQUIRE(tnz.nextToken() == Token(sp, kInt, 1));
     REQUIRE(tnz.nextToken() == Token(sp, kComma));
     REQUIRE(tnz.nextToken() == Token(sp, kInt, 2));

@@ -240,7 +240,7 @@ void SecondPass::parseTypeVector(TypeVector* generics, const Token& expr,
   hr_assert(expr.isNested());
 
   for (auto& c : expr.children()) {
-    if (c == kComma)
+    if (c == kComma || c == kPipe)
       continue;
     Type ty = parseTypeSpec(c, forceOpenType);
     if (ty.isDef())
@@ -337,10 +337,11 @@ Type SecondPass::rephraseRefType(const SrcPos& srcpos, const Type& inType, bool 
 Type SecondPass::parseGroupType(const Token& expr, bool isValue)
 {
   hr_assert(expr.isNested());
-  hr_assert(expr.leftToken() == kParanOpen || expr.leftToken() == kUnionOpen);
+  hr_assert(expr.leftToken() == kParanOpen);
 
   if (expr.children().size() == 1)
     return rephraseRefType(expr.srcpos(), parseTypeSpec(expr[0]), isValue);
+  hr_assert(expr.children().size() > 2);
 
   // seq
   TypeVector tyvect;
@@ -365,10 +366,15 @@ Type SecondPass::parseGroupType(const Token& expr, bool isValue)
       it->setIsValueType(true);
   }
 
-  if (expr.leftToken() == kParanOpen)
-    return Type::makeSeq(tyvect, isValue);
-  else
+  if (expr[1] == kPipe)
     return Type::makeUnion(tyvect, isValue);
+  else if (expr[1] == kComma)
+    return Type::makeSeq(tyvect, isValue);
+  else {
+    warning(expr.srcpos(), E_UnknownSeqTypeOperator,
+            String("Unknown sequence type: ") + expr[1]);
+    return Type::makeSeq(tyvect, isValue);
+  }
 }
 
 

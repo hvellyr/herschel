@@ -1,0 +1,4 @@
+def all : (Blue, Red, Green)
+
+def some : (Blue | Red | Green)
+

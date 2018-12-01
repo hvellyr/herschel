@@ -83,7 +83,6 @@ String tokenTypeToString(TokenType type)
   case kDot: return String(".");
   case kLiteralVectorOpen: return String("#(");
   case kLiteralArrayOpen: return String("#[");
-  case kUnionOpen: return String("&(");
   case kSangHash: return String("##");
   case kReference: return String("^");
 
@@ -851,7 +850,6 @@ ExprType Token::type() const
   case kDot:
   case kLiteralVectorOpen:
   case kLiteralArrayOpen:
-  case kUnionOpen:
   case kSangHash:
   case kReference:
   case kEOF:

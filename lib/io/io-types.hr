@@ -11,7 +11,7 @@ module io
 export public (*)
 
 
-def type StringOrUri : &(String, Uri)
+def type StringOrUri : (String | Uri)
     ~ A union type as typically used to refer to external resource as files
     or URLs.~
 

@@ -209,6 +209,59 @@ void FirstPass::parseChoiceSequence(ParseFunctor functor, TokenType choiceToken,
 }
 
 
+template <typename ParseFunctor>
+void FirstPass::parseTypeSequence(ParseFunctor functor,
+                                  ErrCodes errorCode, Token& result, zstring ctx)
+{
+  SrcPos startPos = fToken.srcpos();
+
+  TokenType groupType = kInvalid;
+  Token delayedSepToken;
+  while (fToken != kParanClose && fToken != kEOF) {
+    Token tmp;
+    if (!functor(this, tmp))
+      break;
+
+    if (tmp.isSet()) {
+      if (delayedSepToken != Token()) {
+        result << delayedSepToken;
+      }
+      result << tmp.children();
+      delayedSepToken = Token();
+    }
+
+    if (fToken == kPipe || fToken == kComma) {
+      if (groupType == kInvalid || groupType == fToken.tokenType()) {
+        groupType = fToken.tokenType();
+        delayedSepToken = fToken;
+        nextToken();
+        continue;
+      }
+      else {
+          error(fToken.srcpos(), E_InconsistentGroupType,
+                (StringBuffer()
+                 << ctx << ": expected wrong group type operator: " << fToken.toString())
+                .toString());
+          nextToken();
+          continue;
+      }
+    }
+  }
+
+  if (fToken == kParanClose) {
+    nextToken();
+  }
+  else {
+    error(fToken.srcpos(), errorCode,
+          (StringBuffer() << ctx << ": expected '"
+                          << Token(SrcPos(), kParanClose).toString() << "'")
+              .toString());
+
+    scanUntilTopExprAndResume();
+  }
+}
+
+
 //----------------------------------------------------------------------------
 
 TokenVector FirstPass::parseQualifiedName(bool acceptLeadingDot)
@@ -536,24 +589,11 @@ Token FirstPass::parseSymbolOrSimpleType(const Token& baseToken)
 
 Token FirstPass::parseGroupType()
 {
-  if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "missing '('");
-    return scanUntilTopExprAndResume();
-  }
+  nextToken();
 
   Token nested = Token(fToken.srcpos(), kParanOpen, kParanClose);
-  parseSequence(TypeParser(kParanClose), kParanOpen, kParanClose, K(hasSeparator),
-                E_BadParameterList, nested, "group-type");
+  parseTypeSequence(TypeParser(kParanClose), E_BadParameterList, nested, "group-type");
 
-  return nested;
-}
-
-
-Token FirstPass::parseUnionType()
-{
-  Token nested = Token(fToken.srcpos(), kUnionOpen, kParanClose);
-  parseSequence(TypeParser(kParanClose), kUnionOpen, kParanClose, K(hasSeparator),
-                E_BadParameterList, nested, "union-type");
   return nested;
 }
 
@@ -709,10 +749,6 @@ Token FirstPass::parseTypeSpec(bool onlyNestedConstraints, bool needParans)
     else if (fToken == kQuote) {
       // no constraints for generics
       retval = parseArrayExtend(parseQuotedType());
-    }
-    else if (fToken == kUnionOpen) {
-      // no constraints for union types
-      retval = parseArrayExtend(parseUnionType());
     }
     else if (fToken == kParanOpen) {
       // no constraints for sequence types

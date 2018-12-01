@@ -132,7 +132,6 @@ namespace herschel
     kEllipsis,
     kRange,
     kDot,
-    kUnionOpen,
     kSangHash,
     kReference,
 

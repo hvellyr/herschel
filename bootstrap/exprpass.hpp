@@ -110,7 +110,6 @@ private:
 
   Token parseTypeSpec(bool onlyNestedConstraints, bool needParans);
   Token parseSymbolOrSimpleType(const Token& baseType);
-  Token parseUnionType();
   Token parseGroupType();
   Token parseFunctionType();
   Token parseFunctionSignature();
@@ -194,6 +193,9 @@ private:
                      bool skipFirst = true, bool eatLast = true);
   template <typename ParseFunctor>
   void parseChoiceSequence(ParseFunctor functor, TokenType choiceToken, Token& result);
+  template <typename ParseFunctor>
+  void parseTypeSequence(ParseFunctor functor, ErrCodes errorCode, Token& result,
+                         zstring ctx);
 
   bool isConstraintOperator(const Token& token) const;
 

@@ -732,11 +732,7 @@ Token Tokenizer::nextTokenImpl()
     case '\'': return makeTokenAndNext(srcpos(), kQuote);
     case '^': return makeTokenAndNext(srcpos(), kReference);
 
-    case '&':
-      nextChar();
-      if (fCC == '(')
-        return makeTokenAndNext(beginSrcpos, kUnionOpen);
-      return Token(beginSrcpos, kAmpersand);
+    case '&': return makeTokenAndNext(srcpos(), kAmpersand);
 
     case '+':
     case '/':
