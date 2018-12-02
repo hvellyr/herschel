@@ -54,6 +54,12 @@ static Token qualifyIdToken(const TokenVector& qSymbol)
 }
 
 
+static Token makeAnySymbol(const SrcPos& pos)
+{
+  return Token(pos, kSymbol, "Any");
+}
+
+
 //----------------------------------------------------------------------------
 
 FirstPass::FirstPass(Compiler& compiler, const Token& currentToken,
@@ -677,12 +683,12 @@ Token FirstPass::parseFunctionSignature()
       returnType = parseTypeSpec(K(onlyNestedConstr), !K(needParans));
       if (!returnType.isSet()) {
         errorf(pos, E_MissingType, "returntype expression expected");
-        returnType = Token(pos, kSymbol, "Any");
+        returnType = makeAnySymbol(pos);
       }
     }
     else {
       returnTyToken = Token(fToken.srcpos(), kMapTo);
-      returnType = Token(fToken.srcpos(), kSymbol, "Any");
+      returnType = makeAnySymbol(fToken.srcpos());
     }
 
     return Token() << (Token(paranPos, kParanOpen, kParanClose) << params)
@@ -986,14 +992,14 @@ Token FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
         if (!type.isSet()) {
           errorf(pos, E_MissingType, "type expression expected");
           if (autoCompleteTypes)
-            paramSeq << typeIntroToken << Token(pos, kSymbol, "Any");
+            paramSeq << typeIntroToken << makeAnySymbol(pos);
         }
         else
           paramSeq << typeIntroToken << type;
       }
       else if (autoCompleteTypes)
         paramSeq << Token(typeIntroToken.srcpos(), kColon)
-                 << Token(typeIntroToken.srcpos(), kSymbol, "Any");
+                 << makeAnySymbol(typeIntroToken.srcpos());
 
       if (fToken == kAssign) {
         Token assignToken = fToken;
@@ -1113,12 +1119,12 @@ Token FirstPass::parseAnonFun()
       returnType = parseTypeSpec(K(onlyNestedConstr), K(needParans));
       if (!returnType.isSet()) {
         errorf(pos, E_MissingType, "returntype expression expected");
-        returnType = Token(pos, kSymbol, "Any");
+        returnType = makeAnySymbol(pos);
       }
     }
     else {
       returnTyToken = Token(fToken.srcpos(), kMapTo);
-      returnType = Token(fToken.srcpos(), kSymbol, "Any");
+      returnType = makeAnySymbol(fToken.srcpos());
     }
 
     Token body = parseExpr(!K(acceptComma));
@@ -1663,7 +1669,7 @@ struct ForClauseParser {
         type = pass->parseTypeSpec(K(onlyNestedConstr), K(needParans));
         if (!type.isSet()) {
           errorf(pos, E_MissingType, "type expression expected");
-          type = Token(pos, kSymbol, "Any");
+          type = makeAnySymbol(pos);
         }
         allowNormalExpr = false;
       }
@@ -2421,7 +2427,7 @@ TokenVector FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken
       type = parseTypeSpec(K(onlyNestedConstr), K(needParans));
       if (!type.isSet()) {
         errorf(pos, E_MissingType, "type expression expected");
-        type = Token(pos, kSymbol, "Any");
+        type = makeAnySymbol(pos);
       }
     }
 
@@ -2707,12 +2713,12 @@ Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
       returnType = parseTypeSpec(K(onlyNestedConstr), !K(needParans));
       if (!returnType.isSet()) {
         errorf(pos, E_MissingType, "type expression expected");
-        returnType = Token(pos, kSymbol, "Any");
+        returnType = makeAnySymbol(pos);
       }
     }
     else {
       returnTyToken = Token(fToken.srcpos(), kMapTo);
-      returnType = Token(fToken.srcpos(), kSymbol, "Any");
+      returnType = makeAnySymbol(fToken.srcpos());
     }
 
     if (fToken == kWhereId)
@@ -2930,7 +2936,7 @@ Token FirstPass::parseTypeDef(const Token& defToken, bool isRecord, bool isLocal
     isaType = parseTypeSpec(K(onlyNestedConstr), !K(needParans));
     if (!isaType.isSet()) {
       errorf(pos, E_MissingType, "type expression expected");
-      isaType = Token(fToken.srcpos(), kSymbol, "Any");
+      isaType = makeAnySymbol(fToken.srcpos());
     }
   }
 
@@ -3041,7 +3047,7 @@ Token FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
     isaType = parseTypeSpec(K(onlyNestedConstr), !K(needParans));
     if (!isaType.isSet()) {
       errorf(pos, E_MissingType, "type expression expected");
-      isaType = Token(fToken.srcpos(), kSymbol, "Any");
+      isaType = makeAnySymbol(fToken.srcpos());
     }
   }
 
