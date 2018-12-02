@@ -210,8 +210,8 @@ void FirstPass::parseChoiceSequence(ParseFunctor functor, TokenType choiceToken,
 
 
 template <typename ParseFunctor>
-void FirstPass::parseTypeSequence(ParseFunctor functor,
-                                  ErrCodes errorCode, Token& result, zstring ctx)
+void FirstPass::parseSumType(ParseFunctor functor, ErrCodes errorCode, Token& result,
+                             zstring ctx)
 {
   SrcPos startPos = fToken.srcpos();
 
@@ -238,12 +238,12 @@ void FirstPass::parseTypeSequence(ParseFunctor functor,
         continue;
       }
       else {
-          error(fToken.srcpos(), E_InconsistentGroupType,
-                (StringBuffer()
-                 << ctx << ": expected wrong group type operator: " << fToken.toString())
-                .toString());
-          nextToken();
-          continue;
+        error(fToken.srcpos(), E_InconsistentGroupType,
+              (StringBuffer() << ctx << ": expected wrong group type operator: "
+                              << fToken.toString())
+                  .toString());
+        nextToken();
+        continue;
       }
     }
   }
@@ -592,7 +592,7 @@ Token FirstPass::parseGroupType()
   nextToken();
 
   Token nested = Token(fToken.srcpos(), kParanOpen, kParanClose);
-  parseTypeSequence(TypeParser(kParanClose), E_BadParameterList, nested, "group-type");
+  parseSumType(TypeParser(kParanClose), E_BadParameterList, nested, "sum-type");
 
   return nested;
 }

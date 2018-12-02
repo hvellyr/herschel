@@ -70,8 +70,8 @@ enum TypeKind {
   kType_Type,      //!< specifies a type kind
   kType_Alias,     //!< specifies an type alias kind
 
-  kType_Union,     //!< specifies an union type kind
-  kType_Sequence,  //!< specifies an sequence type kind
+  kType_Union,         //!< specifies an union type kind
+  kType_Intersection,  //!< specifies an intersection type kind
 };
 
 
@@ -219,8 +219,8 @@ public:
   //! relevant.
   static Type makeUnion(const TypeVector& types, bool isValue);
 
-  //! Creates a new sequence type instance for the types \p types.
-  static Type makeSeq(const TypeVector& types, bool isValue);
+  //! Creates a new intersection type instance for the types \p types.
+  static Type makeIntersection(const TypeVector& types, bool isValue);
 
   //@}
 
@@ -389,16 +389,16 @@ public:
   const TypeVector& unionTypes() const;
   //@}
 
-  //@{ Sequence types
+  //@{ Intersection types
 
   //! Indicates whether the receiver is a sequence type.
-  bool isSequence() const;
+  bool isIntersection() const;
 
   //! Returns the list of types in a sequence type.
-  const TypeVector& seqTypes() const;
+  const TypeVector& intersectionTypes() const;
 
-  //! Indicates whether the receiver, which must be a sequence type,
-  //! contains \p type as sequence type.
+  //! Indicates whether the receiver, which must be an intersection or
+  //! union type, contains \p type.
   bool containsType(const Type& type) const;
   //@}
 

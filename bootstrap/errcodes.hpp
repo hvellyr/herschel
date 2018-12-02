@@ -91,7 +91,7 @@ enum ErrCodes {
   E_InvalidArraySize = 0x4037,
   E_RefToFunc = 0x4038,
   k_DoubleRefType = 0x4039,
-  E_EmptySeqType = 0x403a,
+  E_EmptyIntersectionType = 0x403a,
   E_MixedValueType = 0x403b,
   E_InheritsRefType = 0x403c,
   E_InvariantType = 0x403d,
@@ -101,7 +101,7 @@ enum ErrCodes {
   E_UnknownType = 0x4041,
   E_SlotRefToNonClass = 0x4042,
   E_UnknownSlot = 0x4043,
-  E_UnknownSeqTypeOperator = 0x4044,
+  E_UnknownIntersectionTypeOperator = 0x4044,
 
   // enums
   E_BadEnumItemList = 0x4050,

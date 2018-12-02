@@ -194,8 +194,7 @@ private:
   template <typename ParseFunctor>
   void parseChoiceSequence(ParseFunctor functor, TokenType choiceToken, Token& result);
   template <typename ParseFunctor>
-  void parseTypeSequence(ParseFunctor functor, ErrCodes errorCode, Token& result,
-                         zstring ctx);
+  void parseSumType(ParseFunctor functor, ErrCodes errorCode, Token& result, zstring ctx);
 
   bool isConstraintOperator(const Token& token) const;
 

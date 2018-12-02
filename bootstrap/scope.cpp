@@ -10,13 +10,13 @@
 
 #include "scope.hpp"
 
-#include "macro.hpp"
-#include "strbuf.hpp"
-#include "typectx.hpp"
 #include "ast.hpp"
 #include "errcodes.hpp"
 #include "log.hpp"
+#include "macro.hpp"
+#include "strbuf.hpp"
 #include "symbol.hpp"
+#include "typectx.hpp"
 #include "utils.hpp"
 
 
@@ -427,12 +427,12 @@ Type Scope::lookupType(const Type& type) const
     }
     return Type::makeUnion(types, type.isValueType());
   }
-  else if (type.isSequence()) {
+  else if (type.isIntersection()) {
     TypeVector types;
-    for (size_t i = 0; i < type.seqTypes().size(); ++i) {
-      types.push_back(lookupType(type.seqTypes()[i]));
+    for (size_t i = 0; i < type.intersectionTypes().size(); ++i) {
+      types.push_back(lookupType(type.intersectionTypes()[i]));
     }
-    return Type::makeSeq(types, type.isValueType());
+    return Type::makeIntersection(types, type.isValueType());
   }
 
   return Type();

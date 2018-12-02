@@ -84,9 +84,9 @@ namespace {
         Type::makeType(String("Xyz"), TypeVector(), Type::makeTypeRef("Abstract")));
 
     TypeVector isa = makeVector(Type::makeTypeRef("Base"), Type::makeTypeRef("Xyz"));
-    scope->registerType(
-        SrcPos(), String("Special"),
-        Type::makeType(String("Special"), TypeVector(), Type::makeSeq(isa, K(isValue))));
+    scope->registerType(SrcPos(), String("Special"),
+                        Type::makeType(String("Special"), TypeVector(),
+                                       Type::makeIntersection(isa, K(isValue))));
     scope->registerType(
         SrcPos(), String("Ultra"),
         Type::makeType(String("Ultra"), TypeVector(), Type::makeTypeRef("Special")));
@@ -163,14 +163,15 @@ namespace {
 
     scope->registerType(
         SrcPos(), String("Multi"),
-        Type::makeType(String("Multi"), TypeVector(),
-                       Type::makeSeq(makeVector(Type::makeTypeRef("Mno"),
-                                                Type::makeTypeRef(
-                                                    String("OrdMap"),
-                                                    makeVector(Type::makeTypeRef("Abc"),
-                                                               Type::makeTypeRef("Def")),
-                                                    !K(isvalue))),
-                                     !K(isvalue))));
+        Type::makeType(
+            String("Multi"), TypeVector(),
+            Type::makeIntersection(
+                makeVector(Type::makeTypeRef("Mno"),
+                           Type::makeTypeRef(String("OrdMap"),
+                                             makeVector(Type::makeTypeRef("Abc"),
+                                                        Type::makeTypeRef("Def")),
+                                             !K(isvalue))),
+                !K(isvalue))));
 
     return scope;
   }
@@ -265,19 +266,19 @@ TEST_CASE("Is same for seq types", "[type]")
 
   TypeVector seq1 = makeVector(Type::makeTypeRef("Medium"), Type::makeTypeRef("Xyz"));
 
-  REQUIRE(herschel::isSameType(Type::makeSeq(seq0, K(isValue)),
-                               Type::makeSeq(seq0, K(isValue)), *scope, SrcPos(),
+  REQUIRE(herschel::isSameType(Type::makeIntersection(seq0, K(isValue)),
+                               Type::makeIntersection(seq0, K(isValue)), *scope, SrcPos(),
                                K(reportErrors)));
-  REQUIRE(!herschel::isSameType(Type::makeSeq(seq0, K(isValue)),
-                                Type::makeSeq(seq1, K(isValue)), *scope, SrcPos(),
-                                K(reportErrors)));
+  REQUIRE(!herschel::isSameType(Type::makeIntersection(seq0, K(isValue)),
+                                Type::makeIntersection(seq1, K(isValue)), *scope,
+                                SrcPos(), K(reportErrors)));
 
   TypeVector seq2 = makeVector(Type::makeTypeRef("Medium"), Type::makeTypeRef("Ultra"),
                                Type::makeTypeRef("Abstract"));
 
-  REQUIRE(!herschel::isSameType(Type::makeSeq(seq0, K(isValue)),
-                                Type::makeSeq(seq2, K(isValue)), *scope, SrcPos(),
-                                K(reportErrors)));
+  REQUIRE(!herschel::isSameType(Type::makeIntersection(seq0, K(isValue)),
+                                Type::makeIntersection(seq2, K(isValue)), *scope,
+                                SrcPos(), K(reportErrors)));
 }
 
 

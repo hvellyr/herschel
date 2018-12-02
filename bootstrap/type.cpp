@@ -90,9 +90,9 @@ StringBuffer& operator<<(StringBuffer& other, const TypeVector& tyve)
 
 //--------------------------------------------------------------------------
 
-class GroupTypeImpl : public TypeImpl {
+class SumTypeImpl : public TypeImpl {
 public:
-  GroupTypeImpl(const TypeVector& types)
+  SumTypeImpl(const TypeVector& types)
       : fTypes(types)
   {
   }
@@ -100,7 +100,7 @@ public:
 
   bool isEqual(const TypeImpl* other) const override
   {
-    auto o = dynamic_cast<const GroupTypeImpl*>(other);
+    auto o = dynamic_cast<const SumTypeImpl*>(other);
 
     return (o && typeid(this) == typeid(other) && ::herschel::isEqual(fTypes, o->fTypes));
   }
@@ -139,10 +139,10 @@ protected:
 
 //--------------------------------------------------------------------------
 
-class UnionTypeImpl : public GroupTypeImpl {
+class UnionTypeImpl : public SumTypeImpl {
 public:
   UnionTypeImpl(const TypeVector& types)
-      : GroupTypeImpl(types)
+      : SumTypeImpl(types)
   {
   }
 
@@ -184,26 +184,26 @@ public:
 
 //--------------------------------------------------------------------------
 
-class SeqTypeImpl : public GroupTypeImpl {
+class IntersectionTypeImpl : public SumTypeImpl {
 public:
-  SeqTypeImpl(const TypeVector& types)
-      : GroupTypeImpl(types)
+  IntersectionTypeImpl(const TypeVector& types)
+      : SumTypeImpl(types)
   {
   }
 
   std::shared_ptr<TypeImpl> clone() const override
   {
-    return std::make_shared<SeqTypeImpl>(vectorClone(fTypes));
+    return std::make_shared<IntersectionTypeImpl>(vectorClone(fTypes));
   }
 
 
   String toString(bool isValue) const override
   {
     StringBuffer buf;
-    buf << "<ty:seq" << (!isValue ? " ref='t'" : "") << ">\n";
+    buf << "<ty:intersc" << (!isValue ? " ref='t'" : "") << ">\n";
     for (const auto& t : fTypes)
       buf << t.toString();
-    buf << "</ty:seq>\n";
+    buf << "</ty:intersc>\n";
     return buf.toString();
   }
 
@@ -211,9 +211,9 @@ public:
   bool matchGenerics(TypeCtx& localCtx, const Type& right0, const Scope& scope,
                      const SrcPos& srcpos) const override
   {
-    if (right0.isSequence() && types().size() == right0.seqTypes().size()) {
+    if (right0.isIntersection() && types().size() == right0.intersectionTypes().size()) {
       const auto& ltypes = types();
-      const auto& rtypes = right0.seqTypes();
+      const auto& rtypes = right0.intersectionTypes();
 
       for (size_t i = 0; i < ltypes.size(); ++i) {
         if (!ltypes[i].matchGenerics(localCtx, rtypes[i], scope, srcpos))
@@ -359,8 +359,8 @@ namespace {
           if (matchGenericsImpl(localCtx, typeName, generics, inheritance, scope, srcpos))
             return true;
         }
-        else if (inheritance.isSequence()) {
-          const TypeVector& seq = inheritance.seqTypes();
+        else if (inheritance.isIntersection()) {
+          const TypeVector& seq = inheritance.intersectionTypes();
           for (const auto& s : seq) {
             if (matchGenericsImpl(localCtx, typeName, generics, s, scope, srcpos))
               return true;
@@ -998,9 +998,10 @@ Type Type::makeUnion(const TypeVector& types, bool isValue)
 }
 
 
-Type Type::makeSeq(const TypeVector& types, bool isValue)
+Type Type::makeIntersection(const TypeVector& types, bool isValue)
 {
-  return Type(kType_Sequence, isValue, !K(isImg), std::make_shared<SeqTypeImpl>(types));
+  return Type(kType_Intersection, isValue, !K(isImg),
+              std::make_shared<IntersectionTypeImpl>(types));
 }
 
 
@@ -1366,7 +1367,7 @@ String Type::typeName() const
   case kType_Alias: return std::dynamic_pointer_cast<AliasTypeImpl>(fImpl)->name();
 
   case kType_Union:
-  case kType_Sequence:
+  case kType_Intersection:
   case kType_Function: return String();
   }
 
@@ -1419,8 +1420,9 @@ String Type::typeId() const
     buffer << "&(" << std::dynamic_pointer_cast<UnionTypeImpl>(fImpl)->types() << ")";
     return buffer.toString();
 
-  case kType_Sequence:
-    buffer << "(" << std::dynamic_pointer_cast<SeqTypeImpl>(fImpl)->types() << ")";
+  case kType_Intersection:
+    buffer << "(" << std::dynamic_pointer_cast<IntersectionTypeImpl>(fImpl)->types()
+           << ")";
     return buffer.toString();
 
   case kType_Function:
@@ -1457,8 +1459,8 @@ Type Type::slotType(const String& slotName, const Scope& scope) const
   }
 
   auto inherits = typeInheritance();
-  if (inherits.isSequence()) {
-    const auto& inheritedTypes = inherits.seqTypes();
+  if (inherits.isIntersection()) {
+    const auto& inheritedTypes = inherits.intersectionTypes();
     for (const auto& ty : inheritedTypes) {
       auto normalizedType = resolveType(ty, scope);
 
@@ -1571,23 +1573,23 @@ const TypeVector& Type::unionTypes() const
 }
 
 
-bool Type::isSequence() const
+bool Type::isIntersection() const
 {
-  return fKind == kType_Sequence;
+  return fKind == kType_Intersection;
 }
 
 
-const TypeVector& Type::seqTypes() const
+const TypeVector& Type::intersectionTypes() const
 {
-  hr_assert(isSequence());
-  return std::dynamic_pointer_cast<SeqTypeImpl>(fImpl)->types();
+  hr_assert(isIntersection());
+  return std::dynamic_pointer_cast<IntersectionTypeImpl>(fImpl)->types();
 }
 
 
 bool Type::containsType(const Type& type) const
 {
-  if (isSequence())
-    return std::dynamic_pointer_cast<SeqTypeImpl>(fImpl)->containsType(type);
+  if (isIntersection())
+    return std::dynamic_pointer_cast<IntersectionTypeImpl>(fImpl)->containsType(type);
   else if (isUnion())
     return std::dynamic_pointer_cast<UnionTypeImpl>(fImpl)->containsType(type);
 
@@ -1659,7 +1661,7 @@ const TypeVector& Type::generics() const
   case kType_Array:
   case kType_Function:
   case kType_Union:
-  case kType_Sequence: return sEmptyTypeVector;
+  case kType_Intersection: return sEmptyTypeVector;
   }
 
   return sEmptyTypeVector;
@@ -1720,7 +1722,7 @@ Type Type::replaceGenerics(const TypeCtx& typeMap) const
   case kType_Type:
   case kType_Array:
   case kType_Union:
-  case kType_Sequence:
+  case kType_Intersection:
   case kType_Function:
     clonedTy = clone();
     clonedTy.fImpl->replaceGenerics(typeMap);
@@ -1744,7 +1746,7 @@ String Type::toString() const
   case kType_Type:
   case kType_Alias:
   case kType_Union:
-  case kType_Sequence: return fImpl->toString(fIsValue);
+  case kType_Intersection: return fImpl->toString(fIsValue);
 
   case kType_Undefined:
   default: return String("--default--");
@@ -2738,9 +2740,10 @@ bool isSameType(const Type& left0, const Type& right0, const Scope& scope,
                         reportErrors);
     return false;
   }
-  else if (left.isSequence()) {
-    if (right.isSequence())
-      return isSameType(left.seqTypes(), right.seqTypes(), scope, srcpos, reportErrors);
+  else if (left.isIntersection()) {
+    if (right.isIntersection())
+      return isSameType(left.intersectionTypes(), right.intersectionTypes(), scope,
+                        srcpos, reportErrors);
     return false;
   }
   else if (left.isFunction()) {
@@ -2817,9 +2820,9 @@ bool inheritsFrom(const Type& left0, const Type& right0, const Scope& scope,
     return inheritsFrom(inheritance, right, scope, srcpos, reportErrors);
   }
 
-  if (inheritance.isSequence()) {
-    return std::any_of(inheritance.seqTypes().begin(), inheritance.seqTypes().end(),
-                       [&](const Type& t) {
+  if (inheritance.isIntersection()) {
+    return std::any_of(inheritance.intersectionTypes().begin(),
+                       inheritance.intersectionTypes().end(), [&](const Type& t) {
                          return isSameType(t, right, scope, srcpos, reportErrors) ||
                                 inheritsFrom(t, right, scope, srcpos, reportErrors);
                        });
@@ -2846,9 +2849,9 @@ bool isCovariant(const TypeVector& vect0, const TypeVector& vect1, const Scope& 
 }
 
 
-bool isCovariantToEveryTypeInSeq(const Type& type, const TypeVector& vect0,
-                                 const Scope& scope, const SrcPos& srcpos,
-                                 bool reportErrors)
+bool isCovariantToEveryTypeInInters(const Type& type, const TypeVector& vect0,
+                                    const Scope& scope, const SrcPos& srcpos,
+                                    bool reportErrors)
 {
   for (const auto& ty : vect0) {
     if (!isCovariant(type, ty, scope, srcpos, reportErrors))
@@ -3078,11 +3081,12 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
     }
     return false;
   }
-  else if (left.isSequence()) {
-    if (right.isSequence()) {
+  else if (left.isIntersection()) {
+    if (right.isIntersection()) {
       if (isSameType(left, right, scope, srcpos, reportErrors))
         return true;
-      return isCovariant(left.seqTypes(), right.seqTypes(), scope, srcpos, reportErrors);
+      return isCovariant(left.intersectionTypes(), right.intersectionTypes(), scope,
+                         srcpos, reportErrors);
     }
     return false;
   }
@@ -3116,9 +3120,9 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
         return isSameType(left.generics(), right.generics(), scope, srcpos, reportErrors);
       return true;
     }
-    else if (right.isSequence()) {
-      return isCovariantToEveryTypeInSeq(left, right.seqTypes(), scope, srcpos,
-                                         reportErrors);
+    else if (right.isIntersection()) {
+      return isCovariantToEveryTypeInInters(left, right.intersectionTypes(), scope,
+                                            srcpos, reportErrors);
     }
     else if (right.isUnion()) {
       return isCoOrInvariantToEveryTypeInUnion(left, right.unionTypes(), scope, srcpos,

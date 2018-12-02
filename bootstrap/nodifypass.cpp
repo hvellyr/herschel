@@ -347,21 +347,21 @@ Type SecondPass::parseGroupType(const Token& expr, bool isValue)
   TypeVector tyvect;
   parseTypeVector(&tyvect, expr);
   if (tyvect.empty()) {
-    errorf(expr.srcpos(), E_EmptySeqType, "Empty sequence type.");
+    errorf(expr.srcpos(), E_EmptyIntersectionType, "Empty sum type.");
     return Type();
   }
 
   bool firstIsValue = tyvect.begin()->isValueType();
   for (TypeVector::iterator it = tyvect.begin(); it != tyvect.end(); it++) {
     if (it->isValueType() != firstIsValue) {
-      errorf(expr.srcpos(), E_MixedValueType, "Group type with mixed value types");
+      errorf(expr.srcpos(), E_MixedValueType, "Sum type with mixed value types");
       return Type();
     }
   }
 
   if (!isValue && firstIsValue == isValue) {
     warning(expr.srcpos(), k_DoubleRefType,
-            String("Double reference notation on group type is ignored"));
+            String("Double reference notation on sum type is ignored"));
     for (TypeVector::iterator it = tyvect.begin(); it != tyvect.end(); it++)
       it->setIsValueType(true);
   }
@@ -369,11 +369,11 @@ Type SecondPass::parseGroupType(const Token& expr, bool isValue)
   if (expr[1] == kPipe)
     return Type::makeUnion(tyvect, isValue);
   else if (expr[1] == kComma)
-    return Type::makeSeq(tyvect, isValue);
+    return Type::makeIntersection(tyvect, isValue);
   else {
-    warning(expr.srcpos(), E_UnknownSeqTypeOperator,
-            String("Unknown sequence type: ") + expr[1]);
-    return Type::makeSeq(tyvect, isValue);
+    warning(expr.srcpos(), E_UnknownIntersectionTypeOperator,
+            String("Unknown intersection type: ") + expr[1]);
+    return Type::makeIntersection(tyvect, isValue);
   }
 }
 
@@ -790,7 +790,7 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
 
   std::vector<PrimeTuple> primes;
   for (size_t i = 0; i < primeTuples.size(); i++) {
-    if (inheritsFrom.isSequence()) {
+    if (inheritsFrom.isIntersection()) {
       if (!inheritsFrom.containsType(primeTuples[i].fType)) {
         errorf(primeTuples[i].fPrime->srcpos(), E_BadClassOnAlloc,
                "Super class initialization for unknown type %s",
@@ -971,8 +971,8 @@ static std::vector<ReqTypeInitTuple> getDirectInheritedTypes(const Type& defType
   std::vector<ReqTypeInitTuple> reqTypeInits;
 
   if (defType.typeInheritance().isDef()) {
-    if (defType.typeInheritance().isSequence()) {
-      const TypeVector& inheritedTypes = defType.typeInheritance().seqTypes();
+    if (defType.typeInheritance().isIntersection()) {
+      const TypeVector& inheritedTypes = defType.typeInheritance().intersectionTypes();
 
       for (size_t i = 0; i < inheritedTypes.size(); i++) {
         ReqTypeInitTuple tuple = reqTypeInitTupleForType(inheritedTypes[i], scope);
