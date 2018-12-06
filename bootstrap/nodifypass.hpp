@@ -131,8 +131,6 @@ private:
                               NodeList* testExprs);
   void transformRangeForClause(const Token& token, NodeList* loopDefines,
                                NodeList* testExprs, NodeList* stepExprs);
-  void transformExplicitForClause(const Token& token, NodeList* loopDefines,
-                                  NodeList* testExprs, NodeList* stepExprs);
 
   void parseTypeVector(TypeVector* generics, const Token& expr,
                        bool forceOpenType = false);

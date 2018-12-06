@@ -59,9 +59,7 @@ namespace herschel
     kOpRange,
     kOpShiftLeft,
     kOpShiftRight,
-    kOpThen,
     kOpUnequal,
-    kOpWhile,
   };
 
   //! Returns a human readable name for operator \p type for debug and error
@@ -185,7 +183,6 @@ namespace herschel
     kNilId,
     kNotId,
     kSelectId,
-    kThenId,
     kWhenId,
     kWhereId,
     kWhileId,
@@ -313,7 +310,6 @@ namespace herschel
     bool isBinarySeq(TokenType op) const;
     OperatorType binarySeqOperator() const;
     bool isTernarySeq() const;
-    bool isThenWhileSeq() const;
     //! indicates whether the expression is a (possible) variable declaration;
     //! possible accepted forms are:
     //!   symbol

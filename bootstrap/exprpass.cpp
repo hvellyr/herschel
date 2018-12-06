@@ -1901,14 +1901,6 @@ Token FirstPass::makeBinaryToken(const Token& expr1, OperatorType op1, const Tok
     return Token() << expr1[0] << expr1[1] << expr1[2]
                    << Token(op1Srcpos, operatorToTokenType(op1)) << expr2;
   }
-  else if (op1 == kOpThen && expr2.isBinarySeq(kWhileId)) {
-    return Token() << expr1 << Token(op1Srcpos, operatorToTokenType(op1)) << expr2[0]
-                   << expr2[1] << expr2[2];
-  }
-  else if (op1 == kOpWhile && expr1.isBinarySeq(kThenId)) {
-    return Token() << expr1[0] << expr1[1] << expr1[2]
-                   << Token(op1Srcpos, operatorToTokenType(op1)) << expr2;
-  }
   else
     return Token() << expr1 << Token(op1Srcpos, operatorToTokenType(op1)) << expr2;
 }
@@ -1923,9 +1915,7 @@ bool FirstPass::isRightOperator(OperatorType op1) const
 int FirstPass::weightOperator(OperatorType op1) const
 {
   switch (op1) {
-  case kOpMapTo:
-  case kOpThen:
-  case kOpWhile: return 10;
+  case kOpMapTo: return 10;
 
   case kOpLogicalAnd:
   case kOpLogicalOr: return 20;

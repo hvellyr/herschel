@@ -50,8 +50,6 @@ OperatorType tokenTypeToOperator(TokenType type)
   case kShiftRight: return kOpShiftRight;
   case kRange: return kOpRange;
   case kConcat: return kOpConcat;
-  case kThenId: return kOpThen;
-  case kWhileId: return kOpWhile;
 
   default: return kOpInvalid;
   }
@@ -90,8 +88,6 @@ TokenType operatorToTokenType(OperatorType op)
   case kOpShiftRight: return kShiftRight;
   case kOpRange: return kRange;
   case kOpConcat: return kConcat;
-  case kOpThen: return kThenId;
-  case kOpWhile: return kWhileId;
 
   case kOpMapTo: return kInvalid;
 

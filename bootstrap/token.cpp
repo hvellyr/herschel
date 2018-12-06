@@ -687,7 +687,6 @@ bool Token::operator<(const Token& other) const
       case kNilId:
       case kNotId:
       case kSelectId:
-      case kThenId:
       case kWhenId:
       case kWhereId:
       case kWhileId: return fType < other.fType;
@@ -774,7 +773,6 @@ String Token::toString() const
     case kNilId: return String(MID_nilid);
     case kNotId: return String(MID_notid);
     case kSelectId: return String(MID_selectid);
-    case kThenId: return String(MID_thenid);
     case kWhenId: return String(MID_whenid);
     case kWhereId: return String(MID_whereid);
     case kWhileId: return String(MID_whileid);
@@ -886,7 +884,6 @@ ExprType Token::type() const
   case kNilId:
   case kNotId:
   case kSelectId:
-  case kThenId:
   case kWhenId:
   case kWhereId:
   case kWhileId: return kId;
@@ -1081,7 +1078,6 @@ String Token::idValue() const
   case kNilId:
   case kNotId:
   case kSelectId:
-  case kThenId:
   case kWhenId:
   case kWhereId:
   case kWhileId: return toString();
@@ -1200,19 +1196,7 @@ bool Token::isBinarySeq() const
 bool Token::isTernarySeq() const
 {
   if (isSeq() && children().size() == 5) {
-    return (((*this)[1].isPunct() && (*this)[3].isOperator()) ||
-            ((*this)[1] == kThenId && (*this)[3] == kWhileId));
-  }
-  return false;
-}
-
-
-bool Token::isThenWhileSeq() const
-{
-  if (isSeq()) {
-    if ((children().size() == 3 && (*this)[1] == kThenId) ||
-        (children().size() == 5 && (*this)[1] == kThenId && (*this)[3] == kWhileId))
-      return true;
+    return (*this)[1].isPunct() && (*this)[3].isOperator();
   }
   return false;
 }
@@ -1399,7 +1383,6 @@ void Token::toPort(Port<Octet>& port) const
     case kNilId:
     case kNotId:
     case kSelectId:
-    case kThenId:
     case kWhenId:
     case kWhereId:
     case kWhileId: xml::displayTag(port, "id", toString()); break;
@@ -1441,7 +1424,7 @@ bool Token::isCharOrUnitName() const
           fType == kForId || fType == kFUNCTIONId || fType == kFunctionId ||
           fType == kIfId || fType == kImportId || fType == kLetId || fType == kMatchId ||
           fType == kModuleId || fType == kNilId || fType == kNotId ||
-          fType == kSelectId || fType == kThenId || fType == kWhenId ||
+          fType == kSelectId || fType == kWhenId ||
           fType == kWhereId || fType == kWhileId);
 }
 
@@ -1538,8 +1521,6 @@ zstring operatorName(OperatorType type)
   case kOpShiftLeft: return "<<";
   case kOpShiftRight: return ">>";
   case kOpUnequal: return "<>";
-  case kOpThen: return "then";
-  case kOpWhile: return "while";
 
   case kOpInvalid: hr_invalid("");
   }

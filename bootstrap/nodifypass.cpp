@@ -1796,11 +1796,6 @@ std::shared_ptr<AstNode> SecondPass::parseBinary(const Token& expr)
       return makeRangeNode(expr.srcpos(), from, to, nullptr);
     }
 
-  case kThenId:
-    errorf(expr.srcpos(), E_MisplacedThenWhile,
-           "unexpected then/while operator outside of for() expression");
-    return nullptr;
-
   case kAs: {
     auto base = singletonNodeListOrNull(parseExpr(expr[0]));
     Type type = parseTypeSpec(expr[2]);
@@ -1973,47 +1968,6 @@ std::shared_ptr<AstNode> SecondPass::parseFunCall(const Token& expr)
 
 
 //----------------------------------------------------------------------------
-
-static bool isExplicitForClause(const Token& expr)
-{
-  return (expr.isSeq() && expr.count() >= 3 && expr[0].isVariableDecl() &&
-          expr[1] == kAssign && expr[2].isThenWhileSeq());
-}
-
-
-void SecondPass::transformExplicitForClause(const Token& token, NodeList* loopDefines,
-                                            NodeList* testExprs, NodeList* stepExprs)
-{
-  hr_assert(token.count() == 3);
-
-  SrcPos srcpos = token.srcpos();
-  Token thenWhileExpr = token[2];
-  hr_assert(thenWhileExpr.count() == 3 || thenWhileExpr.count() == 5);
-  hr_assert(thenWhileExpr[1] == kThenId);
-
-  auto firstNode = singletonNodeListOrNull(parseExpr(thenWhileExpr[0]));
-  auto thenNode = singletonNodeListOrNull(parseExpr(thenWhileExpr[2]));
-
-  Token iteratorVarSym = token[0].isSeq() ? token[0][0] : token[0];
-
-  auto vardef = makeVardefNode(srcpos, iteratorVarSym.idValue(), kNormalVar, K(isLocal),
-                               Type(), firstNode);
-  auto iteratorDefNode = makeLetNode(vardef);
-  loopDefines->push_back(iteratorDefNode);
-
-  auto nextNode =
-      makeAssignNode(srcpos, makeSymbolNode(srcpos, iteratorVarSym.idValue()), thenNode);
-  stepExprs->push_back(nextNode);
-
-
-  if (thenWhileExpr.count() == 5) {
-    hr_assert(thenWhileExpr[3] == kWhileId);
-
-    auto whileNode = singletonNodeListOrNull(parseExpr(thenWhileExpr[4]));
-    testExprs->push_back(whileNode);
-  }
-}
-
 
 static bool isRangeForClause(const Token& expr)
 {
@@ -2318,10 +2272,7 @@ std::shared_ptr<AstNode> SecondPass::parseFor(const Token& expr)
     if (seq[i] == kComma)
       continue;
 
-    if (isExplicitForClause(seq[i])) {
-      transformExplicitForClause(seq[i], &loopDefines, &testExprs, &stepExprs);
-    }
-    else if (isRangeForClause(seq[i])) {
+    if (isRangeForClause(seq[i])) {
       transformRangeForClause(seq[i], &loopDefines, &testExprs, &stepExprs);
     }
     else if (isCollForClause(seq[i])) {
