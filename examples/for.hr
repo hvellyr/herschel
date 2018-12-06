@@ -1,0 +1,8 @@
+def foo()
+  for (i : Int in 0 .. 100 by 2)
+    outln(i)
+
+
+def gaz(coll)
+  for (i : Int in coll)
+    outln(i)

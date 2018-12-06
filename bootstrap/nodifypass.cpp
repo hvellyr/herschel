@@ -2244,6 +2244,108 @@ std::shared_ptr<AstNode> SecondPass::constructWhileTestNode(const Token& expr,
 }
 
 
+std::shared_ptr<AstNode> SecondPass::transformLoopExpr(const SrcPos& srcpos,  //
+                                                       NodeList loopDefines,
+                                                       std::shared_ptr<AstNode> testNode,
+                                                       NodeList stepExprs,
+                                                       std::shared_ptr<AstNode> body,
+                                                       std::shared_ptr<AstNode> alternate)
+{
+  const bool requiresReturnValue = alternate || testNode;
+  const bool hasAlternateBranch = alternate != nullptr;
+
+  std::shared_ptr<AstNode> evalNextStepTestNode;
+
+  Token returnSym = Token::newUniqueSymbolToken(srcpos, "return");
+  Token tmpTestSym = Token::newUniqueSymbolToken(srcpos, "test");
+
+  static int loopId = 0;
+  loopId++;
+
+  bool delayTypeSpec = false;
+  if (requiresReturnValue) {
+    Type retType;
+
+    std::shared_ptr<AstNode> defaultRetVal;
+    if (!alternate) {
+      TypeVector unionTypes = makeVector(
+          Type::makeAny(), Type::makeTypeRef(Names::kUnspecifiedTypeName, K(isValue)));
+
+      retType = Type::makeUnion(unionTypes, K(isValue));
+      defaultRetVal = makeSymbolNode(srcpos, Names::kLangUnspecified);
+    }
+    else {
+      defaultRetVal = makeUndefNode();
+      delayTypeSpec = true;
+    }
+
+    auto returnVardef = makeVardefNode(srcpos, returnSym.idValue(), kNormalVar,
+                                       K(isLocal), retType, defaultRetVal);
+    returnVardef->setTypeSpecDelayed(delayTypeSpec);
+
+    auto defReturnNode = makeLetNode(returnVardef);
+    defReturnNode->setLoopId(loopId);
+    loopDefines.push_back(defReturnNode);
+
+    if (hasAlternateBranch) {
+      // evaluate the tests once into a temporary variable
+      auto tmpTestNode = makeVardefNode(srcpos, tmpTestSym.idValue(), kNormalVar,
+                                        K(isLocal), Type::makeBool(), testNode);
+      auto defTmpTestNode = makeLetNode(tmpTestNode);
+      loopDefines.push_back(defTmpTestNode);
+
+      // construct the next step evaluation of the test variable
+      evalNextStepTestNode = makeAssignNode(
+          srcpos, makeSymbolNode(srcpos, tmpTestSym.idValue()), testNode->clone());
+
+      // the test is actually to check the temporary test variable
+      testNode = makeSymbolNode(srcpos, tmpTestSym.idValue());
+    }
+  }
+
+  auto block = makeBlockNode(srcpos);
+  block->appendNodes(loopDefines);
+
+  auto bodyNode = makeBlockNode(srcpos);
+
+  if (requiresReturnValue) {
+    auto retNode = makeSymbolNode(srcpos, returnSym.idValue());
+    auto saveRetNode = makeAssignNode(srcpos, retNode, body);
+    saveRetNode->setTypeSpecDelayed(delayTypeSpec);
+    saveRetNode->setLoopId(loopId);
+    bodyNode->appendNode(saveRetNode);
+  }
+  else
+    bodyNode->appendNode(body);
+
+  bodyNode->appendNodes(stepExprs);
+  if (evalNextStepTestNode)
+    bodyNode->appendNode(evalNextStepTestNode->clone());
+
+  auto loopNode = makeWhileNode(srcpos, testNode->clone(), bodyNode);
+
+  auto returnNode = makeSymbolNode(srcpos, returnSym.idValue());
+  returnNode->setLoopId(loopId);
+
+  if (hasAlternateBranch) {
+    auto consequent = makeBlockNode(srcpos);
+    consequent->appendNode(loopNode);
+    consequent->appendNode(returnNode);
+
+    auto ifNode = makeIfNode(srcpos, testNode->clone(), consequent, alternate);
+    block->appendNode(ifNode);
+  }
+  else {
+    block->appendNode(loopNode);
+
+    if (requiresReturnValue)
+      block->appendNode(returnNode);
+  }
+
+  return block;
+}
+
+
 std::shared_ptr<AstNode> SecondPass::parseFor(const Token& expr)
 {
   hr_assert(!fCompiler.isParsingInterface());
@@ -2257,8 +2359,8 @@ std::shared_ptr<AstNode> SecondPass::parseFor(const Token& expr)
   ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
 
   auto body = singletonNodeListOrNull(parseExpr(expr[2]));
-  std::shared_ptr<AstNode> alternate;
 
+  std::shared_ptr<AstNode> alternate;
   if (expr.count() == 5)
     alternate = singletonNodeListOrNull(parseExpr(expr[4]));
 
@@ -2284,101 +2386,38 @@ std::shared_ptr<AstNode> SecondPass::parseFor(const Token& expr)
     }
   }
 
+  return transformLoopExpr(expr.srcpos(), std::move(loopDefines),
+                           constructWhileTestNode(expr, testExprs), std::move(stepExprs),
+                           body, alternate);
+}
 
-  const bool requiresReturnValue = alternate || !testExprs.empty();
-  const bool hasAlternateBranch = alternate != nullptr;
 
-  auto testNode = constructWhileTestNode(expr, testExprs);
-  std::shared_ptr<AstNode> evalNextStepTestNode;
+std::shared_ptr<AstNode> SecondPass::parseWhile(const Token& expr)
+{
+  hr_assert(!fCompiler.isParsingInterface());
 
-  Token returnSym = Token::newUniqueSymbolToken(expr.srcpos(), "return");
-  Token tmpTestSym = Token::newUniqueSymbolToken(expr.srcpos(), "test");
+  hr_assert(expr.isSeq());
+  hr_assert(expr.count() == 3 || expr.count() == 5);
+  hr_assert(expr[0] == kWhileId);
+  hr_assert(expr[1].isNested());
+  hr_assert(implies(expr.count() == 5, expr[3] == kElseId));
 
-  static int loopId = 0;
-  loopId++;
+  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
 
-  bool delayTypeSpec = false;
-  if (requiresReturnValue) {
-    Type retType;
+  auto body = singletonNodeListOrNull(parseExpr(expr[2]));
 
-    std::shared_ptr<AstNode> defaultRetVal;
-    if (!alternate) {
-      TypeVector unionTypes = makeVector(
-          Type::makeAny(), Type::makeTypeRef(Names::kUnspecifiedTypeName, K(isValue)));
+  std::shared_ptr<AstNode> alternate;
+  if (expr.count() == 5)
+    alternate = singletonNodeListOrNull(parseExpr(expr[4]));
 
-      retType = Type::makeUnion(unionTypes, K(isValue));
-      defaultRetVal = makeSymbolNode(expr.srcpos(), Names::kLangUnspecified);
-    }
-    else {
-      defaultRetVal = makeUndefNode();
-      delayTypeSpec = true;
-    }
-
-    auto returnVardef = makeVardefNode(expr.srcpos(), returnSym.idValue(), kNormalVar,
-                                       K(isLocal), retType, defaultRetVal);
-    returnVardef->setTypeSpecDelayed(delayTypeSpec);
-
-    auto defReturnNode = makeLetNode(returnVardef);
-    defReturnNode->setLoopId(loopId);
-    loopDefines.push_back(defReturnNode);
-
-    if (hasAlternateBranch) {
-      // evaluate the tests once into a temporary variable
-      auto tmpTestNode = makeVardefNode(expr.srcpos(), tmpTestSym.idValue(), kNormalVar,
-                                        K(isLocal), Type::makeBool(), testNode);
-      auto defTmpTestNode = makeLetNode(tmpTestNode);
-      loopDefines.push_back(defTmpTestNode);
-
-      // construct the next step evaluation of the test variable
-      evalNextStepTestNode = makeAssignNode(
-          expr.srcpos(), makeSymbolNode(expr.srcpos(), tmpTestSym.idValue()),
-          testNode->clone());
-
-      // the test is actually to check the temporary test variable
-      testNode = makeSymbolNode(expr.srcpos(), tmpTestSym.idValue());
-    }
+  NodeList testExprs = parseTokenVector(expr[1].children());
+  if (testExprs.size() != 1) {
+    errorf(expr[1].srcpos(), E_BadParameterList, "broken if-test");
+    return nullptr;
   }
 
-  auto block = makeBlockNode(expr.srcpos());
-  block->appendNodes(loopDefines);
-
-  auto bodyNode = makeBlockNode(expr.srcpos());
-
-  if (requiresReturnValue) {
-    auto retNode = makeSymbolNode(expr.srcpos(), returnSym.idValue());
-    auto saveRetNode = makeAssignNode(expr.srcpos(), retNode, body);
-    saveRetNode->setTypeSpecDelayed(delayTypeSpec);
-    saveRetNode->setLoopId(loopId);
-    bodyNode->appendNode(saveRetNode);
-  }
-  else
-    bodyNode->appendNode(body);
-
-  bodyNode->appendNodes(stepExprs);
-  if (evalNextStepTestNode)
-    bodyNode->appendNode(evalNextStepTestNode->clone());
-
-  auto whileNode = makeWhileNode(expr.srcpos(), testNode->clone(), bodyNode);
-
-  auto returnNode = makeSymbolNode(expr.srcpos(), returnSym.idValue());
-  returnNode->setLoopId(loopId);
-
-  if (hasAlternateBranch) {
-    auto consequent = makeBlockNode(expr.srcpos());
-    consequent->appendNode(whileNode);
-    consequent->appendNode(returnNode);
-
-    auto ifNode = makeIfNode(expr.srcpos(), testNode->clone(), consequent, alternate);
-    block->appendNode(ifNode);
-  }
-  else {
-    block->appendNode(whileNode);
-
-    if (requiresReturnValue)
-      block->appendNode(returnNode);
-  }
-
-  return block;
+  return transformLoopExpr(expr[0].srcpos(), NodeList{}, testExprs[0], NodeList{}, body,
+                           alternate);
 }
 
 
@@ -2737,6 +2776,8 @@ NodeList SecondPass::parseSeq(const Token& expr)
     return makeNodeList(parseClosure(expr));
   else if (first == kForId)
     return makeNodeList(parseFor(expr));
+  else if (first == kWhileId)
+    return makeNodeList(parseWhile(expr));
   else if (first == kSelectId)
     return makeNodeList(parseSelect(expr));
   else if (first == kMatchId)

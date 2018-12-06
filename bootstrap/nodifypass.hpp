@@ -68,6 +68,7 @@ private:
   NodeList parseDef(const Token& expr, bool isLocal);
   std::shared_ptr<AstNode> parseIf(const Token& expr);
   std::shared_ptr<AstNode> parseFor(const Token& expr);
+  std::shared_ptr<AstNode> parseWhile(const Token& expr);
   std::shared_ptr<AstNode> parseSelect(const Token& expr);
   std::shared_ptr<AstNode> parseMatch(const Token& expr);
   std::shared_ptr<AstNode> parseClosure(const Token& expr);
@@ -209,6 +210,12 @@ private:
 
   Type getIntType(int bitwidth, bool isSigned) const;
 
+  std::shared_ptr<AstNode> transformLoopExpr(const SrcPos& srcpos,  //
+                                             NodeList loopDefines,
+                                             std::shared_ptr<AstNode> testNode,
+                                             NodeList stepExprs,
+                                             std::shared_ptr<AstNode> body,
+                                             std::shared_ptr<AstNode> alternate);
 
   using TSharedGenericTable = std::map<String, Type>;
   class TSharedGenericScopeHelper {

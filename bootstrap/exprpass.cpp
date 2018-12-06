@@ -1732,6 +1732,51 @@ Token FirstPass::parseFor()
 }
 
 
+Token FirstPass::parseWhile()
+{
+  hr_assert(fToken == kWhileId);
+  Token whileToken = fToken;
+  nextToken();
+
+  if (fToken != kParanOpen) {
+    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    return scanUntilTopExprAndResume();
+  }
+  SrcPos paranPos = fToken.srcpos();
+  nextToken();
+
+  Token test = parseExpr(!K(acceptComma));
+  if (fToken != kParanClose) {
+    errorf(fToken.srcpos(), E_ParamMissParanClose, "Syntax error, missing ')'");
+  }
+  else
+    nextToken();
+
+  Token cond = test.isSeq() ? Token(paranPos, kParanOpen, kParanClose) << test.children()
+                            : Token(paranPos, kParanOpen, kParanClose) << test;
+
+  Token body = parseExpr(K(acceptComma));
+
+  Token elseToken;
+  Token alternate;
+  if (fToken == kElseId) {
+    elseToken = fToken;
+    nextToken();
+
+    alternate = parseExpr(!K(acceptComma));
+  }
+
+  if (body.isSet()) {
+    Token result = Token() << whileToken << cond << body;
+    if (elseToken.isSet() && alternate.isSet()) {
+      result << elseToken << alternate;
+    }
+    return result;
+  }
+  return Token() << Token(whileToken.srcpos(), "lang.unspecified");
+}
+
+
 Token FirstPass::parseUnitNumber(const Token& token)
 {
   Token number = token;
@@ -1809,6 +1854,7 @@ Token FirstPass::parseAtomicExpr()
   case kSelectId: return parseSelect();
   case kMatchId: return parseMatch();
   case kForId: return parseFor();
+  case kWhileId: return parseWhile();
 
   case kLetId: errorf(fToken.srcpos(), E_UnexpectedToken, "Unexpected let token"); break;
 

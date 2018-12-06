@@ -1,0 +1,20 @@
+def bar(t : Int) {
+  let i = t
+  while (i < 100) {
+    i = i + 1
+  }
+}
+
+
+def foo(t : Int) {
+  let i = t
+  while (i < 100) {
+    i = i + 1
+  }
+  else
+    -1
+}
+
+def gaz(p : Function() -> Bool)
+  while (p())
+    outln("Next!")

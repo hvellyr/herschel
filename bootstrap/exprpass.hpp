@@ -99,6 +99,7 @@ private:
   Token parseSelect();
   Token parseMatch();
   Token parseFor();
+  Token parseWhile();
 
   Token parseExpr(bool acceptComma);
   Token parseAtomicExpr0();
