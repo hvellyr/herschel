@@ -342,6 +342,7 @@ namespace herschel
 
 
     bool isQualifiedId() const;
+    bool isIdWithNamespace() const;
     String baseName() const;
     String nsName() const;
 

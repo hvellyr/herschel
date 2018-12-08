@@ -21,22 +21,26 @@
 namespace herschel {
 
 
-String qualifyId(const String& ns, const String& name)
+bool isQualified(const String& sym)
 {
-  if (!name.isEmpty() && name.indexOf('.', 0) == 0) {
-    return name;
-  }
-  else if (ns.isEmpty()) {
-    return String(".") + name;
-  }
-
-  return ns + "." + name;
+  return !sym.isEmpty() && sym.indexOf('.', 0) == 0;
 }
 
 
-bool isQualified(const String& sym)
+bool hasNamespace(const String& sym)
 {
-  return sym.lastIndexOf('.') >= 0;
+  return !sym.isEmpty() && sym.indexOf('.', 0) >= 0;
+}
+
+
+String qualifyId(const String& ns, const String& name)
+{
+  if (isQualified(name))
+    return name;
+  else if (ns.isEmpty())
+    return String(".") + name;
+
+  return ns + "." + name;
 }
 
 

@@ -160,7 +160,7 @@ Scope::LookupResult Scope::lookupItemLocalImpl(const SrcPos& srcpos,
 
   NsScopeMap::const_iterator it = fMap.find(base);
   if (it != fMap.end()) {
-    if (doAutoMatch && !isQualified(src_name)) {
+    if (doAutoMatch && !hasNamespace(src_name)) {
       if (it->second.size() == 1) {
         return LookupResult(it->second.begin()->second.get(), !K(inOuterFunc));
       }

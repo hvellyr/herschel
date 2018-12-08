@@ -158,19 +158,32 @@ TEST_CASE("Token is qualified ID", "[token]")
   {
     SrcPos sp;
     Token t = Token(sp, kSymbol, "io.File");
-    REQUIRE(t.isQualifiedId());
+    REQUIRE(!t.isQualifiedId());
+    REQUIRE(t.isIdWithNamespace());
     REQUIRE(t.baseName() == String("File"));
     REQUIRE(t.nsName() == String("io"));
   }
 
 
-  SECTION("Multi qualified names")
+  SECTION("Multi namespace names")
   {
     SrcPos sp;
     Token t = Token(sp, kSymbol, "core.rubitz.packs.Package");
-    REQUIRE(t.isQualifiedId());
+    REQUIRE(!t.isQualifiedId());
+    REQUIRE(t.isIdWithNamespace());
     REQUIRE(t.baseName() == String("Package"));
     REQUIRE(t.nsName() == String("core.rubitz.packs"));
+  }
+
+
+  SECTION("Qualified root names")
+  {
+    SrcPos sp;
+    Token t = Token(sp, kSymbol, ".io.File");
+    REQUIRE(t.isQualifiedId());
+    REQUIRE(t.isIdWithNamespace());
+    REQUIRE(t.baseName() == String("File"));
+    REQUIRE(t.nsName() == String(".io"));
   }
 }
 

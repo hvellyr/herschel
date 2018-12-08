@@ -22,6 +22,7 @@ class Token;
  * itself, a leading "." is added. */
 String qualifyId(const String& ns, const String& name);
 bool isQualified(const String& sym);
+bool hasNamespace(const String& sym);
 String qualifyId(const std::vector<Token>& tokens);
 
 /*! Removes a leading "." from @p str if existing. */

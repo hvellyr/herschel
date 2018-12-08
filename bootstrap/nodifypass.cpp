@@ -663,7 +663,7 @@ std::shared_ptr<AstNode> SecondPass::parseSlotParam(const Token& expr)
   hr_assert(seq[ofs] == kSymbol);
 
   String sym = seq[ofs].idValue();
-  if (isQualified(sym)) {
+  if (hasNamespace(sym)) {
     errorf(seq[ofs].srcpos(), E_QualifiedLocalSym,
            "Slot names must not be qualified.  Ignore namespace");
     sym = baseName(sym);
@@ -1083,7 +1083,7 @@ std::shared_ptr<AstNode> SecondPass::parseAliasDef(const Token& expr, size_t ofs
 
   const TokenVector& seq = expr.children();
   String aliasName = seq[ofs].idValue();
-  if (isLocal && isQualified(aliasName)) {
+  if (isLocal && hasNamespace(aliasName)) {
     errorf(seq[ofs].srcpos(), E_QualifiedLocalSym,
            "Local symbol in definition must not be qualified.  "
            "Ignore namespace");
@@ -1228,7 +1228,7 @@ std::shared_ptr<AstNode> SecondPass::parseEnumDef(const Token& expr, size_t ofs,
     else
       hr_invalid("");
 
-    if (isQualified(sym)) {
+    if (hasNamespace(sym)) {
       errorf(enumVal.srcpos(), E_QualifiedEnumDefSym,
              "Enum item definitions must not be qualified. "
              "Ignore namespace");
@@ -1275,7 +1275,7 @@ std::shared_ptr<AstNode> SecondPass::parseVarDef(const Token& expr, VardefFlags 
 
   const TokenVector& seq = expr.children();
   String sym = seq[ofs].idValue();
-  if (isLocal && isQualified(sym)) {
+  if (isLocal && hasNamespace(sym)) {
     errorf(expr[ofs].srcpos(), E_QualifiedLocalSym,
            "Local symbol in definition must not be qualified.  "
            "Ignore namespace");
@@ -1436,7 +1436,7 @@ NodeList SecondPass::parseFunctionDef(const Token& expr, size_t ofs, bool isLoca
 
   hr_assert(expr[ofs] == kSymbol);
   String sym = expr[ofs].idValue();
-  if ((isLocal || linkage == String("C")) && isQualified(sym)) {
+  if ((isLocal || linkage == String("C")) && hasNamespace(sym)) {
     errorf(expr[ofs].srcpos(), E_QualifiedLocalSym,
            "Local symbol in definition must not be qualified.  "
            "Ignore namespace");
@@ -1664,7 +1664,7 @@ std::shared_ptr<AstNode> SecondPass::parseParameter(const Token& expr)
   ParamFlags paramType = kPosArg;
   if (seq[ofs] == kKeyarg) {
     key = seq[ofs].idValue();
-    if (isQualified(key)) {
+    if (hasNamespace(key)) {
       errorf(seq[ofs].srcpos(), E_QualifiedParamKey,
              "Named Parameter keys must not be qualified.  Ignore namespace");
       key = baseName(key);
@@ -1679,7 +1679,7 @@ std::shared_ptr<AstNode> SecondPass::parseParameter(const Token& expr)
   hr_assert(seq[ofs] == kSymbol);
 
   String sym = seq[ofs].idValue();
-  if (isQualified(sym)) {
+  if (hasNamespace(sym)) {
     errorf(seq[ofs].srcpos(), E_QualifiedLocalSym,
            "Parameter names must not be qualified.  Ignore namespace");
     sym = baseName(sym);

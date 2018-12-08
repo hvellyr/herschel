@@ -1324,6 +1324,14 @@ bool Token::isQualifiedId() const
 }
 
 
+bool Token::isIdWithNamespace() const
+{
+  if (fType != kSymbol)
+    throw NotSupportedException(__FUNCTION__);
+  return herschel::hasNamespace(idValue());
+}
+
+
 String Token::baseName() const
 {
   if (fType != kSymbol)
