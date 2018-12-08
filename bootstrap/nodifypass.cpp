@@ -197,35 +197,40 @@ std::shared_ptr<AstNode> SecondPass::parseImport(const Token& expr)
 
 //------------------------------------------------------------------------------
 
-void SecondPass::parseExtendImpl(NodeList* functions, const Token& expr)
+void SecondPass::parseWithNamespaceImpl(NodeList* functions, const Token& expr)
 {
   hr_assert(expr.isSeq() && expr.count() == 4);
-  hr_assert(expr[0] == kExtendId);
-  hr_assert(expr[1] == kModuleId);
+  hr_assert(expr[0] == kWithId);
+  hr_assert(expr[1] == kNamespaceId);
   hr_assert(expr[2] == kSymbol);
   hr_assert(expr[3].isNested());
 
-  String moduleName = expr[2].idValue();
+  String nsName = expr[2].idValue();
 
   {
-    // temporarily change the current module name
-    ModuleHelper modHelper(this, moduleName, K(setName));
+    // temporarily change the current namespace
+    ModuleHelper nsHelper(this, nsName, K(setName));
     for (auto& c : expr[3].children())
       appendNodes(*functions, parseExpr(c));
   }
 }
 
 
-std::shared_ptr<AstNode> SecondPass::parseExtend(const Token& expr)
+std::shared_ptr<AstNode> SecondPass::parseWith(const Token& expr)
 {
   NodeList nodeList;
 
-  parseExtendImpl(&nodeList, expr);
+  if (expr.isSeq() && expr.count() == 4 && expr[1] == kNamespaceId) {
+    parseWithNamespaceImpl(&nodeList, expr);
 
-  for (size_t i = 0; i < nodeList.size(); i++) {
-    auto n = nodeList[i];
-    if (n)
-      fRootNode->appendNode(n);
+    for (size_t i = 0; i < nodeList.size(); i++) {
+      auto n = nodeList[i];
+      if (n)
+        fRootNode->appendNode(n);
+    }
+  }
+  else {
+    hr_invalid("");
   }
 
   return nullptr;
@@ -2839,8 +2844,8 @@ NodeList SecondPass::parseSeq(const Token& expr)
     }
   }
   else if (expr.count() == 4) {
-    if (expr[0] == kExtendId)
-      return makeNodeList(parseExtend(expr));
+    if (expr[0] == kWithId)
+      return makeNodeList(parseWith(expr));
   }
 
   return parseExpr(expr[0]);

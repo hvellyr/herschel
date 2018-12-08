@@ -194,7 +194,7 @@ def record VectorSlice<T> : core.Slice<Ordinal, T>
 )
 
 
-extend module core
+with ns core
 {
   def num-items(vsl @ VectorSlice<'T>) -> Ordinal
     vsl.to - vsl.from

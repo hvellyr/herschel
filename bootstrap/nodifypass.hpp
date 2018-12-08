@@ -117,7 +117,7 @@ private:
   std::shared_ptr<AstNode> parseBlock(const Token& expr);
   NodeList parseNested(const Token& expr);
 
-  std::shared_ptr<AstNode> parseExtend(const Token& expr);
+  std::shared_ptr<AstNode> parseWith(const Token& expr);
 
   Type parseTypeSpec(const Token& expr, bool forceOpenType = false);
   Type parseTypeSpecImpl(const Token& expr, bool forceOpenType);
@@ -125,7 +125,7 @@ private:
   Type parseGroupType(const Token& expr, bool isValue);
   Type rephraseRefType(const SrcPos& srcpos, const Type& inType, bool isValue);
 
-  void parseExtendImpl(NodeList* functions, const Token& expr);
+  void parseWithNamespaceImpl(NodeList* functions, const Token& expr);
 
 
   void transformCollForClause(const Token& token, NodeList* loopDefines,

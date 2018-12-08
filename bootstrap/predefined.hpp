@@ -34,7 +34,6 @@ namespace herschel {
 #define MID_equalq "equal?"
 #define MID_exponent "exponent"
 #define MID_exportid "export"
-#define MID_extendid "extend"
 #define MID_externid "extern"
 #define MID_fold "fold"
 #define MID_forid "for"
@@ -55,8 +54,10 @@ namespace herschel {
 #define MID_mod "mod"
 #define MID_moduleid "module"
 #define MID_multiply "multiply"
+#define MID_namespaceid "namespace"
 #define MID_nilid "nil"
 #define MID_notid "not"
+#define MID_nsid "ns"
 #define MID_rem "rem"
 #define MID_selectid "select"
 #define MID_shiftleft "shift-left"
@@ -67,6 +68,7 @@ namespace herschel {
 #define MID_whenid "when"
 #define MID_whereid "where"
 #define MID_whileid "while"
+#define MID_withid "with"
 
 
 //--------------------------------------------------------------------------

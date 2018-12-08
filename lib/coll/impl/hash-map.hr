@@ -292,7 +292,7 @@ def table!(self : HashMap<'K, 'T>,
 }
 
 
-extend module core
+with ns core
 {
 def copy(self @ HashMap<'K, 'T>) -> HashMap<'K, 'T>
   self.Type()().table!(self.table)

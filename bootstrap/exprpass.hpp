@@ -161,7 +161,7 @@ private:
                             bool exceptEmptyList = true);
 
   Token parseWhen(bool isTopLevel);
-  Token parseExtend();
+  Token parseWith();
 
   TokenVector parseExtern();
 

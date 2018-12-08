@@ -674,7 +674,7 @@ bool Token::operator<(const Token& other) const
       case kElseId:
       case kEofId:
       case kExportId:
-      case kExtendId:
+      case kWithId:
       case kExternId:
       case kForId:
       case kFUNCTIONId:
@@ -684,8 +684,10 @@ bool Token::operator<(const Token& other) const
       case kLetId:
       case kMatchId:
       case kModuleId:
+      case kNamespaceId:
       case kNilId:
       case kNotId:
+      case kNsId:
       case kSelectId:
       case kWhenId:
       case kWhereId:
@@ -760,22 +762,24 @@ String Token::toString() const
     case kElseId: return String(MID_elseid);
     case kEofId: return String(MID_eofid);
     case kExportId: return String(MID_exportid);
-    case kExtendId: return String(MID_extendid);
     case kExternId: return String(MID_externid);
-    case kForId: return String(MID_forid);
     case kFUNCTIONId: return String(MID_FUNCTIONid);
+    case kForId: return String(MID_forid);
     case kFunctionId: return String(MID_functionid);
     case kIfId: return String(MID_ifid);
     case kImportId: return String(MID_importid);
     case kLetId: return String(MID_letid);
     case kMatchId: return String(MID_matchid);
     case kModuleId: return String(MID_moduleid);
+    case kNamespaceId: return String(MID_namespaceid);
     case kNilId: return String(MID_nilid);
     case kNotId: return String(MID_notid);
+    case kNsId: return String(MID_nsid);
     case kSelectId: return String(MID_selectid);
     case kWhenId: return String(MID_whenid);
     case kWhereId: return String(MID_whereid);
     case kWhileId: return String(MID_whileid);
+    case kWithId: return String(MID_withid);
 
     default: hr_invalid("");
     }
@@ -863,30 +867,32 @@ ExprType Token::type() const
   case kRational:
   case kKeyword: return kLit;
 
-  case kSymbol:  // kIdExpr
-  case kKeyarg:
-  case kMacroParam:
-  case kMacroParamAsStr:
   case kDefId:
   case kElseId:
   case kEofId:
   case kExportId:
-  case kExtendId:
   case kExternId:
-  case kForId:
   case kFUNCTIONId:
+  case kForId:
   case kFunctionId:
   case kIfId:
   case kImportId:
+  case kKeyarg:
   case kLetId:
+  case kMacroParam:
+  case kMacroParamAsStr:
   case kMatchId:
   case kModuleId:
+  case kNamespaceId:
   case kNilId:
   case kNotId:
+  case kNsId:
   case kSelectId:
+  case kSymbol:  // kIdExpr
   case kWhenId:
   case kWhereId:
-  case kWhileId: return kId;
+  case kWhileId:
+  case kWithId: return kId;
 
   default: fprintf(stderr, "Type: %d\n", fType); hr_invalid("");
   }
@@ -1065,7 +1071,6 @@ String Token::idValue() const
   case kElseId:
   case kEofId:
   case kExportId:
-  case kExtendId:
   case kExternId:
   case kForId:
   case kFUNCTIONId:
@@ -1075,12 +1080,15 @@ String Token::idValue() const
   case kLetId:
   case kMatchId:
   case kModuleId:
+  case kNamespaceId:
   case kNilId:
   case kNotId:
+  case kNsId:
   case kSelectId:
   case kWhenId:
   case kWhereId:
-  case kWhileId: return toString();
+  case kWhileId:
+  case kWithId: return toString();
   case kSymbol:
   case kMacroParam:
   case kMacroParamAsStr:
@@ -1378,7 +1386,6 @@ void Token::toPort(Port<Octet>& port) const
     case kElseId:
     case kEofId:
     case kExportId:
-    case kExtendId:
     case kExternId:
     case kForId:
     case kFUNCTIONId:
@@ -1388,12 +1395,15 @@ void Token::toPort(Port<Octet>& port) const
     case kLetId:
     case kMatchId:
     case kModuleId:
+    case kNamespaceId:
     case kNilId:
     case kNotId:
+    case kNsId:
     case kSelectId:
     case kWhenId:
     case kWhereId:
-    case kWhileId: xml::displayTag(port, "id", toString()); break;
+    case kWhileId:
+    case kWithId: xml::displayTag(port, "id", toString()); break;
     default: hr_invalid("");
     }
     break;
@@ -1424,16 +1434,16 @@ TokenVector Token::toTokenVector() const
 
 bool Token::isCharOrUnitName() const
 {
-  return (fType == kSymbol || fType == kIn || fType == kLogicalAnd ||
-          fType == kLogicalOr || fType == kMod || fType == kRem || fType == kBitAnd ||
-          fType == kBitOr || fType == kBitXor || fType == kIsa || fType == kAs ||
-          fType == kBy || fType == kDefId || fType == kElseId || fType == kEofId ||
-          fType == kExportId || fType == kExtendId || fType == kExternId ||
-          fType == kForId || fType == kFUNCTIONId || fType == kFunctionId ||
-          fType == kIfId || fType == kImportId || fType == kLetId || fType == kMatchId ||
-          fType == kModuleId || fType == kNilId || fType == kNotId ||
-          fType == kSelectId || fType == kWhenId ||
-          fType == kWhereId || fType == kWhileId);
+  return (
+      fType == kSymbol || fType == kIn || fType == kLogicalAnd || fType == kLogicalOr ||
+      fType == kMod || fType == kRem || fType == kBitAnd || fType == kBitOr ||
+      fType == kBitXor || fType == kIsa || fType == kAs || fType == kBy ||
+      fType == kDefId || fType == kElseId || fType == kEofId || fType == kExportId ||
+      fType == kWithId || fType == kNamespaceId || fType == kNsId || fType == kExternId ||
+      fType == kForId || fType == kFUNCTIONId || fType == kFunctionId || fType == kIfId ||
+      fType == kImportId || fType == kLetId || fType == kMatchId || fType == kModuleId ||
+      fType == kNilId || fType == kNotId || fType == kSelectId || fType == kWhenId ||
+      fType == kWhereId || fType == kWhileId);
 }
 
 

@@ -96,7 +96,7 @@ Token FirstPass::scanUntilTopExprAndResume()
 {
   while (fToken != kEOF && fToken != kDefId && fToken != kModuleId &&
          fToken != kExportId && fToken != kImportId && fToken != kWhenId &&
-         fToken != kExtendId && fToken != kExternId)
+         fToken != kExternId)
     nextToken();
 
   return Token();
@@ -1302,7 +1302,7 @@ bool FirstPass::parseExprListUntilBrace(TokenVector* result, bool endAtToplevelI
                                         bool isLocal)
 {
   for (;;) {
-    if (fToken == kDefId || fToken == kExtendId || fToken == kExternId ||
+    if (fToken == kDefId || fToken == kExternId ||
         fToken == kExportId || fToken == kImportId || fToken == kModuleId) {
       if (!endAtToplevelId) {
         error(fToken.srcpos(), E_UnexpectedTopExpr,
@@ -2313,44 +2313,45 @@ Token FirstPass::parseWhen(bool isTopLevel)
 }
 
 
-Token FirstPass::parseExtend()
+Token FirstPass::parseWith()
 {
-  hr_assert(fToken == kExtendId);
-  Token extendToken = fToken;
+  hr_assert(fToken == kWithId);
+  Token withToken = fToken;
   nextToken();
 
-  if (fToken != kModuleId) {
-    errorf(fToken.srcpos(), E_UnexpectedToken, "expected 'module'");
+  if (fToken == kNamespaceId || fToken == kNsId) {
+    Token nsToken = Token(fToken.srcpos(), kNamespaceId);
+    nextToken();
+
+    auto qSymbol = parseQualifiedName(false);
+    if (qSymbol.empty()) {
+      errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+      return scanUntilTopExprAndResume();
+    }
+
+    Token nsNameToken = qualifyIdToken(qSymbol);
+
+    if (fToken != kBraceOpen) {
+      errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+      return scanUntilTopExprAndResume();
+    }
+
+    Token code;
+    {
+      ModuleHelper modHelper(this, nsNameToken.idValue(), K(setName));
+
+      code = wrapInBlock(fToken.srcpos(), parseTopOrExprList(K(isTopLevel)));
+    }
+
+    if (code.isSet())
+      return Token() << withToken << nsToken << nsNameToken << code;
+    else
+      return Token();
+  }
+  else {
+    error(fToken.srcpos(), E_UnexpectedToken, String("unknown scope in 'with': ") + fToken);
     return scanUntilTopExprAndResume();
   }
-
-  Token moduleToken = fToken;
-  nextToken();
-
-  auto qSymbol = parseQualifiedName(false);
-  if (qSymbol.empty()) {
-    errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
-    return scanUntilTopExprAndResume();
-  }
-
-  Token modNameToken = qualifyIdToken(qSymbol);
-
-  if (fToken != kBraceOpen) {
-    errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
-    return scanUntilTopExprAndResume();
-  }
-
-  Token code;
-  {
-    ModuleHelper modHelper(this, modNameToken.idValue(), K(setName));
-
-    code = wrapInBlock(fToken.srcpos(), parseTopOrExprList(K(isTopLevel)));
-  }
-
-  if (code.isSet())
-    return Token() << extendToken << moduleToken << modNameToken << code;
-  else
-    return Token();
 }
 
 
@@ -3468,8 +3469,8 @@ TokenVector FirstPass::parseTop()
   else if (fToken == kWhenId) {
     return parseWhen(K(isTopLevel)).toTokenVector();
   }
-  else if (fToken == kExtendId) {
-    return parseExtend().toTokenVector();
+  else if (fToken == kWithId) {
+    return parseWith().toTokenVector();
   }
   else if (fToken == kExternId) {
     return parseExtern();
