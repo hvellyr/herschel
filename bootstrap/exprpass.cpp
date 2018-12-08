@@ -1621,77 +1621,63 @@ Token FirstPass::parseMatch()
 }
 
 
-struct ForClauseParser {
-  bool parseInCollClause(FirstPass* pass, Token& result, const Token& symToken,
-                         const Token& colonToken, const Token& type)
-  {
-    hr_assert(pass->fToken == kIn);
-    Token inToken = pass->fToken;
-    pass->nextToken();
+Token FirstPass::parseForTestClause()
+{
+  if (fToken == kSymbol) {
+    Token symToken = fToken;
+    nextToken();
 
-    Token collToken = pass->parseExpr(!K(acceptComma));
-    if (!collToken.isSet()) {
-      error(pass->fToken.srcpos(), E_MissingRHExpr,
-            String("unexpected token: ") + pass->fToken.toString());
-      pass->scanUntilNextParameter();
-      return true;
+    Token type;
+    Token colonToken;
+
+    if (fToken == kColon) {
+      colonToken = fToken;
+      nextToken();
+      SrcPos pos = fToken.srcpos();
+      type = parseTypeSpec(K(onlyNestedConstr), K(needParans));
+      if (!type.isSet()) {
+        errorf(pos, E_MissingType, "type expression expected");
+        type = makeAnySymbol(pos);
+      }
     }
 
-    Token varClause;
-    if (colonToken.isSet() && type.isSet())
-      varClause = Token() << symToken << colonToken << type;
-    else
-      varClause = symToken;
+    if (fToken == kIn) {
+      Token inToken = fToken;
+      nextToken();
 
-    Token subexpr;
-    subexpr << varClause << inToken << collToken;
-
-    result << subexpr;
-    return true;
-  }
-
-
-  bool operator()(FirstPass* pass, Token& result)
-  {
-    if (pass->fToken == kSymbol) {
-      bool allowNormalExpr = true;
-
-      Token symToken = pass->fToken;
-      pass->nextToken();
-
-      Token type;
-      Token colonToken;
-
-      if (pass->fToken == kColon) {
-        colonToken = pass->fToken;
-        pass->nextToken();
-        SrcPos pos = pass->fToken.srcpos();
-        type = pass->parseTypeSpec(K(onlyNestedConstr), K(needParans));
-        if (!type.isSet()) {
-          errorf(pos, E_MissingType, "type expression expected");
-          type = makeAnySymbol(pos);
-        }
-        allowNormalExpr = false;
+      Token collToken = parseExpr(!K(acceptComma));
+      if (!collToken.isSet()) {
+        error(fToken.srcpos(), E_MissingRHExpr,
+              String("unexpected token: ") + fToken.toString());
+        scanUntilNextParameter();
+        return Token();
       }
 
-      if (pass->fToken == kIn) {
-        return parseInCollClause(pass, result, symToken, colonToken, type);
-      }
-      else {
-        error(pass->fToken.srcpos(), E_UnexpectedToken,
-              String("'in' keyword expected: ") + pass->fToken.toString());
-        pass->scanUntilNextParameter();
-      }
+      Token varClause;
+      if (colonToken.isSet() && type.isSet())
+        varClause = Token() << symToken << colonToken << type;
+      else
+        varClause = symToken;
+
+      Token subexpr;
+      subexpr << varClause << inToken << collToken;
+
+      return Token(symToken.srcpos(), kParanOpen, kParanClose) << subexpr;
     }
     else {
-      error(pass->fToken.srcpos(), E_UnexpectedToken,
-            String("Symbol expected in for clause: ") + pass->fToken.toString());
-      pass->scanUntilNextParameter();
+      error(fToken.srcpos(), E_UnexpectedToken,
+            String("'in' keyword expected: ") + fToken.toString());
+      scanUntilNextParameter();
     }
-
-    return true;
   }
-};
+  else {
+    error(fToken.srcpos(), E_UnexpectedToken,
+          String("Symbol expected in for clause: ") + fToken.toString());
+    scanUntilNextParameter();
+  }
+
+  return Token();
+}
 
 
 Token FirstPass::parseFor()
@@ -1707,9 +1693,12 @@ Token FirstPass::parseFor()
   SrcPos paranPos = fToken.srcpos();
   nextToken();
 
-  Token args = Token(paranPos, kParanOpen, kParanClose);
-  parseSequence(ForClauseParser(), kParanOpen, kParanClose, K(hasSeparator),
-                E_BadParameterList, args, "for-clauses", !K(skipFirst));
+  Token test = parseForTestClause();
+  if (fToken != kParanClose) {
+    errorf(fToken.srcpos(), E_ParamMissParanClose, "Syntax error, missing ')'");
+  }
+  else
+    nextToken();
 
   Token body = parseExpr(K(acceptComma));
 
@@ -1723,7 +1712,7 @@ Token FirstPass::parseFor()
   }
 
   if (body.isSet()) {
-    Token result = Token() << forToken << args << body;
+    Token result = Token() << forToken << test << body;
     if (elseToken.isSet() && alternate.isSet())
       result << elseToken << alternate;
     return result;
