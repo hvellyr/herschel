@@ -2558,6 +2558,60 @@ std::shared_ptr<AstNode> SecondPass::parseChainSelect(const Token& expr)
 
 //------------------------------------------------------------------------------
 
+static std::shared_ptr<AstNode> transformMatchNode(std::shared_ptr<MatchNode> node)
+{
+  std::shared_ptr<AstNode> rootIf;
+  std::shared_ptr<IfNode> lastIf;
+  std::shared_ptr<AstNode> elseAlternate;
+
+  for (size_t i = 0; i < node->mappingCount(); i++) {
+    if (node->mappingAt(i).fMatchType.isAny())
+    {
+      if (elseAlternate) {
+        errorf(node->mappingAt(i).fSrcPos, E_MatchAmbiguousType,
+               "redefinition of catch-all lang|Any branch in match");
+        errorf(elseAlternate->srcpos(), E_MatchAmbiguousType,
+               "previous Any branch was here");
+      }
+      else
+        elseAlternate = node->mappingAt(i).fConsequent;
+    }
+    else {
+      auto isaCall = makeApplyNode(node->mappingAt(i).fSrcPos,
+                                   makeSymbolNode(node->mappingAt(i).fSrcPos,
+                                                  Names::kLangIsaQ));
+      isaCall->appendNode(node->expr()->clone());
+      isaCall->appendNode(makeTypeNode(node->mappingAt(i).fSrcPos,
+                                       node->mappingAt(i).fMatchType));
+
+      auto newIf = makeIfNode(node->mappingAt(i).fSrcPos,
+                              isaCall,
+                              node->mappingAt(i).fConsequent, nullptr);
+      if (lastIf) {
+        lastIf->setAlternate(newIf);
+        lastIf = newIf;
+      }
+      else
+        rootIf = lastIf = newIf;
+    }
+  }
+
+  if (!elseAlternate)
+    elseAlternate = makeSymbolNode(node->srcpos(),
+                                   Names::kLangUnspecified);
+
+  if (lastIf)
+    lastIf->setAlternate(elseAlternate);
+  else
+    rootIf = elseAlternate;
+
+  lastIf = nullptr;
+  elseAlternate = nullptr;
+
+  return rootIf;
+}
+
+
 std::shared_ptr<AstNode> SecondPass::parseMatch(const Token& expr)
 {
   hr_assert(!fCompiler.isParsingInterface());
@@ -2631,7 +2685,7 @@ std::shared_ptr<AstNode> SecondPass::parseMatch(const Token& expr)
     }
   }
 
-  block->appendNode(matchNode);
+  block->appendNode(transformMatchNode(matchNode));
 
   return block;
 }
