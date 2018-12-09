@@ -89,6 +89,33 @@ public:
 };
 
 
+//--------------------------------------------------------------------------
+
+class FunctionScopeItem : public Scope::ScopeItem {
+public:
+  FunctionScopeItem(const SrcPos& srcpos, Scope::ScopeItemKind kind,
+                    std::shared_ptr<AstNode> node)
+      : ScopeItem(srcpos)
+      , fKind(kind)
+  {
+    add(node);
+  }
+
+
+  void add(std::shared_ptr<AstNode> node) { fNodes.push_back(node); }
+
+
+  Scope::ScopeItemKind kind() const override { return fKind; }
+
+  const std::vector<std::shared_ptr<AstNode>>& nodes() const { return fNodes; }
+
+  //-------- data members
+
+  Scope::ScopeItemKind fKind;
+  std::vector<std::shared_ptr<AstNode>> fNodes;
+};
+
+
 //------------------------------------------------------------------------------
 
 Scope::Scope(ScopeLevel level)
@@ -481,19 +508,91 @@ const Macro* Scope::lookupMacro(const SrcPos& srcpos, const String& name,
 
 //............................................................................
 
-void Scope::registerFunction(const SrcPos& srcpos, const String& name,
+bool Scope::hasFunctionNameLocal(ScopeDomain domain, const String& name, SrcPos* srcpos,
+                                 bool doAutoMatch) const
+{
+  auto lv =
+      lookupItemLocalImpl(SrcPos(), ScopeName(domain, name), !K(showError), doAutoMatch);
+  if (lv.fItem) {
+    if (lv.fItem->kind() != kScopeItem_function) {
+      *srcpos = lv.fItem->srcpos();
+      return true;
+    }
+    // check return type and parameter types
+  }
+
+  for (const auto& scopep : fImportedScopes) {
+    if (scopep.second->hasFunctionNameLocal(domain, name, srcpos, doAutoMatch))
+      return true;
+  }
+
+  return false;
+}
+
+
+bool Scope::checkForFunctionRedefinition(const SrcPos& srcpos, ScopeDomain domain,
+                                         const String& sym) const
+{
+  SrcPos firstSrcpos;
+  if (hasFunctionNameLocal(domain, sym, &firstSrcpos, !K(doAutoMatch))) {
+    errorf(srcpos, E_Redefinition, "Redefinition of '%s'.",
+           (zstring)StrHelper(sym));
+    errorf(firstSrcpos, E_Redefinition, "'%s' previously defined here.",
+           (zstring)StrHelper(sym));
+    return true;
+  }
+
+  return false;
+}
+
+
+void Scope::registerFunction(const SrcPos& srcpos, const String& funcName,
                              std::shared_ptr<AstNode> node)
 {
-  registerScopeItem(ScopeName(kNormal, name),
-                    std::make_shared<NodeScopeItem>(srcpos, kScopeItem_function, node));
+  const ScopeName& name = ScopeName(kNormal, funcName);
+
+  auto result = lookupItemLocalImpl(srcpos, name, K(showError), !K(doAutoMatch));
+  if (result.fItem) {
+    if (result.fItem->kind() != kScopeItem_function) {
+      errorf(srcpos, E_SymbolRedefined, "redefinition of symbol '%s'",
+             (zstring)StrHelper(name.fName));
+      errorf(result.fItem->srcpos(), E_SymbolRedefined, "symbol was defined here");
+
+      return;
+    }
+
+    if (auto funcItem = dynamic_cast<FunctionScopeItem*>(result.fItem)) {
+      // check for function re-definition
+      funcItem->add(node);
+    }
+    else {
+      hr_invalid("");
+    }
+  }
+  else {
+    auto src_name = deroot(name.fName);
+    ScopeName base(name.fDomain, herschel::baseName(src_name));
+    String ns(herschel::nsName(src_name));
+
+    auto item = std::make_shared<FunctionScopeItem>(srcpos, kScopeItem_function, node);
+    NsScopeMap::iterator it = fMap.find(base);
+    if (it != fMap.end())
+      it->second.insert(std::make_pair(ns, item));
+    else
+      fMap[base].insert(std::make_pair(ns, item));
+  }
 }
 
 
 const AstNode* Scope::lookupFunction(const String& name, bool showAmbiguousSymDef) const
 {
   auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef);
-  if (lv.fItem && lv.fItem->kind() == kScopeItem_function)
-    return dynamic_cast<const NodeScopeItem*>(lv.fItem)->node();
+  if (lv.fItem && lv.fItem->kind() == kScopeItem_function) {
+    const auto& defs = dynamic_cast<const FunctionScopeItem*>(lv.fItem)->nodes();
+
+    // TODO: handle type overloading
+    return defs.front().get();
+  }
   return nullptr;
 }
 

@@ -1,0 +1,16 @@
+def foo(a : Int) -> Int
+  a
+
+def foo(b : String) -> String
+  b
+
+def foo(c : (Int, Bool)) -> Bool
+  match (c)
+    | x : Bool -> x
+    | _ : Any -> false
+
+
+def foo(x)
+  x
+
+-- def foo = 42

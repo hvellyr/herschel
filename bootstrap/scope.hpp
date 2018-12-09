@@ -106,9 +106,17 @@ public:
   bool hasNameLocal(ScopeDomain domain, const String& name, SrcPos* srcpos,
                     bool doAutoMatch) const;
 
+  //! Like hasName() but checks in the current scope only and handles
+  //! function overloading.  If @p doAutoMatch is true the function
+  //! maps a non-qualified @p name to a solitary available definition
+  //! from any namespace.
+  bool hasFunctionNameLocal(ScopeDomain domain, const String& name, SrcPos* srcpos,
+                            bool doAutoMatch) const;
 
   bool checkForRedefinition(const SrcPos& srcpos, ScopeDomain domain,
                             const String& sym) const;
+  bool checkForFunctionRedefinition(const SrcPos& srcpos, ScopeDomain domain,
+                                    const String& sym) const;
 
   void dumpDebug(bool recursive = false) const;
 
@@ -211,6 +219,7 @@ public:
 
 private:
   void registerScopeItem(const ScopeName& name, std::shared_ptr<ScopeItem> item);
+
   struct LookupResult {
     LookupResult()
         : fItem(nullptr)
@@ -218,7 +227,7 @@ private:
     {
     }
 
-    LookupResult(const ScopeItem* item, bool inOuterFunc)
+    LookupResult(ScopeItem* item, bool inOuterFunc)
         : fItem(item)
         , fInOuterFunc(inOuterFunc)
     {
@@ -237,7 +246,7 @@ private:
       return *this;
     }
 
-    const ScopeItem* fItem;
+    ScopeItem* fItem;
     bool fInOuterFunc;
   };
 
