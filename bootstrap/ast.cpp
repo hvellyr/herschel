@@ -147,12 +147,6 @@ void AstNode::setTypeConv(TypeConvKind typeConv)
 }
 
 
-// llvm::Value* AstNode::codegen(CodeGenerator* generator) const
-// {
-//   return nullptr;
-// }
-
-
 bool AstNode::isInTailPos() const
 {
   return fIsInTailPos;
@@ -277,43 +271,6 @@ void ListNode::appendNodes(const NodeList& nodes)
 }
 
 
-#if 0
-#  define DEF_RENDER(_type) \
-    void _type::render(XmlRenderer* renderer) const { renderer->renderNode(*this); }
-
-#  define DEF_CODEGEN(_type)                                    \
-    llvm::Value* _type::codegen(CodeGenerator* generator) const \
-    {                                                           \
-      return generator->codegen(this);                          \
-    }
-
-
-#  define DEF_TRAVERSE(_type) \
-    void _type::traverse(Traversator* traversator) { traversator->traverse(*this); }
-
-
-#  define DEF_ANNOTATE(_type)                                           \
-    void _type::annotate(Annotator* an, std::shared_ptr<AstNode> nd)    \
-    {                                                                   \
-      using ConcreteType = std::remove_pointer<decltype(this)>::type;   \
-      return an->annotate(std::dynamic_pointer_cast<ConcreteType>(nd)); \
-    }
-
-
-#  define DEF_TRANSFORM(_type)                                             \
-    std::shared_ptr<AstNode> _type::transform(Transformator* tr,           \
-                                              std::shared_ptr<AstNode> nd) \
-    {                                                                      \
-      using ConcreteType = std::remove_pointer<decltype(this)>::type;      \
-      return tr->transform(std::dynamic_pointer_cast<ConcreteType>(nd));   \
-    }
-
-
-#  define DEF_TYPIFY(_type) \
-    void _type::typify(Typifier& typifier) { typifier.typify(*this); }
-#endif
-
-
 //----------------------------------------------------------------------------
 
 UndefNode::UndefNode()
@@ -326,14 +283,6 @@ std::shared_ptr<AstNode> UndefNode::clone() const
 {
   return makeUndefNode();
 }
-
-
-// DEF_RENDER(UndefNode)
-// DEF_CODEGEN(UndefNode)
-// DEF_ANNOTATE(UndefNode)
-// DEF_TRAVERSE(UndefNode)
-// DEF_TRANSFORM(UndefNode)
-// DEF_TYPIFY(UndefNode)
 
 
 //----------------------------------------------------------------------------
@@ -368,14 +317,6 @@ const String& StringNode::value() const
 }
 
 
-// DEF_RENDER(StringNode)
-// DEF_CODEGEN(StringNode)
-// DEF_ANNOTATE(StringNode)
-// DEF_TRAVERSE(StringNode)
-// DEF_TRANSFORM(StringNode)
-// DEF_TYPIFY(StringNode)
-
-
 //----------------------------------------------------------------------------
 
 KeywordNode::KeywordNode(const SrcPos& srcpos, const String& value)
@@ -395,14 +336,6 @@ const String& KeywordNode::value() const
 {
   return fValue;
 }
-
-
-// DEF_RENDER(KeywordNode)
-// DEF_CODEGEN(KeywordNode)
-// DEF_ANNOTATE(KeywordNode)
-// DEF_TRAVERSE(KeywordNode)
-// DEF_TRANSFORM(KeywordNode)
-// DEF_TYPIFY(KeywordNode)
 
 
 //----------------------------------------------------------------------------
@@ -478,14 +411,6 @@ bool SymbolNode::isShared() const
 }
 
 
-// DEF_RENDER(SymbolNode)
-// DEF_CODEGEN(SymbolNode)
-// DEF_ANNOTATE(SymbolNode)
-// DEF_TRAVERSE(SymbolNode)
-// DEF_TRANSFORM(SymbolNode)
-// DEF_TYPIFY(SymbolNode)
-
-
 //----------------------------------------------------------------------------
 
 ArrayTypeNode::ArrayTypeNode(const SrcPos& srcpos, std::shared_ptr<AstNode> typeNode)
@@ -507,14 +432,6 @@ std::shared_ptr<AstNode> ArrayTypeNode::clone() const
 }
 
 
-// DEF_RENDER(ArrayTypeNode)
-// DEF_CODEGEN(ArrayTypeNode)
-// DEF_ANNOTATE(ArrayTypeNode)
-// DEF_TRAVERSE(ArrayTypeNode)
-// DEF_TRANSFORM(ArrayTypeNode)
-// DEF_TYPIFY(ArrayTypeNode)
-
-
 //--------------------------------------------------------------------------
 
 TypeNode::TypeNode(const SrcPos& srcpos, const Type& type)
@@ -527,14 +444,6 @@ std::shared_ptr<AstNode> TypeNode::clone() const
 {
   return cloneScope(this, makeTypeNode(fSrcPos, fType.clone()));
 }
-
-
-// DEF_RENDER(TypeNode)
-// DEF_CODEGEN(TypeNode)
-// DEF_ANNOTATE(TypeNode)
-// DEF_TRAVERSE(TypeNode)
-// DEF_TRANSFORM(TypeNode)
-// DEF_TYPIFY(TypeNode)
 
 
 //----------------------------------------------------------------------------
@@ -566,14 +475,6 @@ std::shared_ptr<AstNode> IntNode::clone() const
 }
 
 
-// DEF_RENDER(IntNode)
-// DEF_CODEGEN(IntNode)
-// DEF_ANNOTATE(IntNode)
-// DEF_TRAVERSE(IntNode)
-// DEF_TRANSFORM(IntNode)
-// DEF_TYPIFY(IntNode)
-
-
 //----------------------------------------------------------------------------
 
 RealNode::RealNode(const SrcPos& srcpos, double value, bool isImaginary, const Type& type)
@@ -586,14 +487,6 @@ std::shared_ptr<AstNode> RealNode::clone() const
 {
   return cloneScope(this, makeRealNode(fSrcPos, fValue, fIsImaginary, fType.clone()));
 }
-
-
-// DEF_RENDER(RealNode)
-// DEF_CODEGEN(RealNode)
-// DEF_ANNOTATE(RealNode)
-// DEF_TRAVERSE(RealNode)
-// DEF_TRANSFORM(RealNode)
-// DEF_TYPIFY(RealNode)
 
 
 //----------------------------------------------------------------------------
@@ -609,14 +502,6 @@ std::shared_ptr<AstNode> RationalNode::clone() const
 {
   return cloneScope(this, makeRationalNode(fSrcPos, fValue, fIsImaginary, fType.clone()));
 }
-
-
-// DEF_RENDER(RationalNode)
-// DEF_CODEGEN(RationalNode)
-// DEF_ANNOTATE(RationalNode)
-// DEF_TRAVERSE(RationalNode)
-// DEF_TRANSFORM(RationalNode)
-// DEF_TYPIFY(RationalNode)
 
 
 //----------------------------------------------------------------------------
@@ -640,14 +525,6 @@ Char CharNode::value() const
 }
 
 
-// DEF_RENDER(CharNode)
-// DEF_CODEGEN(CharNode)
-// DEF_ANNOTATE(CharNode)
-// DEF_TRAVERSE(CharNode)
-// DEF_TRANSFORM(CharNode)
-// DEF_TYPIFY(CharNode)
-
-
 //----------------------------------------------------------------------------
 
 BoolNode::BoolNode(const SrcPos& srcpos, bool value)
@@ -669,57 +546,6 @@ bool BoolNode::value() const
 }
 
 
-// DEF_RENDER(BoolNode)
-// DEF_CODEGEN(BoolNode)
-// DEF_ANNOTATE(BoolNode)
-// DEF_TRAVERSE(BoolNode)
-// DEF_TRANSFORM(BoolNode)
-// DEF_TYPIFY(BoolNode)
-
-
-//----------------------------------------------------------------------------
-
-UnitConstNode::UnitConstNode(const SrcPos& srcpos, std::shared_ptr<AstNode> value,
-                             const TypeUnit& unit)
-    : AstNode(srcpos)
-    , fValue(std::move(value))
-    , fUnit(unit)
-{
-}
-
-
-std::shared_ptr<AstNode> UnitConstNode::clone() const
-{
-  return cloneScope(this, makeUnitConstNode(fSrcPos, nodeClone(fValue), fUnit));
-}
-
-
-std::shared_ptr<AstNode> UnitConstNode::value() const
-{
-  return fValue;
-}
-
-
-void UnitConstNode::setValue(std::shared_ptr<AstNode> node)
-{
-  fValue = std::move(node);
-}
-
-
-TypeUnit UnitConstNode::unit() const
-{
-  return fUnit;
-}
-
-
-// DEF_RENDER(UnitConstNode)
-// DEF_CODEGEN(UnitConstNode)
-// DEF_ANNOTATE(UnitConstNode)
-// DEF_TRAVERSE(UnitConstNode)
-// DEF_TRANSFORM(UnitConstNode)
-// DEF_TYPIFY(UnitConstNode)
-
-
 //----------------------------------------------------------------------------
 
 CompileUnitNode::CompileUnitNode(const SrcPos& srcpos)
@@ -734,14 +560,6 @@ std::shared_ptr<AstNode> CompileUnitNode::clone() const
   copyNodes(&node->fChildren, &fChildren);
   return cloneScope(this, std::move(node));
 }
-
-
-// DEF_RENDER(CompileUnitNode)
-// DEF_CODEGEN(CompileUnitNode)
-// DEF_ANNOTATE(CompileUnitNode)
-// DEF_TRAVERSE(CompileUnitNode)
-// DEF_TRANSFORM(CompileUnitNode)
-// DEF_TYPIFY(CompileUnitNode)
 
 
 //----------------------------------------------------------------------------
@@ -779,14 +597,6 @@ std::shared_ptr<AstNode> LetNode::clone() const
 }
 
 
-// DEF_RENDER(LetNode)
-// DEF_CODEGEN(LetNode)
-// DEF_ANNOTATE(LetNode)
-// DEF_TRAVERSE(LetNode)
-// DEF_TRANSFORM(LetNode)
-// DEF_TYPIFY(LetNode)
-
-
 //----------------------------------------------------------------------------
 
 DefNode::DefNode(std::shared_ptr<AstNode> node)
@@ -799,14 +609,6 @@ std::shared_ptr<AstNode> DefNode::clone() const
 {
   return cloneScope(this, makeDefNode(nodeClone(fDefined)));
 }
-
-
-// DEF_RENDER(DefNode)
-// DEF_CODEGEN(DefNode)
-// DEF_ANNOTATE(DefNode)
-// DEF_TRAVERSE(DefNode)
-// DEF_TRANSFORM(DefNode)
-// DEF_TYPIFY(DefNode)
 
 
 //----------------------------------------------------------------------------
@@ -901,25 +703,6 @@ VardefFlags VardefNode::flags() const
 }
 
 
-// DEF_RENDER(VardefNode)
-// DEF_TRAVERSE(VardefNode)
-// DEF_TRANSFORM(VardefNode)
-// DEF_TYPIFY(VardefNode)
-
-
-// llvm::Value* VardefNode::codegen(CodeGenerator* generator) const
-// {
-//   hr_invalid("this should never be called directly.  See codegen::DefNode");
-//   return nullptr;
-// }
-
-
-// void VardefNode::annotate(Annotator* annotator, std::shared_ptr<AstNode> nd)
-// {
-//   hr_invalid("this should never be called directly.  See Annotator::DefNode");
-// }
-
-
 //----------------------------------------------------------------------------
 
 ParamNode::ParamNode(const SrcPos& srcpos, const String& keyName,
@@ -970,14 +753,6 @@ const String& ParamNode::key() const
 }
 
 
-// DEF_RENDER(ParamNode)
-// DEF_CODEGEN(ParamNode)
-// DEF_ANNOTATE(ParamNode)
-// DEF_TRAVERSE(ParamNode)
-// DEF_TRANSFORM(ParamNode)
-// DEF_TYPIFY(ParamNode)
-
-
 //----------------------------------------------------------------------------
 
 SlotdefNode::SlotdefNode(const SrcPos& srcpos, const String& symbolName,
@@ -1002,14 +777,6 @@ unsigned int SlotdefNode::flags() const
 }
 
 
-// DEF_RENDER(SlotdefNode)
-// DEF_CODEGEN(SlotdefNode)
-// DEF_ANNOTATE(SlotdefNode)
-// DEF_TRAVERSE(SlotdefNode)
-// DEF_TRANSFORM(SlotdefNode)
-// DEF_TYPIFY(SlotdefNode)
-
-
 //----------------------------------------------------------------------------
 
 ArrayNode::ArrayNode(const SrcPos& srcpos)
@@ -1026,14 +793,6 @@ std::shared_ptr<AstNode> ArrayNode::clone() const
 }
 
 
-// DEF_RENDER(ArrayNode)
-// DEF_CODEGEN(ArrayNode)
-// DEF_ANNOTATE(ArrayNode)
-// DEF_TRAVERSE(ArrayNode)
-// DEF_TRANSFORM(ArrayNode)
-// DEF_TYPIFY(ArrayNode)
-
-
 //----------------------------------------------------------------------------
 
 VectorNode::VectorNode(const SrcPos& srcpos)
@@ -1048,14 +807,6 @@ std::shared_ptr<AstNode> VectorNode::clone() const
   copyNodes(&vect->fChildren, &fChildren);
   return cloneScope(this, std::move(vect));
 }
-
-
-// DEF_RENDER(VectorNode)
-// DEF_CODEGEN(VectorNode)
-// DEF_ANNOTATE(VectorNode)
-// DEF_TRAVERSE(VectorNode)
-// DEF_TRANSFORM(VectorNode)
-// DEF_TYPIFY(VectorNode)
 
 
 //----------------------------------------------------------------------------
@@ -1081,14 +832,6 @@ void DictNode::addPair(std::shared_ptr<AstNode> key, std::shared_ptr<AstNode> va
 
   appendNode(makeBinaryNode(key->srcpos(), key, kOpMapTo, std::move(value)));
 }
-
-
-// DEF_RENDER(DictNode)
-// DEF_CODEGEN(DictNode)
-// DEF_ANNOTATE(DictNode)
-// DEF_TRAVERSE(DictNode)
-// DEF_TRANSFORM(DictNode)
-// DEF_TYPIFY(DictNode)
 
 
 //----------------------------------------------------------------------------
@@ -1147,14 +890,6 @@ bool BinaryNode::isMapTo() const
 }
 
 
-// DEF_RENDER(BinaryNode)
-// DEF_CODEGEN(BinaryNode)
-// DEF_ANNOTATE(BinaryNode)
-// DEF_TRAVERSE(BinaryNode)
-// DEF_TRANSFORM(BinaryNode)
-// DEF_TYPIFY(BinaryNode)
-
-
 //----------------------------------------------------------------------------
 
 UnaryNode::UnaryNode(const SrcPos& srcpos, UnaryOperatorType op,
@@ -1188,14 +923,6 @@ std::shared_ptr<AstNode> UnaryNode::clone() const
 {
   return cloneScope(this, makeUnaryNode(fSrcPos, fOp, nodeClone(fBase)));
 }
-
-
-// DEF_RENDER(UnaryNode)
-// DEF_CODEGEN(UnaryNode)
-// DEF_ANNOTATE(UnaryNode)
-// DEF_TRAVERSE(UnaryNode)
-// DEF_TRANSFORM(UnaryNode)
-// DEF_TYPIFY(UnaryNode)
 
 
 //------------------------------------------------------------------------------
@@ -1253,14 +980,6 @@ void RangeNode::setBy(std::shared_ptr<AstNode> node)
 }
 
 
-// DEF_RENDER(RangeNode)
-// DEF_CODEGEN(RangeNode)
-// DEF_ANNOTATE(RangeNode)
-// DEF_TRAVERSE(RangeNode)
-// DEF_TRANSFORM(RangeNode)
-// DEF_TYPIFY(RangeNode)
-
-
 //--------------------------------------------------------------------------
 
 AssignNode::AssignNode(const SrcPos& srcpos, std::shared_ptr<AstNode> lvalue,
@@ -1301,14 +1020,6 @@ void AssignNode::setRvalue(std::shared_ptr<AstNode> val)
 {
   fRValue = std::move(val);
 }
-
-
-// DEF_RENDER(AssignNode)
-// DEF_CODEGEN(AssignNode)
-// DEF_ANNOTATE(AssignNode)
-// DEF_TRAVERSE(AssignNode)
-// DEF_TRANSFORM(AssignNode)
-// DEF_TYPIFY(AssignNode)
 
 
 //------------------------------------------------------------------------------
@@ -1364,14 +1075,6 @@ void IfNode::setAlternate(std::shared_ptr<AstNode> node)
 {
   fAlternate = std::move(node);
 }
-
-
-// DEF_RENDER(IfNode)
-// DEF_CODEGEN(IfNode)
-// DEF_ANNOTATE(IfNode)
-// DEF_TRAVERSE(IfNode)
-// DEF_TRANSFORM(IfNode)
-// DEF_TYPIFY(IfNode)
 
 
 //------------------------------------------------------------------------------
@@ -1486,14 +1189,6 @@ SelectNode::SelectMapping::SelectMapping(const SelectMapping& other)
 }
 
 
-// DEF_RENDER(SelectNode)
-// DEF_CODEGEN(SelectNode)
-// DEF_ANNOTATE(SelectNode)
-// DEF_TRAVERSE(SelectNode)
-// DEF_TRANSFORM(SelectNode)
-// DEF_TYPIFY(SelectNode)
-
-
 //------------------------------------------------------------------------------
 
 MatchNode::MatchNode(const SrcPos& srcpos, std::shared_ptr<AstNode> expr)
@@ -1559,14 +1254,6 @@ void MatchNode::setConsequentAt(size_t i, std::shared_ptr<AstNode> consq)
 }
 
 
-// DEF_RENDER(MatchNode)
-// DEF_CODEGEN(MatchNode)
-// DEF_ANNOTATE(MatchNode)
-// DEF_TRAVERSE(MatchNode)
-// DEF_TRANSFORM(MatchNode)
-// DEF_TYPIFY(MatchNode)
-
-
 MatchNode::MatchMapping::MatchMapping(const SrcPos& srcpos, const String& varName,
                                       const Type& matchType,
                                       std::shared_ptr<AstNode> consequent)
@@ -1601,14 +1288,6 @@ std::shared_ptr<AstNode> BlockNode::clone() const
   copyNodes(&block->fChildren, &fChildren);
   return cloneScope(this, std::move(block));
 }
-
-
-// DEF_RENDER(BlockNode)
-// DEF_CODEGEN(BlockNode)
-// DEF_ANNOTATE(BlockNode)
-// DEF_TRAVERSE(BlockNode)
-// DEF_TRANSFORM(BlockNode)
-// DEF_TYPIFY(BlockNode)
 
 
 //----------------------------------------------------------------------------
@@ -1682,14 +1361,6 @@ bool FunctionNode::hasSpecializedParams() const
 }
 
 
-// DEF_RENDER(FunctionNode)
-// DEF_CODEGEN(FunctionNode)
-// DEF_ANNOTATE(FunctionNode)
-// DEF_TRAVERSE(FunctionNode)
-// DEF_TRANSFORM(FunctionNode)
-// DEF_TYPIFY(FunctionNode)
-
-
 //----------------------------------------------------------------------------
 
 FuncDefNode::FuncDefNode(const SrcPos& srcpos, const String& sym, unsigned int flags,
@@ -1740,24 +1411,6 @@ bool FuncDefNode::isAppMain() const
 }
 
 
-// llvm::Value* FuncDefNode::codegen(CodeGenerator* generator) const
-// {
-//   hr_invalid("this should never be called directly.  See codegen::DefNode");
-//   return nullptr;
-// }
-
-
-// void FuncDefNode::annotate(Annotator* annotator, std::shared_ptr<AstNode> nd)
-// {
-//   hr_invalid("this should never be called directly.  See Annotator::DefNode");
-// }
-
-// DEF_RENDER(FuncDefNode)
-// DEF_TRAVERSE(FuncDefNode)
-// DEF_TRANSFORM(FuncDefNode)
-// DEF_TYPIFY(FuncDefNode)
-
-
 //----------------------------------------------------------------------------
 
 ApplyNode::ApplyNode(const SrcPos& srcpos, std::shared_ptr<AstNode> base)
@@ -1801,14 +1454,6 @@ String ApplyNode::simpleCallName() const
 }
 
 
-// DEF_RENDER(ApplyNode)
-// DEF_CODEGEN(ApplyNode)
-// DEF_ANNOTATE(ApplyNode)
-// DEF_TRAVERSE(ApplyNode)
-// DEF_TRANSFORM(ApplyNode)
-// DEF_TYPIFY(ApplyNode)
-
-
 //----------------------------------------------------------------------------
 
 KeyargNode::KeyargNode(const SrcPos& srcpos, const String& key,
@@ -1843,14 +1488,6 @@ void KeyargNode::setValue(std::shared_ptr<AstNode> node)
 {
   fValue = std::move(node);
 }
-
-
-// DEF_RENDER(KeyargNode)
-// DEF_CODEGEN(KeyargNode)
-// DEF_ANNOTATE(KeyargNode)
-// DEF_TRAVERSE(KeyargNode)
-// DEF_TRANSFORM(KeyargNode)
-// DEF_TYPIFY(KeyargNode)
 
 
 //----------------------------------------------------------------------------
@@ -1892,14 +1529,6 @@ void WhileNode::setTest(std::shared_ptr<AstNode> node)
 {
   fTest = std::move(node);
 }
-
-
-// DEF_RENDER(WhileNode)
-// DEF_CODEGEN(WhileNode)
-// DEF_ANNOTATE(WhileNode)
-// DEF_TRAVERSE(WhileNode)
-// DEF_TRANSFORM(WhileNode)
-// DEF_TYPIFY(WhileNode)
 
 
 //----------------------------------------------------------------------------
@@ -1951,13 +1580,6 @@ NodeList& TypeDefNode::slots()
   return fSlots;
 }
 
-// DEF_RENDER(TypeDefNode)
-// DEF_CODEGEN(TypeDefNode)
-// DEF_ANNOTATE(TypeDefNode)
-// DEF_TRAVERSE(TypeDefNode)
-// DEF_TRANSFORM(TypeDefNode)
-// DEF_TYPIFY(TypeDefNode)
-
 
 //----------------------------------------------------------------------------
 
@@ -1966,6 +1588,7 @@ CastNode::CastNode(const SrcPos& srcpos, std::shared_ptr<AstNode> base, const Ty
     , fBase(std::move(base))
 {
 }
+
 
 std::shared_ptr<AstNode> CastNode::base() const
 {
@@ -1983,14 +1606,6 @@ std::shared_ptr<AstNode> CastNode::clone() const
 {
   return cloneScope(this, makeCastNode(fSrcPos, nodeClone(fBase), fType.clone()));
 }
-
-
-// DEF_RENDER(CastNode)
-// DEF_CODEGEN(CastNode)
-// DEF_ANNOTATE(CastNode)
-// DEF_TRAVERSE(CastNode)
-// DEF_TRANSFORM(CastNode)
-// DEF_TYPIFY(CastNode)
 
 
 //--------------------------------------------------------------------------------
@@ -2026,14 +1641,6 @@ String SlotRefNode::slotName() const
 {
   return fSlotName;
 }
-
-
-// DEF_RENDER(SlotRefNode)
-// DEF_CODEGEN(SlotRefNode)
-// DEF_ANNOTATE(SlotRefNode)
-// DEF_TRAVERSE(SlotRefNode)
-// DEF_TRANSFORM(SlotRefNode)
-// DEF_TYPIFY(SlotRefNode)
 
 
 //--------------------------------------------------------------------------------

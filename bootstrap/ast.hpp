@@ -30,12 +30,6 @@ class Value;
 
 namespace herschel {
 class AstNode;
-// class CodeGenerator;
-// class XmlRenderer;
-// class Annotator;
-// class Transformator;
-// class Traversator;
-// class Typifier;
 
 
 using NodeList = std::vector<std::shared_ptr<AstNode>>;
@@ -114,29 +108,10 @@ public:
   //! type is required.
   void setIsSingleTypeRequired(bool value);
 
+
+
   //! Returns a (deep) copy of this node.
   virtual std::shared_ptr<AstNode> clone() const = 0;
-
-  // //! Render a (debug) representation of this node using \p renderer.  For
-  // //! details see \c XmlRenderer.
-  // virtual void render(XmlRenderer* renderer) const = 0;
-
-  // //! Generate (binary) code for this node using \p generator.  For details
-  // //! see \p CodeGenerator.
-  // virtual llvm::Value* codegen(CodeGenerator* generator) const;
-
-  // //! Annotate this node using \p annotator.  For details see \c Annotator.
-  // virtual void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) = 0;
-  // //! Apply the \c Traversator pass to this node.  For details see \c
-  // //! Traversator.
-  // virtual void traverse(Traversator* traversator) = 0;
-
-  // //! Transform this node using \p transformator.
-  // virtual std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                            std::shared_ptr<AstNode> nd) = 0;
-
-  // //! Apply the \c Typifier pass to this node.
-  // virtual void typify(Typifier& typifier) = 0;
 
   //! Dump an xml output to stderr.
   virtual void dump() const;
@@ -239,13 +214,6 @@ public:
   UndefNode();
 
   std::shared_ptr<AstNode> clone() const override;
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 };
 
 inline std::shared_ptr<UndefNode> makeUndefNode()
@@ -268,13 +236,6 @@ public:
   StringNode(const SrcPos& srcpos, const String& value);
 
   std::shared_ptr<AstNode> clone() const override;
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
   //! Returns the (unicode) string value.
   const String& value() const;
@@ -296,13 +257,6 @@ public:
   KeywordNode(const SrcPos& srcpos, const String& value);
 
   std::shared_ptr<AstNode> clone() const override;
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
   //! Returns the keyword value.
   const String& value() const;
@@ -363,14 +317,6 @@ public:
   //! owning frame (i.e. is a variable which has to be closed in a closure).
   bool isShared() const;
 
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* an, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
-
 protected:
   String fValue;
   TypeVector fGenerics;
@@ -393,13 +339,6 @@ public:
   std::shared_ptr<AstNode> typeNode() const;
 
   std::shared_ptr<AstNode> clone() const override;
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
 private:
   std::shared_ptr<AstNode> fTypeNode;
@@ -421,13 +360,6 @@ public:
   TypeNode(const SrcPos& srcpos, const Type& type);
 
   std::shared_ptr<AstNode> clone() const override;
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 };
 
 inline std::shared_ptr<TypeNode> makeTypeNode(const SrcPos& srcpos, const Type& type)
@@ -478,14 +410,6 @@ class IntNode : public NumberNode<int64_t> {
 public:
   IntNode(const SrcPos& srcpos, int64_t value, bool isImaginary, const Type& type);
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 };
 
 inline std::shared_ptr<IntNode> makeIntNode(const SrcPos& srcpos, int64_t value,
@@ -499,14 +423,6 @@ class RealNode : public NumberNode<double> {
 public:
   RealNode(const SrcPos& srcpos, double value, bool isImaginary, const Type& type);
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 };
 
 inline std::shared_ptr<RealNode> makeRealNode(const SrcPos& srcpos, double value,
@@ -521,14 +437,6 @@ public:
   RationalNode(const SrcPos& srcpos, const Rational& value, bool isImaginary,
                const Type& type);
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 };
 
 inline std::shared_ptr<RationalNode> makeRationalNode(const SrcPos& srcpos,
@@ -543,14 +451,6 @@ class CharNode : public AstNode {
 public:
   CharNode(const SrcPos& srcpos, Char value);
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
   Char value() const;
 
@@ -568,13 +468,6 @@ class BoolNode : public AstNode {
 public:
   BoolNode(const SrcPos& srcpos, bool value);
   std::shared_ptr<AstNode> clone() const override;
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
   bool value() const;
 
@@ -588,48 +481,11 @@ inline std::shared_ptr<BoolNode> makeBoolNode(const SrcPos& srcpos, bool value)
 }
 
 
-class UnitConstNode : public AstNode {
-public:
-  UnitConstNode(const SrcPos& srcpos, std::shared_ptr<AstNode> value,
-                const TypeUnit& unit);
-  std::shared_ptr<AstNode> clone() const override;
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
-
-  std::shared_ptr<AstNode> value() const;
-  void setValue(std::shared_ptr<AstNode> node);
-  TypeUnit unit() const;
-
-private:
-  std::shared_ptr<AstNode> fValue;
-  TypeUnit fUnit;
-};
-
-inline std::shared_ptr<UnitConstNode> makeUnitConstNode(const SrcPos& srcpos,
-                                                        std::shared_ptr<AstNode> value,
-                                                        const TypeUnit& unit)
-{
-  return std::make_shared<UnitConstNode>(srcpos, std::move(value), unit);
-}
-
-
 class CompileUnitNode : public ListNode {
 public:
   CompileUnitNode(const SrcPos& srcpos);
 
   std::shared_ptr<AstNode> clone() const override;
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 };
 
 inline std::shared_ptr<CompileUnitNode> makeCompileUnitNode(const SrcPos& srcpos)
@@ -655,13 +511,6 @@ public:
   LetNode(std::shared_ptr<AstNode> node);
 
   std::shared_ptr<AstNode> clone() const override;
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 };
 
 inline std::shared_ptr<LetNode> makeLetNode(std::shared_ptr<AstNode> node)
@@ -675,13 +524,6 @@ public:
   DefNode(std::shared_ptr<AstNode> node);
 
   std::shared_ptr<AstNode> clone() const override;
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 };
 
 inline std::shared_ptr<DefNode> makeDefNode(std::shared_ptr<AstNode> node)
@@ -732,14 +574,6 @@ public:
 
   VardefFlags flags() const;
 
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
-
 private:
   bool fIsLocal;
   VardefFlags fFlags;
@@ -781,14 +615,6 @@ public:
   //! Indicates whether this is a specialized parameter ("@").
   bool isSpecArg() const;
 
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
-
 private:
   String fKey;
   ParamFlags fFlags;
@@ -809,14 +635,6 @@ public:
               const Type& type, std::shared_ptr<AstNode> initExpr);
 
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
   unsigned int flags() const;
 
@@ -839,14 +657,6 @@ public:
   ArrayNode(const SrcPos& srcpos);
 
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 };
 
 inline std::shared_ptr<ArrayNode> makeArrayNode(const SrcPos& srcpos)
@@ -860,14 +670,6 @@ public:
   VectorNode(const SrcPos& srcpos);
 
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 };
 
 inline std::shared_ptr<VectorNode> makeVectorNode(const SrcPos& srcpos)
@@ -883,14 +685,6 @@ public:
   void addPair(std::shared_ptr<AstNode> key, std::shared_ptr<AstNode> value);
 
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 };
 
 inline std::shared_ptr<DictNode> makeDictNode(const SrcPos& srcpos)
@@ -914,14 +708,6 @@ public:
   bool isMapTo() const;
 
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
 private:
   std::shared_ptr<AstNode> fLeft;
@@ -956,14 +742,6 @@ public:
 
   std::shared_ptr<AstNode> clone() const override;
 
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
-
 private:
   std::shared_ptr<AstNode> fBase;
   UnaryOperatorType fOp;
@@ -989,14 +767,6 @@ public:
   void setBy(std::shared_ptr<AstNode> node);
 
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
 private:
   std::shared_ptr<AstNode> fFrom;
@@ -1026,14 +796,6 @@ public:
 
   std::shared_ptr<AstNode> clone() const override;
 
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
-
 private:
   std::shared_ptr<AstNode> fLValue;
   std::shared_ptr<AstNode> fRValue;
@@ -1053,14 +815,6 @@ public:
          std::shared_ptr<AstNode> consequent, std::shared_ptr<AstNode> alternate);
 
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
   std::shared_ptr<AstNode> test() const;
   void setTest(std::shared_ptr<AstNode> node);
@@ -1103,14 +857,6 @@ public:
              std::shared_ptr<AstNode> comparator);
 
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
   void addMapping(const NodeList& mappings, std::shared_ptr<AstNode> consequent);
   void addMapping(std::shared_ptr<AstNode> mapping, std::shared_ptr<AstNode> consequent);
@@ -1161,14 +907,6 @@ public:
 
   std::shared_ptr<AstNode> clone() const override;
 
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
-
   void addMapping(const SrcPos& srcpos, const String& varName, const Type& matchType,
                   std::shared_ptr<AstNode> consequent);
 
@@ -1196,14 +934,6 @@ class BlockNode : public ListNode {
 public:
   BlockNode(const SrcPos& srcpos);
   std::shared_ptr<AstNode> clone() const override;
-
-//   void render(XmlRenderer* renderer) const override;
-//   llvm::Value* codegen(CodeGenerator* generator) const override;
-//   void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-//   void traverse(Traversator* traversator) override;
-//   std::shared_ptr<AstNode> transform(Transformator* annotator,
-//                                      std::shared_ptr<AstNode> nd) override;
-//   void typify(Typifier& typifier) override;
 };
 
 inline std::shared_ptr<BlockNode> makeBlockNode(const SrcPos& srcpos)
@@ -1218,14 +948,6 @@ public:
                std::shared_ptr<AstNode> body);
 
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
   const Type& retType() const;
   void setRetType(const Type& type);
@@ -1271,14 +993,6 @@ public:
   bool isMethod() const;
   bool isAbstract() const;
 
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
-
   bool isAppMain() const;
 
 private:
@@ -1310,20 +1024,12 @@ public:
 
   std::shared_ptr<AstNode> clone() const override;
 
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
-
 private:
   std::shared_ptr<AstNode> fBase;
 };
 
-inline std::shared_ptr<ApplyNode> makeApplyNode(const SrcPos& srcpos,
-                                                std::shared_ptr<AstNode> base)
+inline std::shared_ptr<ApplyNode>
+makeApplyNode(const SrcPos& srcpos, std::shared_ptr<AstNode> base)
 {
   return std::make_shared<ApplyNode>(srcpos, std::move(base));
 }
@@ -1334,14 +1040,6 @@ public:
   KeyargNode(const SrcPos& srcpos, const String& key, std::shared_ptr<AstNode> value);
 
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
   const String& key() const;
   std::shared_ptr<AstNode> value() const;
@@ -1366,14 +1064,6 @@ public:
 
   std::shared_ptr<AstNode> clone() const override;
 
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
-
   std::shared_ptr<AstNode> body() const;
   void setBody(std::shared_ptr<AstNode> node);
   std::shared_ptr<AstNode> test() const;
@@ -1394,18 +1084,10 @@ inline std::shared_ptr<WhileNode> makeWhileNode(const SrcPos& srcpos,
 
 class TypeDefNode : public AstNode {
 public:
-  TypeDefNode(const SrcPos& srcpos, const String& typeName, bool isRecord, const Type& isa,
-              const NodeList& slots);
+  TypeDefNode(const SrcPos& srcpos, const String& typeName, bool isRecord,
+              const Type& isa, const NodeList& slots);
 
   std::shared_ptr<AstNode> clone() const override;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
   const String& name() const;
   const Type& defType() const;
@@ -1422,9 +1104,10 @@ private:
   Type fIsa;
 };
 
-inline std::shared_ptr<TypeDefNode>
-makeTypeDefNode(const SrcPos& srcpos, const String& typeName, bool isRecord,
-                const Type& isa, const NodeList& slots)
+inline std::shared_ptr<TypeDefNode> makeTypeDefNode(const SrcPos& srcpos,
+                                                    const String& typeName, bool isRecord,
+                                                    const Type& isa,
+                                                    const NodeList& slots)
 {
   return std::make_shared<TypeDefNode>(srcpos, typeName, isRecord, isa, slots);
 }
@@ -1438,14 +1121,6 @@ public:
 
   std::shared_ptr<AstNode> base() const;
   void setBase(std::shared_ptr<AstNode> node);
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
 private:
   std::shared_ptr<AstNode> fBase;
@@ -1468,14 +1143,6 @@ public:
   std::shared_ptr<AstNode> base() const;
   void setBase(std::shared_ptr<AstNode> base);
   String slotName() const;
-
-  // void render(XmlRenderer* renderer) const override;
-  // llvm::Value* codegen(CodeGenerator* generator) const override;
-  // void annotate(Annotator* annotator, std::shared_ptr<AstNode> nd) override;
-  // void traverse(Traversator* traversator) override;
-  // std::shared_ptr<AstNode> transform(Transformator* annotator,
-  //                                    std::shared_ptr<AstNode> nd) override;
-  // void typify(Typifier& typifier) override;
 
 private:
   std::shared_ptr<AstNode> fBase;
