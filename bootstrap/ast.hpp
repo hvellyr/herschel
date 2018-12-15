@@ -108,13 +108,11 @@ public:
   //! type is required.
   void setIsSingleTypeRequired(bool value);
 
-
+  bool isRemoveable() const { return fIsRemoveable; }
+  void setIsRemoveable(bool value) { fIsRemoveable = value; }
 
   //! Returns a (deep) copy of this node.
   virtual std::shared_ptr<AstNode> clone() const = 0;
-
-  //! Dump an xml output to stderr.
-  virtual void dump() const;
 
 protected:
   SrcPos fSrcPos;
@@ -124,6 +122,7 @@ protected:
   TypeConvKind fTypeConvKind;
   bool fIsInTailPos;
   bool fIsSingleTypeRequired;
+  bool fIsRemoveable = false;
 };
 
 
@@ -543,7 +542,6 @@ public:
               std::shared_ptr<AstNode> initExpr);
 
   std::shared_ptr<AstNode> initExpr() const;
-  void setInitExpr(std::shared_ptr<AstNode> val);
   const String& name() const override;
 
   void setAllocType(BindingAllocType type);

@@ -535,8 +535,7 @@ bool Scope::checkForFunctionRedefinition(const SrcPos& srcpos, ScopeDomain domai
 {
   SrcPos firstSrcpos;
   if (hasFunctionNameLocal(domain, sym, &firstSrcpos, !K(doAutoMatch))) {
-    errorf(srcpos, E_Redefinition, "Redefinition of '%s'.",
-           (zstring)StrHelper(sym));
+    errorf(srcpos, E_Redefinition, "Redefinition of '%s'.", (zstring)StrHelper(sym));
     errorf(firstSrcpos, E_Redefinition, "'%s' previously defined here.",
            (zstring)StrHelper(sym));
     return true;
@@ -619,9 +618,16 @@ const AstNode* Scope::lookupVar(const String& name, bool showAmbiguousSymDef) co
 const AstNode* Scope::lookupVarOrFunc(const String& name, bool showAmbiguousSymDef) const
 {
   auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef);
-  if (lv.fItem && (lv.fItem->kind() == kScopeItem_variable ||
-                   lv.fItem->kind() == kScopeItem_function))
-    return dynamic_cast<const NodeScopeItem*>(lv.fItem)->node();
+  if (lv.fItem) {
+    if (lv.fItem->kind() == kScopeItem_variable)
+      return dynamic_cast<const NodeScopeItem*>(lv.fItem)->node();
+    else if (lv.fItem->kind() == kScopeItem_function) {
+      const auto& defs = dynamic_cast<const FunctionScopeItem*>(lv.fItem)->nodes();
+
+      // TODO: handle type overloading
+      return defs.front().get();
+    }
+  }
   return nullptr;
 }
 

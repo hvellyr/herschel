@@ -81,6 +81,7 @@ LIBHRC_LIBS = $(LIBS) $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
 
 LIBHRC_SOURCES =         \
 	abstrpass.cpp       \
+	annotate.cpp        \
 	ast.cpp             \
 	compilepass.cpp     \
 	compiler.cpp        \
@@ -107,6 +108,7 @@ LIBHRC_SOURCES =         \
 
 LIBHRC_HEADERS =         \
 	abstrpass.hpp       \
+	annotate.hpp        \
 	ast.hpp             \
 	compilepass.hpp     \
 	compiler.hpp        \
@@ -128,6 +130,7 @@ LIBHRC_HEADERS =         \
 	tokeneval.hpp       \
 	tokenizer.hpp       \
 	tokenport.hpp       \
+	traverse.hpp        \
 	type.hpp            \
 	typectx.hpp         \
 	typeenum.hpp        \
@@ -142,7 +145,6 @@ LIBHRC_HEADERS =         \
 
 LIBHRC_SOURCES2 =        \
 	$(LIBHRC_SOURCES)   \
-	annotate.cpp        \
 	apt.cpp             \
 	codegen.cpp         \
 	codegen-apply.cpp   \
@@ -157,12 +159,10 @@ LIBHRC_SOURCES2 =        \
 	codegen-while.cpp   \
 	externc.cpp         \
 	transform.cpp       \
-	traverse.cpp        \
 	typify.cpp
 
 LIBHRC_HEADERS2 =         \
 	$(LIBHRC_HEADERS)   \
-	annotate.hpp        \
 	apt.hpp             \
 	codegen.hpp         \
 	codegen-apply.hpp   \
@@ -178,7 +178,6 @@ LIBHRC_HEADERS2 =         \
 	codegen-while.hpp   \
 	externc.hpp         \
 	transform.hpp       \
-	traverse.hpp        \
 	typify.hpp          \
 	utils.hpp
 

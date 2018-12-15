@@ -12,7 +12,7 @@
 
 #include "compiler.hpp"
 
-//#include "annotate.hpp"
+#include "annotate.hpp"
 #include "ast.hpp"
 //#include "codegen.hpp"
 #include "errcodes.hpp"
@@ -30,6 +30,7 @@
 //#include "transform.hpp"
 //#include "typify.hpp"
 #include "utils.hpp"
+#include "xmlrenderer.hpp"
 
 
 namespace herschel {
@@ -157,7 +158,6 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
       NodifyPass nodifyPass{ 2, *this, fState.fScope };
       ast = nodifyPass.apply(parsedExprs, doTrace);
 
-#if 0
       // if the compileunit contains open-ended module declarations
       // (i.e. without {}) get the last valid scope back and make it the
       // current one.  It contains the complete upstream chain of scopes.  (We
@@ -165,12 +165,15 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
       // the symbols may not be exportable at all).
       fState.fScope = nodifyPass.currentScope();
 
+#if 0
       TransformPass nodePass1{ 3 };
       ast = nodePass1.apply(ast, doTrace);
+#endif
 
       AnnotatePass nodePass2{ 4, fState.fScope, *this };
       ast = nodePass2.apply(ast, doTrace);
 
+#if 0
       TypifyPass nodePass3{ 5 };
       ast = nodePass3.apply(ast, doTrace);
 #endif
@@ -386,6 +389,9 @@ void compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
           std::make_shared<CharPort>(std::make_shared<FilePort>(file, "rb")), file);
 
       if (doCompile) {
+        XmlRenderer out{ std::make_shared<FilePort>(stderr) };
+        out.render(ast);
+
         hr_assert(ast);
         auto unit = dynamic_cast<CompileUnitNode*>(ast.get());
         hr_assert(unit);

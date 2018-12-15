@@ -17,48 +17,12 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 
 namespace herschel {
 
-class ApplyNode;
 class AstNode;
-class ArrayNode;
-class ArrayTypeNode;
-class AssignNode;
-class BinaryNode;
-class BlockNode;
-class BoolNode;
-class CastNode;
-class CharNode;
-class CompileUnitNode;
-class DefNode;
-class DictNode;
-class FuncDefNode;
-class FunctionNode;
-class IfNode;
-class IntNode;
-class KeyargNode;
-class KeywordNode;
-class LetNode;
-class MatchNode;
-class UnaryNode;
-class ParamNode;
-class RangeNode;
-class RationalNode;
-class RealNode;
-class SelectNode;
-class SlotdefNode;
-class SlotRefNode;
-class StringNode;
-class SymbolNode;
-class TypeDefNode;
-class UndefNode;
-class UnitConstNode;
-class VardefNode;
-class VectorNode;
-class WhileNode;
-
 
 using StringList = std::list<String>;
 using StringStringMap = std::map<String, String>;
@@ -69,7 +33,7 @@ class XmlRenderer {
 public:
   XmlRenderer(std::shared_ptr<Port<Octet>> port, bool showNodeType = false);
 
-  void render(const AstNode& node);
+  void render(std::shared_ptr<AstNode> node);
 
   void displayOpenTag(zstring tagName, bool newline = true);
   void displayOpenTagAttrs(zstring tagName, zstring attrs, bool newline = true);
@@ -83,7 +47,7 @@ public:
   void displayStringStringMap(zstring outerTagName, zstring tagName,
                               zstring firstPairTagName, zstring secPairTagName,
                               const StringStringMap& strMap);
-  void displayNode(zstring tagName, AstNode* node);
+  void displayNode(zstring tagName, std::shared_ptr<AstNode> node);
   void displayNodeList(zstring tagName, const NodeList& nodelist);
   void displayType(zstring tagName, const Type& type);
   void displayTypeVector(zstring tagName, const TypeVector& types);
@@ -100,7 +64,7 @@ namespace xml {
 
   String displayTypeConv(const AstNode& node);
 
-  void dump(const AstNode& node);
+  void dump(std::shared_ptr<AstNode> node);
 }  // namespace xml
 
 }  // namespace herschel

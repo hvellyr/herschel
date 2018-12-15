@@ -171,13 +171,6 @@ void AstNode::setIsSingleTypeRequired(bool value)
 }
 
 
-void AstNode::dump() const
-{
-  XmlRenderer out{ std::make_shared<FilePort>(stderr) };
-  out.render(*this);
-}
-
-
 //----------------------------------------------------------------------------
 
 LoopAnnotatable::LoopAnnotatable()
@@ -629,12 +622,6 @@ std::shared_ptr<AstNode> BindingNode::initExpr() const
 }
 
 
-void BindingNode::setInitExpr(std::shared_ptr<AstNode> val)
-{
-  fInitExpr = std::move(val);
-}
-
-
 void BindingNode::setAllocType(BindingAllocType allocType)
 {
   fAllocType = allocType;
@@ -656,11 +643,13 @@ const String& BindingNode::name() const
 //----------------------------------------------------------------------------
 
 VardefNode::VardefNode(const SrcPos& srcpos, const String& symbolName, VardefFlags flags,
-                       bool isLocal, const Type& type, std::shared_ptr<AstNode> initExpr)
-    : BindingNode(srcpos, symbolName, type, std::move(initExpr))
+                       bool isLocal, const Type& type, std::shared_ptr<AstNode> init)
+    : BindingNode(srcpos, symbolName, type, std::move(init))
     , fIsLocal(isLocal)
     , fFlags(flags)
 {
+  if (initExpr())
+    initExpr()->setIsSingleTypeRequired(true);
 }
 
 
@@ -707,12 +696,15 @@ VardefFlags VardefNode::flags() const
 
 ParamNode::ParamNode(const SrcPos& srcpos, const String& keyName,
                      const String& symbolName, ParamFlags flags, const Type& type,
-                     std::shared_ptr<AstNode> initExpr)
-    : BindingNode(srcpos, symbolName, type, std::move(initExpr))
+                     std::shared_ptr<AstNode> init)
+    : BindingNode(srcpos, symbolName, type, std::move(init))
     , fKey(keyName)
     , fFlags(flags)
 {
   hr_assert(implies(fFlags == kNamedArg, !fKey.isEmpty()));
+
+  if (initExpr())
+    initExpr()->setIsSingleTypeRequired(true);
 }
 
 
@@ -988,6 +980,8 @@ AssignNode::AssignNode(const SrcPos& srcpos, std::shared_ptr<AstNode> lvalue,
     , fLValue(std::move(lvalue))
     , fRValue(std::move(rvalue))
 {
+  if (fRValue)
+    fRValue->setIsSingleTypeRequired(true);
 }
 
 
@@ -1413,10 +1407,12 @@ bool FuncDefNode::isAppMain() const
 
 //----------------------------------------------------------------------------
 
-ApplyNode::ApplyNode(const SrcPos& srcpos, std::shared_ptr<AstNode> base)
+ApplyNode::ApplyNode(const SrcPos& srcpos, std::shared_ptr<AstNode> baseNd)
     : ListNode(srcpos)
-    , fBase(std::move(base))
+    , fBase(std::move(baseNd))
 {
+  if (base())
+    base()->setIsSingleTypeRequired(true);
 }
 
 
@@ -1463,6 +1459,8 @@ KeyargNode::KeyargNode(const SrcPos& srcpos, const String& key,
     , fValue(std::move(value))
 {
   hr_assert(fValue);
+  if (fValue)
+    fValue->setIsSingleTypeRequired(true);
 }
 
 
@@ -1498,6 +1496,8 @@ WhileNode::WhileNode(const SrcPos& srcpos, std::shared_ptr<AstNode> test,
     , fTest(std::move(test))
     , fBody(std::move(body))
 {
+  if (fTest)
+    fTest->setIsSingleTypeRequired(true);
 }
 
 
@@ -1587,6 +1587,8 @@ CastNode::CastNode(const SrcPos& srcpos, std::shared_ptr<AstNode> base, const Ty
     : AstNode(srcpos, type)
     , fBase(std::move(base))
 {
+  if (fBase)
+    fBase->setIsSingleTypeRequired(true);
 }
 
 

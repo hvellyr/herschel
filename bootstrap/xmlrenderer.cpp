@@ -14,6 +14,7 @@
 #include "port.hpp"
 #include "properties.hpp"
 #include "strbuf.hpp"
+#include "traverse.hpp"
 #include "xmlout.hpp"
 #include "xmlrenderer.hpp"
 
@@ -30,7 +31,7 @@ struct NodeRenderer {
 
 
 template <>
-struct NodeRenderer<const ApplyNode&> {
+struct NodeRenderer<std::shared_ptr<ApplyNode>> {
   static void render(XmlRenderer* renderer, const ApplyNode& node)
   {
     StringBuffer attrs;
@@ -41,8 +42,11 @@ struct NodeRenderer<const ApplyNode&> {
     if (Properties::isTypeConvDump())
       attrs << xml::displayTypeConv(node);
 
+    if (node.isRemoveable())
+      attrs << " removeable='true'";
+
     renderer->displayOpenTagAttrs("apply", StrHelper(attrs.toString()));
-    renderer->displayNode(nullptr, node.base().get());
+    renderer->displayNode(nullptr, node.base());
     renderer->displayOpenTag("args");
     renderer->displayNodeList(nullptr, node.children());
     renderer->displayCloseTag("args");
@@ -56,7 +60,7 @@ struct NodeRenderer<const ApplyNode&> {
 
 
 template <>
-struct NodeRenderer<const ArrayNode&> {
+struct NodeRenderer<std::shared_ptr<ArrayNode>> {
   static void render(XmlRenderer* renderer, const ArrayNode& node)
   {
     StringBuffer attrs;
@@ -75,7 +79,7 @@ struct NodeRenderer<const ArrayNode&> {
 
 
 template <>
-struct NodeRenderer<const ArrayTypeNode&> {
+struct NodeRenderer<std::shared_ptr<ArrayTypeNode>> {
   static void render(XmlRenderer* renderer, const ArrayTypeNode& node)
   {
     auto rootType = node.typeNode();
@@ -111,7 +115,7 @@ struct NodeRenderer<const ArrayTypeNode&> {
 
 
 template <>
-struct NodeRenderer<const AssignNode&> {
+struct NodeRenderer<std::shared_ptr<AssignNode>> {
   static void render(XmlRenderer* renderer, const AssignNode& node)
   {
     StringBuffer attrs;
@@ -122,15 +126,15 @@ struct NodeRenderer<const AssignNode&> {
     }
 
     renderer->displayOpenTagAttrs("assign", StrHelper(attrs.toString()));
-    renderer->displayNode(nullptr, node.lvalue().get());
-    renderer->displayNode(nullptr, node.rvalue().get());
+    renderer->displayNode(nullptr, node.lvalue());
+    renderer->displayNode(nullptr, node.rvalue());
     renderer->displayCloseTag("assign");
   }
 };
 
 
 template <>
-struct NodeRenderer<const BinaryNode&> {
+struct NodeRenderer<std::shared_ptr<BinaryNode>> {
   static void render(XmlRenderer* renderer, const BinaryNode& node)
   {
     StringBuffer attrs;
@@ -143,15 +147,15 @@ struct NodeRenderer<const BinaryNode&> {
     }
 
     renderer->displayOpenTagAttrs("binary", StrHelper(attrs.toString()));
-    renderer->displayNode(nullptr, node.left().get());
-    renderer->displayNode(nullptr, node.right().get());
+    renderer->displayNode(nullptr, node.left());
+    renderer->displayNode(nullptr, node.right());
     renderer->displayCloseTag("binary");
   }
 };
 
 
 template <>
-struct NodeRenderer<const BlockNode&> {
+struct NodeRenderer<std::shared_ptr<BlockNode>> {
   static void render(XmlRenderer* renderer, const BlockNode& node)
   {
     // StringBuffer attrs;
@@ -168,7 +172,7 @@ struct NodeRenderer<const BlockNode&> {
 
 
 template <>
-struct NodeRenderer<const BoolNode&> {
+struct NodeRenderer<std::shared_ptr<BoolNode>> {
   static void render(XmlRenderer* renderer, const BoolNode& node)
   {
     if (renderer->fShowNodeType) {
@@ -188,11 +192,11 @@ struct NodeRenderer<const BoolNode&> {
 
 
 template <>
-struct NodeRenderer<const CastNode&> {
+struct NodeRenderer<std::shared_ptr<CastNode>> {
   static void render(XmlRenderer* renderer, const CastNode& node)
   {
     renderer->displayOpenTag("cast");
-    renderer->displayNode("base", node.base().get());
+    renderer->displayNode("base", node.base());
     renderer->displayType("as", node.type());
     renderer->displayCloseTag("cast");
   }
@@ -200,7 +204,7 @@ struct NodeRenderer<const CastNode&> {
 
 
 template <>
-struct NodeRenderer<const CharNode&> {
+struct NodeRenderer<std::shared_ptr<CharNode>> {
   static void render(XmlRenderer* renderer, const CharNode& node)
   {
     renderer->displayTag("char", fromInt(int(node.value())));
@@ -209,7 +213,7 @@ struct NodeRenderer<const CharNode&> {
 
 
 template <>
-struct NodeRenderer<const CompileUnitNode&> {
+struct NodeRenderer<std::shared_ptr<CompileUnitNode>> {
   static void render(XmlRenderer* renderer, const CompileUnitNode& node)
   {
     zstring attrs = "xmlns:ty='http://herschel.eyestep.org/types'";
@@ -234,18 +238,18 @@ struct NodeRenderer<const CompileUnitNode&> {
 
 
 template <>
-struct NodeRenderer<const DefNode&> {
+struct NodeRenderer<std::shared_ptr<DefNode>> {
   static void render(XmlRenderer* renderer, const DefNode& node)
   {
     renderer->displayOpenTag("def");
-    renderer->displayNode(nullptr, node.defNode().get());
+    renderer->displayNode(nullptr, node.defNode());
     renderer->displayCloseTag("def");
   }
 };
 
 
 template <>
-struct NodeRenderer<const DictNode&> {
+struct NodeRenderer<std::shared_ptr<DictNode>> {
   static void render(XmlRenderer* renderer, const DictNode& node)
   {
     StringBuffer attrs;
@@ -264,7 +268,7 @@ struct NodeRenderer<const DictNode&> {
 
 
 template <>
-struct NodeRenderer<const FuncDefNode&> {
+struct NodeRenderer<std::shared_ptr<FuncDefNode>> {
   static void render(XmlRenderer* renderer, const FuncDefNode& node)
   {
     zstring tag = nullptr;
@@ -287,27 +291,27 @@ struct NodeRenderer<const FuncDefNode&> {
     renderer->displayOpenTagAttrs(tag, StrHelper(attrs.toString()));
     renderer->displayNodeList("params", node.params());
     renderer->displayType("rettype", node.retType());
-    renderer->displayNode("body", node.body().get());
+    renderer->displayNode("body", node.body());
     renderer->displayCloseTag(tag);
   }
 };
 
 
 template <>
-struct NodeRenderer<const FunctionNode&> {
+struct NodeRenderer<std::shared_ptr<FunctionNode>> {
   static void render(XmlRenderer* renderer, const FunctionNode& node)
   {
     renderer->displayOpenTag("function");
     renderer->displayNodeList("params", node.params());
     renderer->displayType("rettype", node.retType());
-    renderer->displayNode("body", node.body().get());
+    renderer->displayNode("body", node.body());
     renderer->displayCloseTag("function");
   }
 };
 
 
 template <>
-struct NodeRenderer<const IfNode&> {
+struct NodeRenderer<std::shared_ptr<IfNode>> {
   static void render(XmlRenderer* renderer, const IfNode& node)
   {
     StringBuffer attrs;
@@ -318,16 +322,16 @@ struct NodeRenderer<const IfNode&> {
     }
 
     renderer->displayOpenTagAttrs("if", StrHelper(attrs.toString()));
-    renderer->displayNode("test", node.test().get());
-    renderer->displayNode("then", node.consequent().get());
-    renderer->displayNode("else", node.alternate().get());
+    renderer->displayNode("test", node.test());
+    renderer->displayNode("then", node.consequent());
+    renderer->displayNode("else", node.alternate());
     renderer->displayCloseTag("if");
   }
 };
 
 
 template <>
-struct NodeRenderer<const IntNode&> {
+struct NodeRenderer<std::shared_ptr<IntNode>> {
   static void render(XmlRenderer* renderer, const IntNode& node)
   {
     StringBuffer attrs;
@@ -348,21 +352,21 @@ struct NodeRenderer<const IntNode&> {
 
 
 template <>
-struct NodeRenderer<const KeyargNode&> {
+struct NodeRenderer<std::shared_ptr<KeyargNode>> {
   static void render(XmlRenderer* renderer, const KeyargNode& node)
   {
     StringBuffer attrs;
     attrs << "key='" << node.key() << "'";
 
     renderer->displayOpenTagAttrs("arg", StrHelper(attrs.toString()));
-    renderer->displayNode(nullptr, node.value().get());
+    renderer->displayNode(nullptr, node.value());
     renderer->displayCloseTag("arg");
   }
 };
 
 
 template <>
-struct NodeRenderer<const KeywordNode&> {
+struct NodeRenderer<std::shared_ptr<KeywordNode>> {
   static void render(XmlRenderer* renderer, const KeywordNode& node)
   {
     renderer->displayTag("keyw", node.value());
@@ -371,22 +375,22 @@ struct NodeRenderer<const KeywordNode&> {
 
 
 template <>
-struct NodeRenderer<const LetNode&> {
+struct NodeRenderer<std::shared_ptr<LetNode>> {
   static void render(XmlRenderer* renderer, const LetNode& node)
   {
     renderer->displayOpenTag("let");
-    renderer->displayNode(nullptr, node.defNode().get());
+    renderer->displayNode(nullptr, node.defNode());
     renderer->displayCloseTag("let");
   }
 };
 
 
 template <>
-struct NodeRenderer<const MatchNode&> {
+struct NodeRenderer<std::shared_ptr<MatchNode>> {
   static void render(XmlRenderer* renderer, const MatchNode& node)
   {
     renderer->displayOpenTag("match");
-    renderer->displayNode("test", node.expr().get());
+    renderer->displayNode("test", node.expr());
 
     for (size_t i = 0; i < node.mappingCount(); i++) {
       StringBuffer attrs;
@@ -394,7 +398,7 @@ struct NodeRenderer<const MatchNode&> {
         attrs << "nm='" << xmlEncode(node.mappingAt(i).fVarName) << "'";
       renderer->displayOpenTagAttrs("map", StrHelper(attrs.toString()));
       renderer->displayType("type", node.mappingAt(i).fMatchType);
-      renderer->displayNode("cons", node.mappingAt(i).fConsequent.get());
+      renderer->displayNode("cons", node.mappingAt(i).fConsequent);
       renderer->displayCloseTag("map");
     }
 
@@ -404,7 +408,7 @@ struct NodeRenderer<const MatchNode&> {
 
 
 template <>
-struct NodeRenderer<const ParamNode&> {
+struct NodeRenderer<std::shared_ptr<ParamNode>> {
   static void render(XmlRenderer* renderer, const ParamNode& node)
   {
     StringBuffer attrs;
@@ -426,7 +430,7 @@ struct NodeRenderer<const ParamNode&> {
     renderer->displayOpenTagAttrs("param", StrHelper(attrs.toString()));
 
     renderer->displayType("type", node.type());
-    renderer->displayNode("init", node.initExpr().get());
+    renderer->displayNode("init", node.initExpr());
 
     renderer->displayCloseTag("param");
   }
@@ -434,7 +438,7 @@ struct NodeRenderer<const ParamNode&> {
 
 
 template <>
-struct NodeRenderer<const RangeNode&> {
+struct NodeRenderer<std::shared_ptr<RangeNode>> {
   static void render(XmlRenderer* renderer, const RangeNode& node)
   {
     StringBuffer attrs;
@@ -445,16 +449,16 @@ struct NodeRenderer<const RangeNode&> {
     }
 
     renderer->displayOpenTagAttrs("range", StrHelper(attrs.toString()));
-    renderer->displayNode(nullptr, node.from().get());
-    renderer->displayNode(nullptr, node.to().get());
-    renderer->displayNode(nullptr, node.by().get());
+    renderer->displayNode(nullptr, node.from());
+    renderer->displayNode(nullptr, node.to());
+    renderer->displayNode(nullptr, node.by());
     renderer->displayCloseTag("range");
   }
 };
 
 
 template <>
-struct NodeRenderer<const RationalNode&> {
+struct NodeRenderer<std::shared_ptr<RationalNode>> {
   static void render(XmlRenderer* renderer, const RationalNode& node)
   {
     StringBuffer attrs;
@@ -473,7 +477,7 @@ struct NodeRenderer<const RationalNode&> {
 
 
 template <>
-struct NodeRenderer<const RealNode&> {
+struct NodeRenderer<std::shared_ptr<RealNode>> {
   static void render(XmlRenderer* renderer, const RealNode& node)
   {
     StringBuffer attrs;
@@ -492,25 +496,25 @@ struct NodeRenderer<const RealNode&> {
 
 
 template <>
-struct NodeRenderer<const SelectNode&> {
+struct NodeRenderer<std::shared_ptr<SelectNode>> {
   static void render(XmlRenderer* renderer, const SelectNode& node)
   {
     renderer->displayOpenTag("select");
-    renderer->displayNode("test", node.test().get());
-    renderer->displayNode("comp", node.comparator().get());
+    renderer->displayNode("test", node.test());
+    renderer->displayNode("comp", node.comparator());
 
     for (size_t i = 0; i < node.mappingCount(); i++) {
       if (node.mappingAt(i).fTestValues.empty()) {
-        renderer->displayNode("alternate", node.mappingAt(i).fConsequent.get());
+        renderer->displayNode("alternate", node.mappingAt(i).fConsequent);
       }
       else {
         renderer->displayOpenTag("map");
         renderer->displayOpenTag("values");
         for (size_t j = 0; j < node.mappingAt(i).fTestValues.size(); j++) {
-          renderer->displayNode(nullptr, node.mappingAt(i).fTestValues[j].get());
+          renderer->displayNode(nullptr, node.mappingAt(i).fTestValues[j]);
         }
         renderer->displayCloseTag("values");
-        renderer->displayNode("cons", node.mappingAt(i).fConsequent.get());
+        renderer->displayNode("cons", node.mappingAt(i).fConsequent);
         renderer->displayCloseTag("map");
       }
     }
@@ -521,7 +525,7 @@ struct NodeRenderer<const SelectNode&> {
 
 
 template <>
-struct NodeRenderer<const SlotdefNode&> {
+struct NodeRenderer<std::shared_ptr<SlotdefNode>> {
   static void render(XmlRenderer* renderer, const SlotdefNode& node)
   {
     StringBuffer attrs;
@@ -555,14 +559,14 @@ struct NodeRenderer<const SlotdefNode&> {
 
     renderer->displayOpenTagAttrs("slot", StrHelper(attrs.toString()));
     renderer->displayType("type", node.type());
-    renderer->displayNode("init", node.initExpr().get());
+    renderer->displayNode("init", node.initExpr());
     renderer->displayCloseTag("slot");
   }
 };
 
 
 template <>
-struct NodeRenderer<const SlotRefNode&> {
+struct NodeRenderer<std::shared_ptr<SlotRefNode>> {
   static void render(XmlRenderer* renderer, const SlotRefNode& node)
   {
     StringBuffer attrs;
@@ -575,14 +579,14 @@ struct NodeRenderer<const SlotRefNode&> {
     }
 
     renderer->displayOpenTagAttrs("slotref", StrHelper(attrs.toString()));
-    renderer->displayNode(nullptr, node.base().get());
+    renderer->displayNode(nullptr, node.base());
     renderer->displayCloseTag("slotref");
   }
 };
 
 
 template <>
-struct NodeRenderer<const StringNode&> {
+struct NodeRenderer<std::shared_ptr<StringNode>> {
   static void render(XmlRenderer* renderer, const StringNode& node)
   {
     renderer->displayTag("str", node.value());
@@ -591,12 +595,14 @@ struct NodeRenderer<const StringNode&> {
 
 
 template <>
-struct NodeRenderer<const SymbolNode&> {
+struct NodeRenderer<std::shared_ptr<SymbolNode>> {
   static void render(XmlRenderer* renderer, const SymbolNode& node)
   {
     StringBuffer attrs;
     if (renderer->fShowNodeType && node.type().isDef())
       attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+    if (node.isRemoveable())
+      attrs << " removeable='true'";
 
     zstring referTag = nullptr;
     switch (node.refersTo()) {
@@ -636,7 +642,7 @@ struct NodeRenderer<const SymbolNode&> {
 
 
 template <>
-struct NodeRenderer<const TypeDefNode&> {
+struct NodeRenderer<std::shared_ptr<TypeDefNode>> {
   static void render(XmlRenderer* renderer, const TypeDefNode& node)
   {
     zstring tagName = node.isRecord() ? "record" : "type";
@@ -653,7 +659,7 @@ struct NodeRenderer<const TypeDefNode&> {
 
 
 template <>
-struct NodeRenderer<const TypeNode&> {
+struct NodeRenderer<std::shared_ptr<TypeNode>> {
   static void render(XmlRenderer* renderer, const TypeNode& node)
   {
     StringBuffer attrs;
@@ -681,7 +687,7 @@ static zstring unary_operator_name(UnaryOperatorType op)
 
 
 template <>
-struct NodeRenderer<const UnaryNode&> {
+struct NodeRenderer<std::shared_ptr<UnaryNode>> {
   static void render(XmlRenderer* renderer, const UnaryNode& node)
   {
     zstring op_nm = unary_operator_name(node.op());
@@ -693,14 +699,14 @@ struct NodeRenderer<const UnaryNode&> {
     }
 
     renderer->displayOpenTagAttrs(op_nm, StrHelper(attrs.toString()));
-    renderer->displayNode(nullptr, node.base().get());
+    renderer->displayNode(nullptr, node.base());
     renderer->displayCloseTag(op_nm);
   }
 };
 
 
 template <>
-struct NodeRenderer<const UndefNode&> {
+struct NodeRenderer<std::shared_ptr<UndefNode>> {
   static void render(XmlRenderer* renderer, const UndefNode& node)
   {
     renderer->displayEmptyTag("undef");
@@ -709,22 +715,7 @@ struct NodeRenderer<const UndefNode&> {
 
 
 template <>
-struct NodeRenderer<const UnitConstNode&> {
-  static void render(XmlRenderer* renderer, const UnitConstNode& node)
-  {
-    StringBuffer attrs;
-    attrs << "unit='" << node.unit().name() << "'";
-
-    renderer->displayOpenTagAttrs("uvalue", StrHelper(attrs.toString()));
-    renderer->displayType("type", node.unit().effType());
-    renderer->displayNode(nullptr, node.value().get());
-    renderer->displayCloseTag("uvalue");
-  }
-};
-
-
-template <>
-struct NodeRenderer<const VardefNode&> {
+struct NodeRenderer<std::shared_ptr<VardefNode>> {
   static void render(XmlRenderer* renderer, const VardefNode& node)
   {
     StringBuffer attrs;
@@ -749,7 +740,7 @@ struct NodeRenderer<const VardefNode&> {
     renderer->displayOpenTagAttrs("vardef", StrHelper(attrs.toString()));
 
     renderer->displayType("type", node.type());
-    renderer->displayNode("init", node.initExpr().get());
+    renderer->displayNode("init", node.initExpr());
 
     renderer->displayCloseTag("vardef");
   }
@@ -757,7 +748,7 @@ struct NodeRenderer<const VardefNode&> {
 
 
 template <>
-struct NodeRenderer<const VectorNode&> {
+struct NodeRenderer<std::shared_ptr<VectorNode>> {
   static void render(XmlRenderer* renderer, const VectorNode& node)
   {
     StringBuffer attrs;
@@ -776,7 +767,7 @@ struct NodeRenderer<const VectorNode&> {
 
 
 template <>
-struct NodeRenderer<const WhileNode&> {
+struct NodeRenderer<std::shared_ptr<WhileNode>> {
   static void render(XmlRenderer* renderer, const WhileNode& node)
   {
     StringBuffer attrs;
@@ -788,8 +779,8 @@ struct NodeRenderer<const WhileNode&> {
     }
 
     renderer->displayOpenTagAttrs("while", StrHelper(attrs.toString()));
-    renderer->displayNode("test", node.test().get());
-    renderer->displayNode("body", node.body().get());
+    renderer->displayNode("test", node.test());
+    renderer->displayNode("body", node.body());
     renderer->displayCloseTag("while");
   }
 };  // namespace herschel
@@ -836,7 +827,7 @@ String xml::displayTypeConv(const AstNode& node)
 }
 
 
-void xml::dump(const AstNode& node)
+void xml::dump(std::shared_ptr<AstNode> node)
 {
   XmlRenderer out{ std::make_shared<FilePort>(stderr) };
   out.render(node);
@@ -851,119 +842,10 @@ XmlRenderer::XmlRenderer(std::shared_ptr<Port<Octet>> port, bool showNodeType)
 }
 
 
-void XmlRenderer::render(const AstNode& node)
+void XmlRenderer::render(std::shared_ptr<AstNode> node)
 {
-  if (auto* applynd = dynamic_cast<const ApplyNode*>(&node)) {
-    NodeRenderer<decltype(*applynd)>::render(this, *applynd);
-  }
-  else if (auto* arraynd = dynamic_cast<const ArrayNode*>(&node)) {
-    NodeRenderer<decltype(*arraynd)>::render(this, *arraynd);
-  }
-  else if (auto* arraytynd = dynamic_cast<const ArrayTypeNode*>(&node)) {
-    NodeRenderer<decltype(*arraytynd)>::render(this, *arraytynd);
-  }
-  else if (auto* assignnd = dynamic_cast<const AssignNode*>(&node)) {
-    NodeRenderer<decltype(*assignnd)>::render(this, *assignnd);
-  }
-  else if (auto* binnd = dynamic_cast<const BinaryNode*>(&node)) {
-    NodeRenderer<decltype(*binnd)>::render(this, *binnd);
-  }
-  else if (auto* blocknd = dynamic_cast<const BlockNode*>(&node)) {
-    NodeRenderer<decltype(*blocknd)>::render(this, *blocknd);
-  }
-  else if (auto* boolnd = dynamic_cast<const BoolNode*>(&node)) {
-    NodeRenderer<decltype(*boolnd)>::render(this, *boolnd);
-  }
-  else if (auto* charnd = dynamic_cast<const CharNode*>(&node)) {
-    NodeRenderer<decltype(*charnd)>::render(this, *charnd);
-  }
-  else if (auto* comunitnd = dynamic_cast<const CompileUnitNode*>(&node)) {
-    NodeRenderer<decltype(*comunitnd)>::render(this, *comunitnd);
-  }
-  else if (auto* defnd = dynamic_cast<const DefNode*>(&node)) {
-    NodeRenderer<decltype(*defnd)>::render(this, *defnd);
-  }
-  else if (auto* dictnd = dynamic_cast<const DictNode*>(&node)) {
-    NodeRenderer<decltype(*dictnd)>::render(this, *dictnd);
-  }
-  else if (auto* funcdefnd = dynamic_cast<const FuncDefNode*>(&node)) {
-    NodeRenderer<decltype(*funcdefnd)>::render(this, *funcdefnd);
-  }
-  else if (auto* functionnd = dynamic_cast<const FunctionNode*>(&node)) {
-    NodeRenderer<decltype(*functionnd)>::render(this, *functionnd);
-  }
-  else if (auto* ifnd = dynamic_cast<const IfNode*>(&node)) {
-    NodeRenderer<decltype(*ifnd)>::render(this, *ifnd);
-  }
-  else if (auto* intnd = dynamic_cast<const IntNode*>(&node)) {
-    NodeRenderer<decltype(*intnd)>::render(this, *intnd);
-  }
-  else if (auto* keyargnd = dynamic_cast<const KeyargNode*>(&node)) {
-    NodeRenderer<decltype(*keyargnd)>::render(this, *keyargnd);
-  }
-  else if (auto* keywnd = dynamic_cast<const KeywordNode*>(&node)) {
-    NodeRenderer<decltype(*keywnd)>::render(this, *keywnd);
-  }
-  else if (auto* letnd = dynamic_cast<const LetNode*>(&node)) {
-    NodeRenderer<decltype(*letnd)>::render(this, *letnd);
-  }
-  else if (auto* matchnd = dynamic_cast<const MatchNode*>(&node)) {
-    NodeRenderer<decltype(*matchnd)>::render(this, *matchnd);
-  }
-  else if (auto* unarynd = dynamic_cast<const UnaryNode*>(&node)) {
-    NodeRenderer<decltype(*unarynd)>::render(this, *unarynd);
-  }
-  else if (auto* paramnd = dynamic_cast<const ParamNode*>(&node)) {
-    NodeRenderer<decltype(*paramnd)>::render(this, *paramnd);
-  }
-  else if (auto* rangend = dynamic_cast<const RangeNode*>(&node)) {
-    NodeRenderer<decltype(*rangend)>::render(this, *rangend);
-  }
-  else if (auto* ratnd = dynamic_cast<const RationalNode*>(&node)) {
-    NodeRenderer<decltype(*ratnd)>::render(this, *ratnd);
-  }
-  else if (auto* realnd = dynamic_cast<const RealNode*>(&node)) {
-    NodeRenderer<decltype(*realnd)>::render(this, *realnd);
-  }
-  else if (auto* selnd = dynamic_cast<const SelectNode*>(&node)) {
-    NodeRenderer<decltype(*selnd)>::render(this, *selnd);
-  }
-  else if (auto* slotdefnd = dynamic_cast<const SlotdefNode*>(&node)) {
-    NodeRenderer<decltype(*slotdefnd)>::render(this, *slotdefnd);
-  }
-  else if (auto* slotrefnd = dynamic_cast<const SlotRefNode*>(&node)) {
-    NodeRenderer<decltype(*slotrefnd)>::render(this, *slotrefnd);
-  }
-  else if (auto* strnd = dynamic_cast<const StringNode*>(&node)) {
-    NodeRenderer<decltype(*strnd)>::render(this, *strnd);
-  }
-  else if (auto* symbolnd = dynamic_cast<const SymbolNode*>(&node)) {
-    NodeRenderer<decltype(*symbolnd)>::render(this, *symbolnd);
-  }
-  else if (auto* typedefnd = dynamic_cast<const TypeDefNode*>(&node)) {
-    NodeRenderer<decltype(*typedefnd)>::render(this, *typedefnd);
-  }
-  else if (auto* typend = dynamic_cast<const TypeNode*>(&node)) {
-    NodeRenderer<decltype(*typend)>::render(this, *typend);
-  }
-  else if (auto* unitconstnd = dynamic_cast<const UnitConstNode*>(&node)) {
-    NodeRenderer<decltype(*unitconstnd)>::render(this, *unitconstnd);
-  }
-  else if (auto* vardefnd = dynamic_cast<const VardefNode*>(&node)) {
-    NodeRenderer<decltype(*vardefnd)>::render(this, *vardefnd);
-  }
-  else if (auto* vectornd = dynamic_cast<const VectorNode*>(&node)) {
-    NodeRenderer<decltype(*vectornd)>::render(this, *vectornd);
-  }
-  else if (auto* whilend = dynamic_cast<const WhileNode*>(&node)) {
-    NodeRenderer<decltype(*whilend)>::render(this, *whilend);
-  }
-  else if (auto* castnd = dynamic_cast<const CastNode*>(&node)) {
-    NodeRenderer<decltype(*castnd)>::render(this, *castnd);
-  }
-  else if (auto* undefnd = dynamic_cast<const UndefNode*>(&node)) {
-    NodeRenderer<decltype(*undefnd)>::render(this, *undefnd);
-  }
+  dispatchNode<void>(node,
+                     [&](auto nd) { NodeRenderer<decltype(nd)>::render(this, *nd); });
 }
 
 
@@ -1025,11 +907,11 @@ void XmlRenderer::displayStringStringMap(zstring outerTagName, zstring tagName,
 }
 
 
-void XmlRenderer::displayNode(zstring tagName, AstNode* node)
+void XmlRenderer::displayNode(zstring tagName, std::shared_ptr<AstNode> node)
 {
   if (node) {
     displayOpenTag(tagName);
-    render(*node);
+    render(node);
     displayCloseTag(tagName);
   }
 }
@@ -1042,7 +924,7 @@ void XmlRenderer::displayNodeList(zstring tagName, const NodeList& nodelist)
 
     for (auto& nd : nodelist) {
       if (nd)
-        render(*nd);
+        render(nd);
     }
 
     displayCloseTag(tagName);

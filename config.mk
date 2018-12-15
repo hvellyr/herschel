@@ -86,7 +86,7 @@ CFLAGS += $(DEFS) $(CADDS)
 
 CXXFLAGS += $(CBUILDFLAG) $(CWARNING) $(OS_FLAGS)
 CXXFLAGS += -I. -I$(top_srcdir)/build
-CXXFLAGS += $(DEFS) $(CXXADDS) -std=c++11
+CXXFLAGS += $(DEFS) $(CXXADDS) -std=c++14
 
 
 #----------------------------------------------------------------------
