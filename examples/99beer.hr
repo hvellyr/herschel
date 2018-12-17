@@ -17,6 +17,8 @@ def bottles(n : Int)
     outln("%s of beer on the wall" % number-str)
     outln()
   }
+  else
+    -1
 
 def .app.main()
   bottles(99)

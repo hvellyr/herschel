@@ -104,6 +104,7 @@ LIBHRC_SOURCES =         \
 	type.cpp            \
 	typectx.cpp         \
 	typeenum.cpp        \
+	typify.cpp          \
 	xmlrenderer.cpp
 
 
@@ -143,6 +144,7 @@ LIBHRC_HEADERS =         \
 	typeprops-int.hpp   \
 	typeprops-keyword.hpp \
 	typeprops-string.hpp \
+	typify.hpp          \
 	xmlrenderer.hpp
 
 LIBHRC_SOURCES2 =        \
@@ -160,8 +162,7 @@ LIBHRC_SOURCES2 =        \
 	codegen-vardef.cpp  \
 	codegen-while.cpp   \
 	externc.cpp         \
-	transform.cpp       \
-	typify.cpp
+	transform.cpp
 
 LIBHRC_HEADERS2 =         \
 	$(LIBHRC_HEADERS)   \
@@ -180,7 +181,6 @@ LIBHRC_HEADERS2 =         \
 	codegen-while.hpp   \
 	externc.hpp         \
 	transform.hpp       \
-	typify.hpp          \
 	utils.hpp
 
 

@@ -28,8 +28,7 @@
 #include "scope.hpp"
 #include "str.hpp"
 #include "tokenizer.hpp"
-//#include "transform.hpp"
-//#include "typify.hpp"
+#include "typify.hpp"
 #include "utils.hpp"
 #include "xmlrenderer.hpp"
 
@@ -172,10 +171,8 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
       Annotate2Pass nodePass3{ 4, fState.fScope, *this };
       ast = nodePass3.apply(ast, doTrace);
 
-#if 0
       TypifyPass nodePass4{ 5 };
       ast = nodePass4.apply(ast, doTrace);
-#endfi
     }
 
     return ast;

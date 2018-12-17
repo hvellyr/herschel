@@ -92,8 +92,9 @@ StringBuffer& operator<<(StringBuffer& other, const TypeVector& tyve)
 
 class SumTypeImpl : public TypeImpl {
 public:
-  SumTypeImpl(const TypeVector& types)
+  SumTypeImpl(const TypeVector& types, const String& sep)
       : fTypes(types)
+      , fSep(sep)
   {
   }
 
@@ -133,8 +134,23 @@ public:
   }
 
 protected:
+  friend StringBuffer& operator<<(StringBuffer& other, const SumTypeImpl& sum);
+
   TypeVector fTypes;
+  String fSep;
 };
+
+
+StringBuffer& operator<<(StringBuffer& other, const SumTypeImpl& sum)
+{
+  if (!sum.fTypes.empty()) {
+    other << sum.fTypes.front().typeId();
+
+    std::for_each(std::next(sum.fTypes.begin()), sum.fTypes.end(),
+                  [&](const Type& t) { other << sum.fSep << t.typeId(); });
+  }
+  return other;
+}
 
 
 //--------------------------------------------------------------------------
@@ -142,7 +158,7 @@ protected:
 class UnionTypeImpl : public SumTypeImpl {
 public:
   UnionTypeImpl(const TypeVector& types)
-      : SumTypeImpl(types)
+      : SumTypeImpl(types, String(" | "))
   {
   }
 
@@ -187,7 +203,7 @@ public:
 class IntersectionTypeImpl : public SumTypeImpl {
 public:
   IntersectionTypeImpl(const TypeVector& types)
-      : SumTypeImpl(types)
+      : SumTypeImpl(types, String(", "))
   {
   }
 
@@ -1417,12 +1433,11 @@ String Type::typeId() const
   case kType_Alias: return std::dynamic_pointer_cast<AliasTypeImpl>(fImpl)->name();
 
   case kType_Union:
-    buffer << "&(" << std::dynamic_pointer_cast<UnionTypeImpl>(fImpl)->types() << ")";
+    buffer << "(" << *std::dynamic_pointer_cast<UnionTypeImpl>(fImpl) << ")";
     return buffer.toString();
 
   case kType_Intersection:
-    buffer << "(" << std::dynamic_pointer_cast<IntersectionTypeImpl>(fImpl)->types()
-           << ")";
+    buffer << "(" << *std::dynamic_pointer_cast<IntersectionTypeImpl>(fImpl) << ")";
     return buffer.toString();
 
   case kType_Function:
