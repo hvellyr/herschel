@@ -33,7 +33,7 @@ namespace herschel {
 
 template <typename T>
 struct NodeAnnotator {
-  static void annotate(Annotator* ann, T node, Annotator::Phase phase)
+  static void annotate(Annotator* ann, T node)
   {
     // Nothing to annotate here
   }
@@ -42,263 +42,132 @@ struct NodeAnnotator {
 
 template <>
 struct NodeAnnotator<std::shared_ptr<CompileUnitNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<CompileUnitNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<CompileUnitNode> node)
   {
-    ann->annotateNodeList(node->children(), !K(markTailPos), !K(markSingleType), phase);
-  }
-};
-
-
-static void takeFullNameFromNode(SymbolNode* node, const AstNode* otherNode)
-{
-  auto nn = dynamic_cast<const NamedNode*>(otherNode);
-  if (nn) {
-    node->setName(nn->name());
-    return;
-  }
-
-  // TODO: unexpected type here.
-  logf(kError, "Unexpected type here: %s", typeid(*otherNode).name());
-  hr_invalid("Unexpected type");
-}
-
-
-static bool updateAllocType(SymbolNode* usingNode, const AstNode* referedNode)
-{
-  if (usingNode->scope()->isVarInOuterFunction(usingNode->name())) {
-    auto bindNode = dynamic_cast<const BindingNode*>(referedNode);
-    hr_assert(bindNode);
-
-    const_cast<BindingNode*>(bindNode)->setAllocType(kAlloc_Shared);
-    return true;
-  }
-  return false;
-}
-
-
-template <>
-struct NodeAnnotator<std::shared_ptr<SymbolNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<SymbolNode> node,
-                       Annotator::Phase phase)
-  {
-    if (phase == Annotator::kLookup) {
-      const AstNode* var =
-          node->scope()->lookupVarOrFunc(node->name(), K(showAmbiguousSymDef));
-      if (var) {
-        takeFullNameFromNode(node.get(), var);
-
-        auto vardef = dynamic_cast<const VardefNode*>(var);
-        if (vardef) {
-          bool isShared = updateAllocType(node.get(), vardef);
-          node->setRefersTo(vardef->isLocal() ? kLocalVar : kGlobalVar, isShared);
-        }
-        else if (auto funcdef = dynamic_cast<const FuncDefNode*>(var)) {
-          if (funcdef->isGeneric())
-            node->setRefersTo(kGeneric, !K(isShared));
-          else
-            node->setRefersTo(kFunction, !K(isShared));
-
-          // keep an additional link to this function (which is obviously
-          // referenced), such that the codegen can produce extern declaration
-          // for it if needed
-          SrcPos srcpos;
-          if (!ann->fCompiler.referredFunctionCache()->hasName(Scope::kNormal,
-                                                               node->name(), &srcpos)) {
-            ann->fCompiler.referredFunctionCache()->registerFunction(
-                funcdef->srcpos(), node->name(), funcdef->clone());
-          }
-        }
-        else if (dynamic_cast<const ParamNode*>(var)) {
-          bool isShared = updateAllocType(node.get(), var);
-          node->setRefersTo(kParam, isShared);
-        }
-        else if (dynamic_cast<const SlotdefNode*>(var)) {
-          bool isShared = updateAllocType(node.get(), var);
-          node->setRefersTo(kSlot, isShared);
-        }
-        else {
-          hr_invalid("unhandled registered symbol def");
-        }
-
-        return;
-      }
-
-      Type type = node->scope()->lookupType(node->name(), K(showAmbiguousSymDef));
-      if (type.isDef()) {
-        node->setName(type.typeName());
-        return;
-      }
-
-#if defined(UNITTESTS)
-      if (!node->isRemoveable() && Properties::test_passLevel() > 2) {
-        errorf(node->srcpos(), E_UndefinedVar, "Unknown symbol '%s'",
-               (zstring)StrHelper(node->name()));
-        // node->scope()->dumpDebug(true);
-      }
-#endif
-    }
+    ann->annotateNodeList(node->children(), !K(markTailPos), !K(markSingleType));
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<ArrayTypeNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<ArrayTypeNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<ArrayTypeNode> node)
   {
-    ann->annotateNode(node->typeNode(), phase);
+    ann->annotateNode(node->typeNode());
   }
 };
 
 
-template <>
-struct NodeAnnotator<std::shared_ptr<TypeNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<TypeNode> node,
-                       Annotator::Phase phase)
-  {
-    // TODO
-  }
-};
-
-
-static void annotateVardefNode(Annotator* ann, std::shared_ptr<VardefNode> node,
-                               Annotator::Phase phase, bool isLocal)
+static void annotateVardefNode(Annotator* ann, std::shared_ptr<VardefNode> node, bool isLocal)
 {
-  if (phase == Annotator::kRegister) {
-    if (isLocal) {
-      if (!ann->fScope->checkForRedefinition(node->srcpos(), Scope::kNormal,
-                                             node->name()))
-        ann->fScope->registerVar(node->srcpos(), node->name(), node);
-    }
+  if (isLocal) {
+    if (!ann->fScope->checkForRedefinition(node->srcpos(), Scope::kNormal,
+                                           node->name()))
+      ann->fScope->registerVar(node->srcpos(), node->name(), node);
   }
 
   if (node->initExpr()) {
-    ann->annotateNode(node->initExpr(), phase);
+    ann->annotateNode(node->initExpr());
   }
 }
 
 
 static void annotateFuncdefNode(Annotator* ann, std::shared_ptr<FuncDefNode> node,
-                                Annotator::Phase phase, bool isLocal)
+                                bool isLocal)
 {
-  if (phase == Annotator::kRegister) {
-    if (isLocal) {
-      ann->fScope->registerFunction(node->srcpos(), node->name(), node);
+  if (isLocal) {
+    ann->fScope->registerFunction(node->srcpos(), node->name(), node);
+  }
+  else if (node->isMethod()) {
+    auto var = node->scope()->lookupVarOrFunc(node->name(), K(showAmbiguousSymDef));
+    if (!var) {
+      errorf(node->srcpos(), E_NoGenericFunction,
+             "No generic function definition found for method");
     }
-    else if (node->isMethod()) {
-      auto var = node->scope()->lookupVarOrFunc(node->name(), K(showAmbiguousSymDef));
-      if (!var) {
-        errorf(node->srcpos(), E_NoGenericFunction,
-               "No generic function definition found for method");
-      }
-      else if (auto funcdef = dynamic_cast<const FuncDefNode*>(var)) {
-        if (!funcdef->isGeneric()) {
-          errorf(node->srcpos(), E_BadGenericReferrer,
-                 "Bad method binding type (referred symbol is not a generic function).");
-          errorf(var->srcpos(), E_BadGenericReferrer,
-                 "Referred function definition was here");
-        }
-      }
-      else {
+    else if (auto funcdef = dynamic_cast<const FuncDefNode*>(var)) {
+      if (!funcdef->isGeneric()) {
         errorf(node->srcpos(), E_BadGenericReferrer,
                "Bad method binding type (referred symbol is not a generic function).");
         errorf(var->srcpos(), E_BadGenericReferrer,
-               "Referred symbol definition was here");
+               "Referred function definition was here");
       }
+    }
+    else {
+      errorf(node->srcpos(), E_BadGenericReferrer,
+             "Bad method binding type (referred symbol is not a generic function).");
+      errorf(var->srcpos(), E_BadGenericReferrer,
+             "Referred symbol definition was here");
     }
   }
 
   ScopeHelper scopeHelper(ann->fScope, !K(doExport), K(isInnerScope), kScopeL_Function);
 
-  ann->annotateNodeList(node->params(), !K(markTailPos), K(markSingleType), phase);
+  ann->annotateNodeList(node->params(), !K(markTailPos), K(markSingleType));
   if (node->body()) {
     node->body()->setIsInTailPos(true);
-    ann->annotateNode(node->body(), phase);
+    ann->annotateNode(node->body());
   }
 }
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<DefNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<DefNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<DefNode> node)
   {
     auto vardefNode = std::dynamic_pointer_cast<VardefNode>(node->defNode());
     if (vardefNode) {
-      if (phase == Annotator::kRegister)
-        vardefNode->setScope(ann->fScope);
-      annotateVardefNode(ann, vardefNode, phase, !K(isLocal));
+      vardefNode->setScope(ann->fScope);
+      annotateVardefNode(ann, vardefNode, !K(isLocal));
       return;
     }
 
     auto funcNode = std::dynamic_pointer_cast<FuncDefNode>(node->defNode());
     if (funcNode) {
-      if (phase == Annotator::kRegister)
-        funcNode->setScope(ann->fScope);
-      annotateFuncdefNode(ann, funcNode, phase, !K(isLocal));
+      funcNode->setScope(ann->fScope);
+      annotateFuncdefNode(ann, funcNode, !K(isLocal));
       return;
     }
 
-    ann->annotateNode(node->defNode(), phase);
+    ann->annotateNode(node->defNode());
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<LetNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<LetNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<LetNode> node)
   {
     auto vardefNode = std::dynamic_pointer_cast<VardefNode>(node->defNode());
     if (vardefNode) {
-      if (phase == Annotator::kRegister)
-        vardefNode->setScope(ann->fScope);
-      annotateVardefNode(ann, vardefNode, phase, K(isLocal));
+      vardefNode->setScope(ann->fScope);
+      annotateVardefNode(ann, vardefNode, K(isLocal));
       return;
     }
 
     auto funcNode = std::dynamic_pointer_cast<FuncDefNode>(node->defNode());
     if (funcNode) {
-      if (phase == Annotator::kRegister)
-        funcNode->setScope(ann->fScope);
-      annotateFuncdefNode(ann, funcNode, phase, K(isLocal));
+      funcNode->setScope(ann->fScope);
+      annotateFuncdefNode(ann, funcNode, K(isLocal));
       return;
     }
 
-    ann->annotateNode(node->defNode(), phase);
+    ann->annotateNode(node->defNode());
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<FunctionNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<FunctionNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<FunctionNode> node)
   {
     ScopeHelper scopeHelper(ann->fScope, !K(doExport), !K(isInnerScope),
                             kScopeL_Function);
 
-    ann->annotateNodeList(node->params(), !K(markTailPos), K(markSingleType), phase);
+    ann->annotateNodeList(node->params(), !K(markTailPos), K(markSingleType));
     if (node->body()) {
       node->body()->setIsInTailPos(true);
-      ann->annotateNode(node->body(), phase);
+      ann->annotateNode(node->body());
     }
-  }
-};
-
-
-template <>
-struct NodeAnnotator<std::shared_ptr<SlotdefNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<SlotdefNode> node,
-                       Annotator::Phase phase)
-  {
-    // TODO
-    // if (phase == Annotator::kRegister) {
-    //   if (!ann->fScope->checkForRedefinition(node->srcpos(),
-    //                                          Scope::kNormal, node->name()))
-    //     ann->fScope->registerVar(node->srcpos(), node->name(), node);
-    // }
   }
 };
 
@@ -350,8 +219,7 @@ public:
 
 template <>
 struct NodeAnnotator<std::shared_ptr<BlockNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<BlockNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<BlockNode> node)
   {
     ScopeHelper scopeHelper(ann->fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
 
@@ -381,25 +249,21 @@ struct NodeAnnotator<std::shared_ptr<BlockNode>> {
       }
     }
 
-    ann->annotateNodeList(node->children(), node->isInTailPos(), !K(markSingleType),
-                          phase);
+    ann->annotateNodeList(node->children(), node->isInTailPos(), !K(markSingleType));
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<ParamNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<ParamNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<ParamNode> node)
   {
-    if (phase == Annotator::kRegister) {
-      if (!ann->fScope->checkForRedefinition(node->srcpos(), Scope::kNormal,
-                                             node->name()))
-        ann->fScope->registerVar(node->srcpos(), node->name(), node);
-    }
+    if (!ann->fScope->checkForRedefinition(node->srcpos(), Scope::kNormal,
+                                           node->name()))
+      ann->fScope->registerVar(node->srcpos(), node->name(), node);
 
     if (node->initExpr()) {
-      ann->annotateNode(node->initExpr(), phase);
+      ann->annotateNode(node->initExpr());
     }
   }
 };
@@ -407,69 +271,63 @@ struct NodeAnnotator<std::shared_ptr<ParamNode>> {
 
 template <>
 struct NodeAnnotator<std::shared_ptr<ApplyNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<ApplyNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<ApplyNode> node)
   {
-    ann->annotateNode(node->base(), phase);
-    ann->annotateNodeList(node->children(), !K(markTailPos), K(markSingleType), phase);
+    ann->annotateNode(node->base());
+    ann->annotateNodeList(node->children(), !K(markTailPos), K(markSingleType));
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<ArrayNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<ArrayNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<ArrayNode> node)
   {
-    ann->annotateNodeList(node->children(), !K(markTailPos), K(markSingleType), phase);
+    ann->annotateNodeList(node->children(), !K(markTailPos), K(markSingleType));
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<AssignNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<AssignNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<AssignNode> node)
   {
-    ann->annotateNode(node->lvalue(), phase);
-    ann->annotateNode(node->rvalue(), phase);
+    ann->annotateNode(node->lvalue());
+    ann->annotateNode(node->rvalue());
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<BinaryNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<BinaryNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<BinaryNode> node)
   {
-    ann->annotateNode(node->left(), phase);
-    ann->annotateNode(node->right(), phase);
+    ann->annotateNode(node->left());
+    ann->annotateNode(node->right());
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<UnaryNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<UnaryNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<UnaryNode> node)
   {
-    ann->annotateNode(node->base(), phase);
+    ann->annotateNode(node->base());
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<IfNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<IfNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<IfNode> node)
   {
-    ann->annotateNode(node->test(), phase);
+    ann->annotateNode(node->test());
 
     node->consequent()->setIsInTailPos(node->isInTailPos());
-    ann->annotateNode(node->consequent(), phase);
+    ann->annotateNode(node->consequent());
     if (node->alternate()) {
       node->alternate()->setIsInTailPos(node->isInTailPos());
-      ann->annotateNode(node->alternate(), phase);
+      ann->annotateNode(node->alternate());
     }
   }
 };
@@ -477,33 +335,31 @@ struct NodeAnnotator<std::shared_ptr<IfNode>> {
 
 template <>
 struct NodeAnnotator<std::shared_ptr<KeyargNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<KeyargNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<KeyargNode> node)
   {
-    ann->annotateNode(node->value(), phase);
+    ann->annotateNode(node->value());
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<SelectNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<SelectNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<SelectNode> node)
   {
     // TODO : set tail node position
-    ann->annotateNode(node->test(), phase);
+    ann->annotateNode(node->test());
     if (node->comparator())
-      ann->annotateNode(node->comparator(), phase);
+      ann->annotateNode(node->comparator());
 
     for (size_t i = 0; i < node->mappingCount(); i++) {
       if (node->mappingAt(i).fTestValues.empty()) {
-        ann->annotateNode(node->mappingAt(i).fConsequent, phase);
+        ann->annotateNode(node->mappingAt(i).fConsequent);
       }
       else {
         for (auto& testValue : node->mappingAt(i).fTestValues)
-          ann->annotateNode(testValue, phase);
+          ann->annotateNode(testValue);
       }
-      ann->annotateNode(node->mappingAt(i).fConsequent, phase);
+      ann->annotateNode(node->mappingAt(i).fConsequent);
     }
   }
 };
@@ -511,81 +367,73 @@ struct NodeAnnotator<std::shared_ptr<SelectNode>> {
 
 template <>
 struct NodeAnnotator<std::shared_ptr<RangeNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<RangeNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<RangeNode> node)
   {
     // TODO : set tail node position
-    ann->annotateNode(node->from(), phase);
-    ann->annotateNode(node->to(), phase);
+    ann->annotateNode(node->from());
+    ann->annotateNode(node->to());
     if (node->by())
-      ann->annotateNode(node->by(), phase);
+      ann->annotateNode(node->by());
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<TypeDefNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<TypeDefNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<TypeDefNode> node)
   {
     // TODO : set tail node position
 
     // don't re-register the type if global; it is registered in pass2 already
-    // if (phase == Annotator::kRegister)
-    //   ann->fScope->registerType(node->srcpos(), node->name(), node->defType());
+    // ann->fScope->registerType(node->srcpos(), node->name(), node->defType());
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<WhileNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<WhileNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<WhileNode> node)
   {
-    ann->annotateNode(node->test(), phase);
+    ann->annotateNode(node->test());
 
     node->body()->setIsInTailPos(node->isInTailPos());
-    ann->annotateNode(node->body(), phase);
+    ann->annotateNode(node->body());
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<VectorNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<VectorNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<VectorNode> node)
   {
-    ann->annotateNodeList(node->children(), !K(markTailPos), K(markSingleType), phase);
+    ann->annotateNodeList(node->children(), !K(markTailPos), K(markSingleType));
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<DictNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<DictNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<DictNode> node)
   {
-    ann->annotateNodeList(node->children(), !K(markTailPos), K(markSingleType), phase);
+    ann->annotateNodeList(node->children(), !K(markTailPos), K(markSingleType));
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<CastNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<CastNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<CastNode> node)
   {
-    ann->annotateNode(node->base(), phase);
+    ann->annotateNode(node->base());
   }
 };
 
 
 template <>
 struct NodeAnnotator<std::shared_ptr<SlotRefNode>> {
-  static void annotate(Annotator* ann, std::shared_ptr<SlotRefNode> node,
-                       Annotator::Phase phase)
+  static void annotate(Annotator* ann, std::shared_ptr<SlotRefNode> node)
   {
-    ann->annotateNode(node->base(), phase);
+    ann->annotateNode(node->base());
   }
 };
 
@@ -603,8 +451,7 @@ AnnotatePass::AnnotatePass(int level, std::shared_ptr<Scope> scope, Compiler& co
 std::shared_ptr<AstNode> AnnotatePass::doApply(std::shared_ptr<AstNode> src)
 {
   Annotator an{ fScope, fCompiler };
-  an.annotateNode(src, Annotator::kRegister);
-  an.annotateNode(src, Annotator::kLookup);
+  an.annotateNode(src);
   return src;
 }
 
@@ -618,18 +465,16 @@ Annotator::Annotator(std::shared_ptr<Scope> scope, Compiler& compiler)
 }
 
 
-void Annotator::annotateNode(std::shared_ptr<AstNode> node, Phase phase)
+void Annotator::annotateNode(std::shared_ptr<AstNode> node)
 {
-  if (phase == Annotator::kRegister)
-    node->setScope(fScope);
+  node->setScope(fScope);
 
   dispatchNode<void>(
-      node, [&](auto nd) { NodeAnnotator<decltype(nd)>::annotate(this, nd, phase); });
+      node, [&](auto nd) { NodeAnnotator<decltype(nd)>::annotate(this, nd); });
 }
 
 
-void Annotator::annotateNodeList(NodeList& nl, bool marktailpos, bool marksingletype,
-                                 Phase phase)
+void Annotator::annotateNodeList(NodeList& nl, bool marktailpos, bool marksingletype)
 {
   const size_t nlsize = nl.size();
 
@@ -640,7 +485,7 @@ void Annotator::annotateNodeList(NodeList& nl, bool marktailpos, bool marksingle
     if (marksingletype)
       nl[i]->setIsSingleTypeRequired(true);
 
-    annotateNode(nl[i], phase);
+    annotateNode(nl[i]);
   }
 }
 

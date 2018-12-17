@@ -14,6 +14,7 @@
 #include "sysconf.hpp"
 #include "version.h"
 
+namespace herschel {
 //! Type abstraction for a byte.
 using Octet = unsigned char;
 
@@ -39,5 +40,7 @@ enum CompileOutFormat {
   kLLVM_IR,  //!< Use LLVM textual intermediate representation
   kLLVM_BC   //!< Use LLVM binary intermediate representation
 };
+
+}  // namespace herschel
 
 #include "require.hpp"

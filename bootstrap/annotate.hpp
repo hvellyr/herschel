@@ -33,21 +33,14 @@ namespace herschel
   class Annotator
   {
   public:
-    enum Phase
-    {
-      kRegister,
-      kLookup
-    };
-
     Annotator(std::shared_ptr<Scope> scope, Compiler& compiler);
 
-    void annotateNode(std::shared_ptr<AstNode> node, Phase phase);
-    void annotateNodeList(NodeList& nl, bool marktailpos, bool marksingletype, Phase phase);
+    void annotateNode(std::shared_ptr<AstNode> node);
+    void annotateNodeList(NodeList& nl, bool marktailpos, bool marksingletype);
 
     //-------- data members
 
     std::shared_ptr<Scope> fScope;
-    //Phase      fPhase;
     Compiler&  fCompiler;       // backlink to owning compiler
   };
 

@@ -82,6 +82,7 @@ LIBHRC_LIBS = $(LIBS) $(BUILDDIR)/$(BUILDSTYLE)/libhrcommon$(LIBEXT)
 LIBHRC_SOURCES =         \
 	abstrpass.cpp       \
 	annotate.cpp        \
+	annotate2.cpp       \
 	ast.cpp             \
 	compilepass.cpp     \
 	compiler.cpp        \
@@ -109,6 +110,7 @@ LIBHRC_SOURCES =         \
 LIBHRC_HEADERS =         \
 	abstrpass.hpp       \
 	annotate.hpp        \
+	annotate2.hpp       \
 	ast.hpp             \
 	compilepass.hpp     \
 	compiler.hpp        \

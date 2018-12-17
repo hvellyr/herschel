@@ -13,6 +13,7 @@
 #include "compiler.hpp"
 
 #include "annotate.hpp"
+#include "annotate2.hpp"
 #include "ast.hpp"
 //#include "codegen.hpp"
 #include "errcodes.hpp"
@@ -165,18 +166,16 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
       // the symbols may not be exportable at all).
       fState.fScope = nodifyPass.currentScope();
 
-#if 0
-      TransformPass nodePass1{ 3 };
-      ast = nodePass1.apply(ast, doTrace);
-#endif
-
-      AnnotatePass nodePass2{ 4, fState.fScope, *this };
+      AnnotatePass nodePass2{ 3, fState.fScope, *this };
       ast = nodePass2.apply(ast, doTrace);
 
-#if 0
-      TypifyPass nodePass3{ 5 };
+      Annotate2Pass nodePass3{ 4, fState.fScope, *this };
       ast = nodePass3.apply(ast, doTrace);
-#endif
+
+#if 0
+      TypifyPass nodePass4{ 5 };
+      ast = nodePass4.apply(ast, doTrace);
+#endfi
     }
 
     return ast;
