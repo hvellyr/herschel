@@ -69,6 +69,8 @@ public:
   //! likely position.
   const SrcPos& srcpos() const;
 
+  virtual NodeList child_nodes() { return {}; }
+
   //! Returns the captured scope for this node.  The scope is only available
   //! after the \c Annotator pass has been applied.
   std::shared_ptr<Scope> scope() const;
@@ -183,6 +185,8 @@ public:
   //! Returns a mutable list of the receiver's children.  Note that the
   //! notion 'children' depends on the specific subclass.
   NodeList& children();
+
+  NodeList child_nodes() override { return children(); }
 
   //! Returns a readonly list of the receiver's children.  Note that the
   //! notion 'children' depends on the specific subclass.
@@ -334,6 +338,8 @@ makeSymbolNode(const SrcPos& srcpos, const String& value, const TypeVector& gene
 class ArrayTypeNode : public AstNode {
 public:
   ArrayTypeNode(const SrcPos& srcpos, std::shared_ptr<AstNode> typeNode);
+
+  NodeList child_nodes() override { return { fTypeNode }; }
 
   std::shared_ptr<AstNode> typeNode() const;
 
@@ -497,6 +503,8 @@ class BaseDefNode : public AstNode {
 public:
   BaseDefNode(const SrcPos& srcpos, std::shared_ptr<AstNode> defined);
 
+  NodeList child_nodes() override { return { fDefined }; }
+
   std::shared_ptr<AstNode> defNode() const;
   void setDefNode(std::shared_ptr<AstNode> val);
 
@@ -546,6 +554,11 @@ public:
 
   void setAllocType(BindingAllocType type);
   BindingAllocType allocType() const;
+
+  NodeList child_nodes() override
+  {
+    return fInitExpr ? NodeList{ fInitExpr } : NodeList{};
+  }
 
 protected:
   String fSymbolName;
@@ -707,6 +720,8 @@ public:
 
   std::shared_ptr<AstNode> clone() const override;
 
+  NodeList child_nodes() override { return { fLeft, fRight }; }
+
 private:
   std::shared_ptr<AstNode> fLeft;
   std::shared_ptr<AstNode> fRight;
@@ -740,6 +755,8 @@ public:
 
   std::shared_ptr<AstNode> clone() const override;
 
+  NodeList child_nodes() override { return { fBase }; }
+
 private:
   std::shared_ptr<AstNode> fBase;
   UnaryOperatorType fOp;
@@ -765,6 +782,11 @@ public:
   void setBy(std::shared_ptr<AstNode> node);
 
   std::shared_ptr<AstNode> clone() const override;
+
+  NodeList child_nodes() override
+  {
+    return fBy ? NodeList{ fFrom, fTo, fBy } : NodeList{ fFrom, fTo };
+  }
 
 private:
   std::shared_ptr<AstNode> fFrom;
@@ -794,6 +816,8 @@ public:
 
   std::shared_ptr<AstNode> clone() const override;
 
+  NodeList child_nodes() override { return { fLValue, fRValue }; }
+
 private:
   std::shared_ptr<AstNode> fLValue;
   std::shared_ptr<AstNode> fRValue;
@@ -820,6 +844,12 @@ public:
   void setConsequent(std::shared_ptr<AstNode> node);
   std::shared_ptr<AstNode> alternate() const;
   void setAlternate(std::shared_ptr<AstNode> node);
+
+  NodeList child_nodes() override
+  {
+    return fAlternate ? NodeList{ fTest, fConsequent, fAlternate }
+                      : NodeList{ fTest, fConsequent };
+  }
 
 private:
   std::shared_ptr<AstNode> fTest;
@@ -871,6 +901,8 @@ public:
   void setConsequentAt(size_t i, std::shared_ptr<AstNode> consq);
   void setTestValueAt(size_t i, size_t j, std::shared_ptr<AstNode> value);
 
+  NodeList child_nodes() override;
+
 private:
   std::shared_ptr<AstNode> fTest;
   std::shared_ptr<AstNode> fComparator;
@@ -916,6 +948,8 @@ public:
 
   void setConsequentAt(size_t i, std::shared_ptr<AstNode> consq);
 
+  NodeList child_nodes() override;
+
 private:
   std::shared_ptr<AstNode> fExpr;
   MatchMappingVector fMappings;
@@ -957,6 +991,8 @@ public:
 
   size_t specializedParamsCount() const;
   bool hasSpecializedParams() const;
+
+  NodeList child_nodes() override;
 
 protected:
   Type fRetType;
@@ -1022,12 +1058,14 @@ public:
 
   std::shared_ptr<AstNode> clone() const override;
 
+  NodeList child_nodes() override;
+
 private:
   std::shared_ptr<AstNode> fBase;
 };
 
-inline std::shared_ptr<ApplyNode>
-makeApplyNode(const SrcPos& srcpos, std::shared_ptr<AstNode> base)
+inline std::shared_ptr<ApplyNode> makeApplyNode(const SrcPos& srcpos,
+                                                std::shared_ptr<AstNode> base)
 {
   return std::make_shared<ApplyNode>(srcpos, std::move(base));
 }
@@ -1042,6 +1080,8 @@ public:
   const String& key() const;
   std::shared_ptr<AstNode> value() const;
   void setValue(std::shared_ptr<AstNode> node);
+
+  NodeList child_nodes() override { return { fValue }; }
 
 private:
   String fKey;
@@ -1066,6 +1106,8 @@ public:
   void setBody(std::shared_ptr<AstNode> node);
   std::shared_ptr<AstNode> test() const;
   void setTest(std::shared_ptr<AstNode> node);
+
+  NodeList child_nodes() override { return { fTest, fBody }; }
 
 private:
   std::shared_ptr<AstNode> fTest;
@@ -1095,6 +1137,8 @@ public:
 
   NodeList& slots();
 
+  NodeList child_nodes() override { return fSlots; }
+
 private:
   String fTypeName;
   bool fIsRecord;
@@ -1120,6 +1164,8 @@ public:
   std::shared_ptr<AstNode> base() const;
   void setBase(std::shared_ptr<AstNode> node);
 
+  NodeList child_nodes() override { return { fBase }; }
+
 private:
   std::shared_ptr<AstNode> fBase;
 };
@@ -1141,6 +1187,8 @@ public:
   std::shared_ptr<AstNode> base() const;
   void setBase(std::shared_ptr<AstNode> base);
   String slotName() const;
+
+  NodeList child_nodes() override { return { fBase }; }
 
 private:
   std::shared_ptr<AstNode> fBase;

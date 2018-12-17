@@ -1168,6 +1168,29 @@ void SelectNode::setTestValueAt(size_t i, size_t j, std::shared_ptr<AstNode> val
 }
 
 
+NodeList SelectNode::child_nodes()
+{
+  auto result = NodeList{};
+
+  result.emplace_back(fTest);
+  if (fComparator)
+    result.emplace_back(fComparator);
+
+  for (size_t i = 0; i < fMappings.size(); i++) {
+    if (fMappings[i].fTestValues.empty()) {
+      result.emplace_back(fMappings[i].fConsequent);
+    }
+    else {
+      for (auto& testValue : fMappings[i].fTestValues)
+        result.emplace_back(testValue);
+    }
+    result.emplace_back(fMappings[i].fConsequent);
+  }
+
+  return result;
+}
+
+
 SelectNode::SelectMapping::SelectMapping(const NodeList& values,
                                          std::shared_ptr<AstNode> consequent)
     : fTestValues(values)
@@ -1245,6 +1268,20 @@ const MatchNode::MatchMapping& MatchNode::mappingAt(size_t i) const
 void MatchNode::setConsequentAt(size_t i, std::shared_ptr<AstNode> consq)
 {
   fMappings[i].fConsequent = std::move(consq);
+}
+
+
+NodeList MatchNode::child_nodes()
+{
+  auto result = NodeList{};
+
+  result.emplace_back(fExpr);
+
+  for (size_t i = 0; i < fMappings.size(); i++) {
+    result.emplace_back(fMappings[i].fConsequent);
+  }
+
+  return result;
 }
 
 
@@ -1355,6 +1392,15 @@ bool FunctionNode::hasSpecializedParams() const
 }
 
 
+NodeList FunctionNode::child_nodes()
+{
+  auto result = children();
+  if (fBody)
+    result.emplace_back(fBody);
+  return result;
+}
+
+
 //----------------------------------------------------------------------------
 
 FuncDefNode::FuncDefNode(const SrcPos& srcpos, const String& sym, unsigned int flags,
@@ -1447,6 +1493,15 @@ String ApplyNode::simpleCallName() const
 {
   auto sym = dynamic_cast<SymbolNode*>(base().get());
   return (sym ? sym->name() : String());
+}
+
+
+NodeList ApplyNode::child_nodes()
+{
+  auto result = NodeList{};
+  result.emplace_back(fBase);
+  result.insert(end(result), begin(children()), end(children()));
+  return result;
 }
 
 
