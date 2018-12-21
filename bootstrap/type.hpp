@@ -151,8 +151,8 @@ public:
   //! Rewrite \p old to a new typeref taking the typename \p name.
   static Type makeTypeRef(const String& name, const Type& old);
 
-  //! Creates a new lang.Record<'T> type instance with 'T being \p type.
-  static Type makeRecordOf(const Type& type, bool isValue = true);
+  //! Creates a new lang.Type<'T> type instance with 'T being \p type.
+  static Type makeClassTypeOf(const Type& type, bool isValue = true);
 
   //! Creates a new 'T[] array type with \p base being the array base type
   //! 'T.  The \p sizeIndicator is informational, since the size is not
@@ -284,8 +284,8 @@ public:
   //! Indicates whether the receiver is a signed number.
   bool isSigned() const;
 
-  //! Indicates whether the receiver is a lang.Record<'T> type instance.
-  bool isRecordOf() const;
+  //! Indicates whether the receiver is a lang.Type<'T> type instance.
+  bool isClassTypeOf() const;
 
   bool isImaginary() const;
   void setIsImaginary(bool value);

@@ -348,7 +348,8 @@ namespace {
                          const TypeVector& generics, const Type& right0,
                          const Scope& scope, const SrcPos& srcpos)
   {
-    if (right0.isRef() || right0.isType() || right0.isRecord()) {
+    if (right0.isRef() || right0.isType() || right0.isRecord() || right0.isUnion() ||
+        right0.isIntersection()) {
       // if the reference has generics, it itself cannot be generic.  A
       // 'T<'Y'> is not allowed.
       if (!generics.empty()) {
@@ -882,9 +883,9 @@ Type Type::makeTypeRef(const String& name, const Type& old)
 }
 
 
-Type Type::makeRecordOf(const Type& type, bool isValue)
+Type Type::makeClassTypeOf(const Type& type, bool isValue)
 {
-  return makeTypeRef(Names::kRecordTypeName, makeVector(type), isValue);
+  return makeTypeRef(Names::kClassTypeName, makeVector(type), isValue);
 }
 
 
@@ -1327,9 +1328,9 @@ bool Type::isAnyUInt() const
 }
 
 
-bool Type::isRecordOf() const
+bool Type::isClassTypeOf() const
 {
-  return isBuiltinType(Names::kRecordTypeName);
+  return isBuiltinType(Names::kClassTypeName);
 }
 
 

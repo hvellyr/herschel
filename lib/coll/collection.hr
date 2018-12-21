@@ -270,7 +270,7 @@ def record Vector!<T> : (Vector<T>, Sequence!<T>)
 ()
 
 def generic resize!(cltn @ ^'C, new-size : Ordinal,
-                    new-value : 'T = Class<'T>.null-value) -> ^'C ...
+                    new-value : 'T = Type<'T>.null-value) -> ^'C ...
     where C isa Vector<'T>
     ~ Resizes @var{cltn} to @var{new-size} slots.
 

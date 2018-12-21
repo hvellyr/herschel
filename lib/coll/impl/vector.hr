@@ -163,7 +163,7 @@ def index-of(cltn @ Vector<'T>, elt @ T) -> OrdinalOrFalse
 -- from vector
 def generic resize!(cltn @ ^Vector<'T>,
                     new-size : Ordinal,
-                    init-value : 'T = Class<'T>.null-value) -> ^Vector<'T>
+                    init-value : 'T = Type<'T>.null-value) -> ^Vector<'T>
 {
 --    on out(r) r.num-items == new-size
 

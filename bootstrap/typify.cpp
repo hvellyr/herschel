@@ -59,7 +59,7 @@ struct NodeTypifier<std::shared_ptr<SymbolNode>> {
 
       Type type2 = degeneralizeType(node->srcpos(), type1, node->generics());
       if (type2.isDef())
-        node->setType(Type::makeRecordOf(type2));
+        node->setType(Type::makeClassTypeOf(type2));
     }
   }
 };
@@ -75,7 +75,7 @@ struct NodeTypifier<std::shared_ptr<ArrayTypeNode>> {
       auto symnd = std::dynamic_pointer_cast<SymbolNode>(node->typeNode());
       auto type = (symnd ? symnd->type() : node->typeNode()->type());
       auto type1 = node->scope()->normalizeType(type);
-      node->setType(Type::makeRecordOf(Type::makeArray(type1, 0, K(isValue))));
+      node->setType(Type::makeClassTypeOf(Type::makeArray(type1, 0, K(isValue))));
     }
   }
 };
@@ -88,7 +88,7 @@ struct NodeTypifier<std::shared_ptr<TypeNode>> {
     if (typf->fPhase == Typifier::kTypify) {
       hr_assert(node->type().isDef());
       Type type1 = node->scope()->normalizeType(node->type());
-      node->setType(Type::makeRecordOf(type1));
+      node->setType(Type::makeClassTypeOf(type1));
     }
   }
 };
@@ -533,7 +533,7 @@ struct NodeTypifier<std::shared_ptr<BinaryNode>> {
         break;
 
       case kOpIsa:
-        if (rightty.isAny() || rightty.isRecordOf()) {
+        if (rightty.isAny() || rightty.isClassTypeOf()) {
           node->setType(Type::makeBool());
           typf->annotateTypeConv(node->left(), node->type());
           typf->annotateTypeConv(node->right(), node->type());
