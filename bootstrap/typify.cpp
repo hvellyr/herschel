@@ -44,23 +44,21 @@ template <>
 struct NodeTypifier<std::shared_ptr<SymbolNode>> {
   static void typify(Typifier* typf, std::shared_ptr<SymbolNode> node)
   {
-    if (typf->fPhase == Typifier::kTypify) {
-      auto var = node->scope()->lookupVarOrFunc(node->name(), K(showAmbiguousSymDef));
-      if (var) {
-        if (auto fdn = dynamic_cast<const FuncDefNode*>(var))
-          node->setLinkage(fdn->linkage());
+    auto var = node->scope()->lookupVarOrFunc(node->name(), K(showAmbiguousSymDef));
+    if (var) {
+      if (auto fdn = dynamic_cast<const FuncDefNode*>(var))
+        node->setLinkage(fdn->linkage());
 
-        node->setType(var->type());
-        return;
-      }
-
-      Type type0 = node->scope()->lookupType(node->name(), K(showAmbiguousSymDef));
-      Type type1 = node->scope()->normalizeType(type0);
-
-      Type type2 = degeneralizeType(node->srcpos(), type1, node->generics());
-      if (type2.isDef())
-        node->setType(Type::makeClassTypeOf(type2));
+      node->setType(var->type());
+      return;
     }
+
+    Type type0 = node->scope()->lookupType(node->name(), K(showAmbiguousSymDef));
+    Type type1 = node->scope()->normalizeType(type0);
+
+    Type type2 = degeneralizeType(node->srcpos(), type1, node->generics());
+    if (type2.isDef())
+      node->setType(Type::makeClassTypeOf(type2));
   }
 };
 
@@ -69,14 +67,12 @@ template <>
 struct NodeTypifier<std::shared_ptr<ArrayTypeNode>> {
   static void typify(Typifier* typf, std::shared_ptr<ArrayTypeNode> node)
   {
-    if (typf->fPhase == Typifier::kTypify) {
-      typf->typifyNode(node->typeNode());
+    typf->typifyNode(node->typeNode());
 
-      auto symnd = std::dynamic_pointer_cast<SymbolNode>(node->typeNode());
-      auto type = (symnd ? symnd->type() : node->typeNode()->type());
-      auto type1 = node->scope()->normalizeType(type);
-      node->setType(Type::makeClassTypeOf(Type::makeArray(type1, 0, K(isValue))));
-    }
+    auto symnd = std::dynamic_pointer_cast<SymbolNode>(node->typeNode());
+    auto type = (symnd ? symnd->type() : node->typeNode()->type());
+    auto type1 = node->scope()->normalizeType(type);
+    node->setType(Type::makeClassTypeOf(Type::makeArray(type1, 0, K(isValue))));
   }
 };
 
@@ -85,11 +81,9 @@ template <>
 struct NodeTypifier<std::shared_ptr<TypeNode>> {
   static void typify(Typifier* typf, std::shared_ptr<TypeNode> node)
   {
-    if (typf->fPhase == Typifier::kTypify) {
-      hr_assert(node->type().isDef());
-      Type type1 = node->scope()->normalizeType(node->type());
-      node->setType(Type::makeClassTypeOf(type1));
-    }
+    hr_assert(node->type().isDef());
+    Type type1 = node->scope()->normalizeType(node->type());
+    node->setType(Type::makeClassTypeOf(type1));
   }
 };
 
@@ -99,8 +93,7 @@ struct NodeTypifier<std::shared_ptr<DefNode>> {
   static void typify(Typifier* typf, std::shared_ptr<DefNode> node)
   {
     typf->typifyNode(node->defNode());
-    if (typf->fPhase == Typifier::kTypify)
-      node->setType(node->defNode()->type());
+    node->setType(node->defNode()->type());
   }
 };
 
@@ -110,13 +103,11 @@ struct NodeTypifier<std::shared_ptr<LetNode>> {
   static void typify(Typifier* typf, std::shared_ptr<LetNode> node)
   {
     typf->typifyNode(node->defNode());
-    if (typf->fPhase == Typifier::kTypify) {
-      if (auto nd = std::dynamic_pointer_cast<DelayTypeAnnotatable>(node->defNode())) {
-        if (nd->isTypeSpecDelayed())
-          return;
-      }
-      node->setType(node->defNode()->type());
+    if (auto nd = std::dynamic_pointer_cast<DelayTypeAnnotatable>(node->defNode())) {
+      if (nd->isTypeSpecDelayed())
+        return;
     }
+    node->setType(node->defNode()->type());
   }
 };
 
@@ -128,13 +119,8 @@ struct NodeTypifier<std::shared_ptr<VardefNode>> {
     if (node->initExpr())
       typf->typifyNode(node->initExpr());
 
-    if (typf->fPhase == Typifier::kTypify) {
-      if (!node->isTypeSpecDelayed())
-        typf->setupBindingNodeType(node, "variable");
-    }
-    else {
-      hr_assert(!node->isTypeSpecDelayed());
-    }
+    if (!node->isTypeSpecDelayed())
+      typf->setupBindingNodeType(node, "variable");
   }
 };
 
@@ -147,60 +133,31 @@ struct NodeTypifier<std::shared_ptr<FuncDefNode>> {
     if (node->body()) {
       typf->typifyNode(node->body());
 
-      if (typf->fPhase == Typifier::kTypify) {
-        if (!node->body()->type().isDef())
-          node->body()->setType(Type::makeAny());
-      }
+      if (!node->body()->type().isDef())
+        node->body()->setType(Type::makeAny());
     }
 
-    if (typf->fPhase == Typifier::kTypify) {
-      typf->setupFunctionNodeType(node);
+    typf->setupFunctionNodeType(node);
 
-      if (node->name() == Names::kAppMain) {
-        if (!node->retType().isAny()) {
-          if (node->retType().typeId() != Names::kInt32TypeName) {
-            errorf(node->srcpos(), E_TypeMismatch,
-                   "return type of " MID_app_main "() must be " MID_Int32TypeName);
-            error(node->srcpos(), E_TypeMismatch,
-                  String("found to be: ") + node->retType().typeId());
-          }
+    if (node->name() == Names::kAppMain) {
+      if (!node->retType().isAny()) {
+        if (node->retType().typeId() != Names::kInt32TypeName) {
+          errorf(node->srcpos(), E_TypeMismatch,
+                 "return type of " MID_app_main "() must be " MID_Int32TypeName);
+          error(node->srcpos(), E_TypeMismatch,
+                String("found to be: ") + node->retType().typeId());
         }
-
-        node->setRetType(Type::makeTypeRef(MID_Int32TypeName));
       }
 
-      if (node->body()) {
-        if (node->isMethod())
-          typf->enforceAtomTypeConv(node->body(), node->retType());
-        else
-          typf->annotateTypeConv(node->body(), node->retType());
-        typf->setBodyLastDstType(node->body(), node->retType());
-      }
+      node->setRetType(Type::makeTypeRef(MID_Int32TypeName));
     }
-    else if (typf->fPhase == Typifier::kCheck) {
-      typf->checkFunctionReturnType(node);
 
-      if (node->isMethod()) {
-        // for methods check that the function signature matches the generic
-        // function implementation.  The following conditions are checked in
-        // annotate.cpp already.
-        const FuncDefNode* genericDef;
-        const AstNode* var =
-            node->scope()->lookupVarOrFunc(node->name(), K(showAmbiguousSymDef));
-        if (var && (genericDef = dynamic_cast<const FuncDefNode*>(var)) &&
-            genericDef->isGeneric()) {
-          if (!isContravariant(genericDef->type(), node->type(), *node->scope(),
-                               node->srcpos())) {
-            // tyerror(genericDef->type(), "genericdef type");
-            // tyerror(node->type(), "node type");
-
-            errorf(node->srcpos(), E_TypeMismatch,
-                   "method does not match generic function definition");
-            // tyerror(genericDef->type(), "Generic");
-            // tyerror(node->type(), "This");
-          }
-        }
-      }
+    if (node->body()) {
+      if (node->isMethod())
+        typf->enforceAtomTypeConv(node->body(), node->retType());
+      else
+        typf->annotateTypeConv(node->body(), node->retType());
+      typf->setBodyLastDstType(node->body(), node->retType());
     }
   }
 };
@@ -218,13 +175,9 @@ struct NodeTypifier<std::shared_ptr<FunctionNode>> {
         node->body()->setType(Type::makeAny());
     }
 
-    if (typf->fPhase == Typifier::kTypify) {
-      typf->setupFunctionNodeType(node);
-      if (node->body())
-        typf->annotateTypeConv(node->body(), node->retType());
-    }
-    else if (typf->fPhase == Typifier::kCheck)
-      typf->checkFunctionReturnType(node);
+    typf->setupFunctionNodeType(node);
+    if (node->body())
+      typf->annotateTypeConv(node->body(), node->retType());
   }
 };
 
@@ -246,9 +199,7 @@ struct NodeTypifier<std::shared_ptr<BlockNode>> {
 
     typf->typifyNodeList(node->children());
 
-    if (typf->fPhase == Typifier::kTypify) {
-      node->setType(node->children().back()->type());
-    }
+    node->setType(node->children().back()->type());
   }
 };
 
@@ -260,20 +211,18 @@ struct NodeTypifier<std::shared_ptr<ParamNode>> {
     if (node->initExpr())
       typf->typifyNode(node->initExpr());
 
-    if (typf->fPhase == Typifier::kTypify) {
-      typf->setupBindingNodeType(node, "parameter");
+    typf->setupBindingNodeType(node, "parameter");
 
-      if (node->type().isDef()) {
-        if (node->isSpecArg()) {
-          if (node->type().isPlainType())
-            node->setTypeConv(kAtom2PlainConv);
-          else if (node->type().isAny())
-            node->setTypeConv(kTypeCheckConv);
-          // else
-          //   ; //OK
-        }
-        node->setDstType(node->type());
+    if (node->type().isDef()) {
+      if (node->isSpecArg()) {
+        if (node->type().isPlainType())
+          node->setTypeConv(kAtom2PlainConv);
+        else if (node->type().isAny())
+          node->setTypeConv(kTypeCheckConv);
+        // else
+        //   ; //OK
       }
+      node->setDstType(node->type());
     }
   }
 };
@@ -286,42 +235,40 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
     typf->typifyNode(node->base());
     typf->typifyNodeList(node->children());
 
-    if (typf->fPhase == Typifier::kTypify) {
-      if (node->isSimpleCall()) {
-        auto funcNode = dynamic_cast<const FunctionNode*>(node->scope()->lookupFunction(
-            node->simpleCallName(), K(showAmbiguousSymDef)));
-        if (funcNode) {
-          // XmlRenderer out{new FilePort(stdout)};
-          // out.render(const_cast<FunctionNode*>(funcNode));
-          typf->typifyMatchAndCheckParameters(node, funcNode);
+    if (node->isSimpleCall()) {
+      auto funcNode = dynamic_cast<const FunctionNode*>(
+          node->scope()->lookupFunction(node->simpleCallName(), K(showAmbiguousSymDef)));
+      if (funcNode) {
+        // XmlRenderer out{new FilePort(stdout)};
+        // out.render(const_cast<FunctionNode*>(funcNode));
+        typf->typifyMatchAndCheckParameters(node, funcNode);
 
-          if (node->simpleCallName() == Names::kLangAllocateArray) {
-            typf->checkAllocateArraySignature(node);
-          }
+        if (node->simpleCallName() == Names::kLangAllocateArray) {
+          typf->checkAllocateArraySignature(node);
         }
+      }
+    }
+    else {
+      if (auto typeNode = std::dynamic_pointer_cast<ArrayTypeNode>(node->base())) {
+        node->setType(typeNode->type());
+      }
+      else if (auto symNode = std::dynamic_pointer_cast<SymbolNode>(node->base())) {
+        node->setType(symNode->type());
+      }
+      else if (auto typeNode = std::dynamic_pointer_cast<TypeNode>(node->base())) {
+        node->setType(typeNode->type());
+      }
+      else if (auto funNode = std::dynamic_pointer_cast<FunctionNode>(node->base())) {
+        node->setType(funNode->type());
       }
       else {
-        if (auto typeNode = std::dynamic_pointer_cast<ArrayTypeNode>(node->base())) {
-          node->setType(typeNode->type());
-        }
-        else if (auto symNode = std::dynamic_pointer_cast<SymbolNode>(node->base())) {
-          node->setType(symNode->type());
-        }
-        else if (auto typeNode = std::dynamic_pointer_cast<TypeNode>(node->base())) {
-          node->setType(typeNode->type());
-        }
-        else if (auto funNode = std::dynamic_pointer_cast<FunctionNode>(node->base())) {
-          node->setType(funNode->type());
-        }
-        else {
-          // XmlRenderer out{new FilePort(stderr)};
-          // out.render(node.base());
-          hr_invalid("Unhandled apply base node");
-        }
+        // XmlRenderer out{new FilePort(stderr)};
+        // out.render(node.base());
+        hr_invalid("Unhandled apply base node");
       }
-
-      typf->annotateTypeConv(node, node->type());
     }
+
+    typf->annotateTypeConv(node, node->type());
   }
 };
 
@@ -349,33 +296,31 @@ struct NodeTypifier<std::shared_ptr<AssignNode>> {
     else
       typf->typifyNode(node->lvalue());
 
-    if (typf->fPhase == Typifier::kTypify) {
-      Type ltype = node->lvalue()->type();
-      Type rtype = node->rvalue()->type();
+    Type ltype = node->lvalue()->type();
+    Type rtype = node->rvalue()->type();
 
-      if (!ltype.isDef()) {
-        // infer the vardef type from rvalue expression
-        node->lvalue()->setType(node->rvalue()->type());
-      }
-      else if (!rtype.isDef()) {
-        errorf(node->rvalue()->srcpos(), E_TypeMismatch,
-               "Undefined type in assignment right hand value");
-      }
-      else if (!isContravariant(ltype, rtype, *node->scope(), node->srcpos()) &&
-               !containsAny(rtype, node->srcpos())) {
-        errorf(node->rvalue()->srcpos(), E_TypeMismatch, "type mismatch in assignment");
-      }
-      else if (!ltype.isDef()) {
-        // infer the vardef type from rvalue expression
-        node->lvalue()->setType(rtype);
-      }
-
-      node->setType(rtype);
-
-      typf->annotateTypeConv(node->rvalue(), ltype);
-      typf->annotateTypeConv(node->lvalue(), ltype);
-      typf->annotateTypeConv(node, ltype);
+    if (!ltype.isDef()) {
+      // infer the vardef type from rvalue expression
+      node->lvalue()->setType(node->rvalue()->type());
     }
+    else if (!rtype.isDef()) {
+      errorf(node->rvalue()->srcpos(), E_TypeMismatch,
+             "Undefined type in assignment right hand value");
+    }
+    else if (!isContravariant(ltype, rtype, *node->scope(), node->srcpos()) &&
+             !containsAny(rtype, node->srcpos())) {
+      errorf(node->rvalue()->srcpos(), E_TypeMismatch, "type mismatch in assignment");
+    }
+    else if (!ltype.isDef()) {
+      // infer the vardef type from rvalue expression
+      node->lvalue()->setType(rtype);
+    }
+
+    node->setType(rtype);
+
+    typf->annotateTypeConv(node->rvalue(), ltype);
+    typf->annotateTypeConv(node->lvalue(), ltype);
+    typf->annotateTypeConv(node, ltype);
   }
 };
 
@@ -386,263 +331,261 @@ struct NodeTypifier<std::shared_ptr<BinaryNode>> {
   {
     Type retty;
 
-    if (typf->fPhase == Typifier::kTypify) {
-      typf->typifyNode(node->left());
-      typf->typifyNode(node->right());
+    typf->typifyNode(node->left());
+    typf->typifyNode(node->right());
 
-      auto leftty = node->left()->type();
-      auto rightty = node->right()->type();
+    auto leftty = node->left()->type();
+    auto rightty = node->right()->type();
 
-      switch (node->op()) {
-      case kOpInvalid: hr_invalid("type not determined yet");
+    switch (node->op()) {
+    case kOpInvalid: hr_invalid("type not determined yet");
 
-      case kOpPlus:
-      case kOpMinus:
-      case kOpMultiply:
-      case kOpDivide:
-      case kOpMod:
-      case kOpRem:
-      case kOpExponent:
-        if (leftty.isAny() || rightty.isAny()) {
-          node->setType(Type::makeAny());
-          typf->annotateTypeConv(node->left(), node->type());
-          typf->annotateTypeConv(node->right(), node->type());
-          typf->annotateTypeConv(node, node->type());
-          return;
-        }
-        if (leftty.isNumber() || rightty.isNumber()) {
-          node->setType(Type::makeTypeRef(Names::kNumberTypeName, K(isValue)));
-          typf->annotateTypeConv(node->left(), node->type());
-          typf->annotateTypeConv(node->right(), node->type());
-          typf->annotateTypeConv(node, node->type());
-          return;
-        }
-
-        if (leftty.isComplex() || rightty.isComplex()) {
-          node->setType(Type::makeTypeRef(Names::kComplexTypeName, K(isValue)));
-          typf->annotateTypeConv(node->left(), node->type());
-          typf->annotateTypeConv(node->right(), node->type());
-          typf->annotateTypeConv(node, node->type());
-          return;
-        }
-
-        if (leftty.isAnyFloat()) {
-          if (rightty.isAnyFloat())
-            node->setType(maxFloatType(leftty, rightty));
-          else
-            node->setType(leftty);
-          typf->annotateTypeConv(node->left(), node->type());
-          typf->annotateTypeConv(node->right(), node->type());
-          typf->annotateTypeConv(node, node->type());
-          return;
-        }
-        if (rightty.isAnyFloat()) {
-          if (leftty.isAnyFloat())
-            node->setType(maxFloatType(leftty, rightty));
-          else
-            node->setType(rightty);
-          typf->annotateTypeConv(node->left(), node->type());
-          typf->annotateTypeConv(node->right(), node->type());
-          typf->annotateTypeConv(node, node->type());
-          return;
-        }
-
-        if (leftty.isRational() || rightty.isRational()) {
-          node->setType(Type::makeTypeRef(Names::kRationalTypeName, K(isValue)));
-          typf->annotateTypeConv(node->left(), node->type());
-          typf->annotateTypeConv(node->right(), node->type());
-          typf->annotateTypeConv(node, node->type());
-          return;
-        }
-
-        if (leftty.isAnyInt() && rightty.isAnyInt()) {
-          node->setType(maxIntType(leftty, rightty));
-          typf->annotateTypeConv(node->left(), node->type());
-          typf->annotateTypeConv(node->right(), node->type());
-          typf->annotateTypeConv(node, node->type());
-          return;
-        }
-
-
-        if (typf->checkBinaryFunctionCall(node, typf->operatorNameByOp(node->op()),
-                                          node->left(), node->right()))
-          return;
-
-        tyerror(leftty, "left");
-        tyerror(rightty, "right");
-        // TODO: try to lookup a method which enables add(leftty, rightty) and use
-        // it's returntype
-        errorf(node->srcpos(), E_BinaryTypeMismatch,
-               "incompatible types in binary operation");
+    case kOpPlus:
+    case kOpMinus:
+    case kOpMultiply:
+    case kOpDivide:
+    case kOpMod:
+    case kOpRem:
+    case kOpExponent:
+      if (leftty.isAny() || rightty.isAny()) {
         node->setType(Type::makeAny());
+        typf->annotateTypeConv(node->left(), node->type());
+        typf->annotateTypeConv(node->right(), node->type());
         typf->annotateTypeConv(node, node->type());
-        break;
-
-      case kOpEqual:
-      case kOpGreater:
-      case kOpGreaterEqual:
-      case kOpIn:
-      case kOpLess:
-      case kOpLessEqual:
-      case kOpUnequal:
-        if (leftty.isAny() || rightty.isAny() ||
-            (leftty.isAnySignedInt() && rightty.isAnySignedInt()) ||
-            (leftty.isAnyUInt() && rightty.isAnyUInt()) ||
-            (leftty.isAnyFloat() && rightty.isAnyFloat()) ||
-            (leftty.isRational() && rightty.isRational()) ||
-            (leftty.isComplex() && rightty.isComplex()) ||
-            (leftty.isNumber() && rightty.isNumber()) ||
-            isSameType(leftty, rightty, *node->scope(), node->srcpos())) {
-          // any is always ok.
-          node->setType(Type::makeBool());
-          typf->annotateTypeConv(node->left(), leftty);
-          typf->annotateTypeConv(node->right(), leftty);
-          typf->annotateTypeConv(node, node->type());
-          return;
-        }
-
-        // TODO: check that left and right type are comparable
-        tyerror(leftty, "compare left");
-        tyerror(rightty, "compare right");
-        errorf(node->srcpos(), E_BinaryTypeMismatch,
-               "incompatible types in binary comparison");
-        node->setType(Type::makeAny());
-        typf->annotateTypeConv(node, node->type());
-        break;
-
-      case kOpCompare:
-        if (leftty.isAny() || rightty.isAny() ||
-            (leftty.isAnySignedInt() && rightty.isAnySignedInt()) ||
-            (leftty.isAnyUInt() && rightty.isAnyUInt()) ||
-            (leftty.isAnyFloat() && rightty.isAnyFloat()) ||
-            (leftty.isRational() && rightty.isRational()) ||
-            (leftty.isComplex() && rightty.isComplex()) ||
-            (leftty.isNumber() && rightty.isNumber()) ||
-            isSameType(leftty, rightty, *node->scope(), node->srcpos())) {
-          node->setType(Type::makeInt32());
-          typf->annotateTypeConv(node->left(), leftty);
-          typf->annotateTypeConv(node->right(), leftty);
-          typf->annotateTypeConv(node, node->type());
-          return;
-        }
-
-        errorf(node->srcpos(), E_BinaryTypeMismatch,
-               "incompatible types in binary comparison (compare)");
-        node->setType(Type::makeAny());
-        typf->annotateTypeConv(node, node->type());
-        break;
-
-      case kOpIsa:
-        if (rightty.isAny() || rightty.isClassTypeOf()) {
-          node->setType(Type::makeBool());
-          typf->annotateTypeConv(node->left(), node->type());
-          typf->annotateTypeConv(node->right(), node->type());
-          typf->annotateTypeConv(node, node->type());
-          return;
-        }
-        // TODO: try to lookup a method which enables isa(leftty, rightty) and
-        // use it's returntype
-        errorf(node->srcpos(), E_BinaryTypeMismatch,
-               "incompatible right side type in isa operation");
-        node->setType(Type::makeAny());
-        typf->annotateTypeConv(node, node->type());
-        break;
-
-      case kOpConcat:
-        if (leftty.isString() || leftty.isAny()) {
-          if (rightty.isString() || rightty.isChar() || rightty.isAny()) {
-            node->setType(leftty);
-            typf->annotateTypeConv(node->left(), leftty);
-            typf->annotateTypeConv(node->right(), leftty);
-            typf->annotateTypeConv(node, node->type());
-            return;
-          }
-        }
-        // TODO: try to lookup a method which enables append(leftty, rightty)
-        // and use it's returntype
-        errorf(node->srcpos(), E_BinaryTypeMismatch,
-               "incompatible types in append() operation");
-        node->setType(Type::makeAny());
-        typf->annotateTypeConv(node, node->type());
-        break;
-
-      case kOpFold:
-        if (leftty.isString() || leftty.isAny()) {
-          // accept everything on the right hand side
-          node->setType(leftty);
-          typf->annotateTypeConv(node->left(), leftty);
-          typf->annotateTypeConv(node->right(), leftty);
-          typf->annotateTypeConv(node, node->type());
-          return;
-        }
-        // TODO: try to lookup a method which enables fold(leftty, rightty) and
-        // use it's returntype
-        errorf(node->srcpos(), E_BinaryTypeMismatch,
-               "incompatible types in fold() operation");
-        node->setType(Type::makeAny());
-        typf->annotateTypeConv(node, node->type());
-        break;
-
-      case kOpLogicalAnd:
-      case kOpLogicalOr:
-        if (leftty.isBool() && rightty.isBool()) {
-          node->setType(Type::makeBool());
-          typf->annotateTypeConv(node->left(), leftty);
-          typf->annotateTypeConv(node->right(), leftty);
-          typf->annotateTypeConv(node, node->type());
-          return;
-        }
-        errorf(node->srcpos(), E_BinaryTypeMismatch,
-               "bool types required in logical 'and'/'or' operations");
-        node->setType(Type::makeAny());
-        typf->annotateTypeConv(node, node->type());
-        break;
-
-      case kOpBitAnd:
-      case kOpBitOr:
-      case kOpBitXor:
-        if ((leftty.isAnyUInt() || leftty.isAny()) &&
-            (rightty.isAnyUInt() || rightty.isAny())) {
-          node->setType(leftty);
-          typf->annotateTypeConv(node->left(), leftty);
-          typf->annotateTypeConv(node->right(), leftty);
-        }
-        else {
-          errorf(node->srcpos(), E_BinaryTypeMismatch,
-                 "AND, OR, XOR operations require unsigned integer types on both sides");
-          node->setType(Type::makeAny());
-        }
-        typf->annotateTypeConv(node, node->type());
-        break;
-
-      case kOpShiftLeft:
-      case kOpShiftRight:
-        if (leftty.isAnyUInt() || leftty.isAny()) {
-          if (rightty.isAnyInt() || rightty.isAny()) {
-            node->setType(leftty);
-            typf->annotateTypeConv(node->left(), leftty);
-            typf->annotateTypeConv(node->right(), leftty);
-          }
-          else {
-            errorf(node->srcpos(), E_BinaryTypeMismatch,
-                   "bit operations require integer types on right side");
-            node->setType(Type::makeAny());
-          }
-        }
-        else {
-          errorf(node->srcpos(), E_BinaryTypeMismatch,
-                 "bit operations require unsigned integer types on left side");
-          node->setType(Type::makeAny());
-        }
-        typf->annotateTypeConv(node, node->type());
-        break;
-
-      case kOpMapTo:
-      case kOpRange:
-      case kOpBy:
-      case kOpAs:
-      case kOpAssign: hr_invalid("not handled operators?");
+        return;
       }
+      if (leftty.isNumber() || rightty.isNumber()) {
+        node->setType(Type::makeTypeRef(Names::kNumberTypeName, K(isValue)));
+        typf->annotateTypeConv(node->left(), node->type());
+        typf->annotateTypeConv(node->right(), node->type());
+        typf->annotateTypeConv(node, node->type());
+        return;
+      }
+
+      if (leftty.isComplex() || rightty.isComplex()) {
+        node->setType(Type::makeTypeRef(Names::kComplexTypeName, K(isValue)));
+        typf->annotateTypeConv(node->left(), node->type());
+        typf->annotateTypeConv(node->right(), node->type());
+        typf->annotateTypeConv(node, node->type());
+        return;
+      }
+
+      if (leftty.isAnyFloat()) {
+        if (rightty.isAnyFloat())
+          node->setType(maxFloatType(leftty, rightty));
+        else
+          node->setType(leftty);
+        typf->annotateTypeConv(node->left(), node->type());
+        typf->annotateTypeConv(node->right(), node->type());
+        typf->annotateTypeConv(node, node->type());
+        return;
+      }
+      if (rightty.isAnyFloat()) {
+        if (leftty.isAnyFloat())
+          node->setType(maxFloatType(leftty, rightty));
+        else
+          node->setType(rightty);
+        typf->annotateTypeConv(node->left(), node->type());
+        typf->annotateTypeConv(node->right(), node->type());
+        typf->annotateTypeConv(node, node->type());
+        return;
+      }
+
+      if (leftty.isRational() || rightty.isRational()) {
+        node->setType(Type::makeTypeRef(Names::kRationalTypeName, K(isValue)));
+        typf->annotateTypeConv(node->left(), node->type());
+        typf->annotateTypeConv(node->right(), node->type());
+        typf->annotateTypeConv(node, node->type());
+        return;
+      }
+
+      if (leftty.isAnyInt() && rightty.isAnyInt()) {
+        node->setType(maxIntType(leftty, rightty));
+        typf->annotateTypeConv(node->left(), node->type());
+        typf->annotateTypeConv(node->right(), node->type());
+        typf->annotateTypeConv(node, node->type());
+        return;
+      }
+
+
+      if (typf->checkBinaryFunctionCall(node, typf->operatorNameByOp(node->op()),
+                                        node->left(), node->right()))
+        return;
+
+      tyerror(leftty, "left");
+      tyerror(rightty, "right");
+      // TODO: try to lookup a method which enables add(leftty, rightty) and use
+      // it's returntype
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "incompatible types in binary operation");
+      node->setType(Type::makeAny());
+      typf->annotateTypeConv(node, node->type());
+      break;
+
+    case kOpEqual:
+    case kOpGreater:
+    case kOpGreaterEqual:
+    case kOpIn:
+    case kOpLess:
+    case kOpLessEqual:
+    case kOpUnequal:
+      if (leftty.isAny() || rightty.isAny() ||
+          (leftty.isAnySignedInt() && rightty.isAnySignedInt()) ||
+          (leftty.isAnyUInt() && rightty.isAnyUInt()) ||
+          (leftty.isAnyFloat() && rightty.isAnyFloat()) ||
+          (leftty.isRational() && rightty.isRational()) ||
+          (leftty.isComplex() && rightty.isComplex()) ||
+          (leftty.isNumber() && rightty.isNumber()) ||
+          isSameType(leftty, rightty, *node->scope(), node->srcpos())) {
+        // any is always ok.
+        node->setType(Type::makeBool());
+        typf->annotateTypeConv(node->left(), leftty);
+        typf->annotateTypeConv(node->right(), leftty);
+        typf->annotateTypeConv(node, node->type());
+        return;
+      }
+
+      // TODO: check that left and right type are comparable
+      tyerror(leftty, "compare left");
+      tyerror(rightty, "compare right");
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "incompatible types in binary comparison");
+      node->setType(Type::makeAny());
+      typf->annotateTypeConv(node, node->type());
+      break;
+
+    case kOpCompare:
+      if (leftty.isAny() || rightty.isAny() ||
+          (leftty.isAnySignedInt() && rightty.isAnySignedInt()) ||
+          (leftty.isAnyUInt() && rightty.isAnyUInt()) ||
+          (leftty.isAnyFloat() && rightty.isAnyFloat()) ||
+          (leftty.isRational() && rightty.isRational()) ||
+          (leftty.isComplex() && rightty.isComplex()) ||
+          (leftty.isNumber() && rightty.isNumber()) ||
+          isSameType(leftty, rightty, *node->scope(), node->srcpos())) {
+        node->setType(Type::makeInt32());
+        typf->annotateTypeConv(node->left(), leftty);
+        typf->annotateTypeConv(node->right(), leftty);
+        typf->annotateTypeConv(node, node->type());
+        return;
+      }
+
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "incompatible types in binary comparison (compare)");
+      node->setType(Type::makeAny());
+      typf->annotateTypeConv(node, node->type());
+      break;
+
+    case kOpIsa:
+      if (rightty.isAny() || rightty.isClassTypeOf()) {
+        node->setType(Type::makeBool());
+        typf->annotateTypeConv(node->left(), node->type());
+        typf->annotateTypeConv(node->right(), node->type());
+        typf->annotateTypeConv(node, node->type());
+        return;
+      }
+      // TODO: try to lookup a method which enables isa(leftty, rightty) and
+      // use it's returntype
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "incompatible right side type in isa operation");
+      node->setType(Type::makeAny());
+      typf->annotateTypeConv(node, node->type());
+      break;
+
+    case kOpConcat:
+      if (leftty.isString() || leftty.isAny()) {
+        if (rightty.isString() || rightty.isChar() || rightty.isAny()) {
+          node->setType(leftty);
+          typf->annotateTypeConv(node->left(), leftty);
+          typf->annotateTypeConv(node->right(), leftty);
+          typf->annotateTypeConv(node, node->type());
+          return;
+        }
+      }
+      // TODO: try to lookup a method which enables append(leftty, rightty)
+      // and use it's returntype
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "incompatible types in append() operation");
+      node->setType(Type::makeAny());
+      typf->annotateTypeConv(node, node->type());
+      break;
+
+    case kOpFold:
+      if (leftty.isString() || leftty.isAny()) {
+        // accept everything on the right hand side
+        node->setType(leftty);
+        typf->annotateTypeConv(node->left(), leftty);
+        typf->annotateTypeConv(node->right(), leftty);
+        typf->annotateTypeConv(node, node->type());
+        return;
+      }
+      // TODO: try to lookup a method which enables fold(leftty, rightty) and
+      // use it's returntype
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "incompatible types in fold() operation");
+      node->setType(Type::makeAny());
+      typf->annotateTypeConv(node, node->type());
+      break;
+
+    case kOpLogicalAnd:
+    case kOpLogicalOr:
+      if (leftty.isBool() && rightty.isBool()) {
+        node->setType(Type::makeBool());
+        typf->annotateTypeConv(node->left(), leftty);
+        typf->annotateTypeConv(node->right(), leftty);
+        typf->annotateTypeConv(node, node->type());
+        return;
+      }
+      errorf(node->srcpos(), E_BinaryTypeMismatch,
+             "bool types required in logical 'and'/'or' operations");
+      node->setType(Type::makeAny());
+      typf->annotateTypeConv(node, node->type());
+      break;
+
+    case kOpBitAnd:
+    case kOpBitOr:
+    case kOpBitXor:
+      if ((leftty.isAnyUInt() || leftty.isAny()) &&
+          (rightty.isAnyUInt() || rightty.isAny())) {
+        node->setType(leftty);
+        typf->annotateTypeConv(node->left(), leftty);
+        typf->annotateTypeConv(node->right(), leftty);
+      }
+      else {
+        errorf(node->srcpos(), E_BinaryTypeMismatch,
+               "AND, OR, XOR operations require unsigned integer types on both sides");
+        node->setType(Type::makeAny());
+      }
+      typf->annotateTypeConv(node, node->type());
+      break;
+
+    case kOpShiftLeft:
+    case kOpShiftRight:
+      if (leftty.isAnyUInt() || leftty.isAny()) {
+        if (rightty.isAnyInt() || rightty.isAny()) {
+          node->setType(leftty);
+          typf->annotateTypeConv(node->left(), leftty);
+          typf->annotateTypeConv(node->right(), leftty);
+        }
+        else {
+          errorf(node->srcpos(), E_BinaryTypeMismatch,
+                 "bit operations require integer types on right side");
+          node->setType(Type::makeAny());
+        }
+      }
+      else {
+        errorf(node->srcpos(), E_BinaryTypeMismatch,
+               "bit operations require unsigned integer types on left side");
+        node->setType(Type::makeAny());
+      }
+      typf->annotateTypeConv(node, node->type());
+      break;
+
+    case kOpMapTo:
+    case kOpRange:
+    case kOpBy:
+    case kOpAs:
+    case kOpAssign: hr_invalid("not handled operators?");
     }
   }
 };
@@ -702,30 +645,28 @@ struct NodeTypifier<std::shared_ptr<UnaryNode>> {
   {
     typf->typifyNode(node->base());
 
-    if (typf->fPhase == Typifier::kTypify) {
-      switch (node->op()) {
-      case kUnaryOpNegate: node->setType(node->base()->type()); break;
+    switch (node->op()) {
+    case kUnaryOpNegate: node->setType(node->base()->type()); break;
 
-      case kUnaryOpNot:
-        if (!node->base()->type().isDef()) {
-          errorf(node->srcpos(), E_BoolTypeExpected, "bool expected for not operator");
-          node->setType(Type::makeAny());
-        }
-        else if (node->base()->type().isBool()) {
-          node->setType(node->base()->type());
-        }
-        else if (node->base()->type().isAny()) {
-          node->setType(Type::makeBool());
-        }
-        else {
-          errorf(node->srcpos(), E_BoolTypeExpected, "bool expected for not operator");
-          node->setType(Type::makeAny());
-        }
-        typf->annotateTypeConv(node->base(), Type::makeBool());
-        break;
-
-      case kUnaryOpInvalid: hr_invalid("unhandled unary operator"); break;
+    case kUnaryOpNot:
+      if (!node->base()->type().isDef()) {
+        errorf(node->srcpos(), E_BoolTypeExpected, "bool expected for not operator");
+        node->setType(Type::makeAny());
       }
+      else if (node->base()->type().isBool()) {
+        node->setType(node->base()->type());
+      }
+      else if (node->base()->type().isAny()) {
+        node->setType(Type::makeBool());
+      }
+      else {
+        errorf(node->srcpos(), E_BoolTypeExpected, "bool expected for not operator");
+        node->setType(Type::makeAny());
+      }
+      typf->annotateTypeConv(node->base(), Type::makeBool());
+      break;
+
+    case kUnaryOpInvalid: hr_invalid("unhandled unary operator"); break;
     }
   }
 };
@@ -742,58 +683,49 @@ struct NodeTypifier<std::shared_ptr<IfNode>> {
     if (node->alternate())
       typf->typifyNode(node->alternate());
 
-    if (typf->fPhase == Typifier::kTypify) {
-      if (node->alternate()) {
-        Type cotype = node->consequent()->type();
-        Type alttype = node->alternate()->type();
+    if (node->alternate()) {
+      Type cotype = node->consequent()->type();
+      Type alttype = node->alternate()->type();
 
-        if (isCovariant(cotype, alttype, *node->scope(), node->srcpos())) {
-          node->setType(alttype);
-          typf->annotateTypeConv(node->consequent(), alttype);
-          typf->annotateTypeConv(node->alternate(), alttype);
-          typf->annotateTypeConv(node, alttype);
-        }
-        else if (isCovariant(alttype, cotype, *node->scope(), node->srcpos())) {
-          node->setType(cotype);
-          typf->annotateTypeConv(node->consequent(), cotype);
-          typf->annotateTypeConv(node->alternate(), cotype);
-          typf->annotateTypeConv(node, cotype);
-        }
-        else {
-          // if the if expression is not in tail position, the branch type
-          // mismatch doesn't matter.
-          if (node->isInTailPos() || node->isSingleTypeRequired()) {
-            errorf(node->srcpos(), E_IfConsqTypeMismatch,
-                   "types for if consequent and alternate branch do not match");
-          }
-          node->setType(Type::makeAny(K(isValue)));
-          typf->annotateTypeConv(node->consequent(), Type::makeAny());
-          typf->annotateTypeConv(node->alternate(), Type::makeAny());
-          typf->annotateTypeConv(node, Type::makeAny());
-        }
+      if (isCovariant(cotype, alttype, *node->scope(), node->srcpos())) {
+        node->setType(alttype);
+        typf->annotateTypeConv(node->consequent(), alttype);
+        typf->annotateTypeConv(node->alternate(), alttype);
+        typf->annotateTypeConv(node, alttype);
+      }
+      else if (isCovariant(alttype, cotype, *node->scope(), node->srcpos())) {
+        node->setType(cotype);
+        typf->annotateTypeConv(node->consequent(), cotype);
+        typf->annotateTypeConv(node->alternate(), cotype);
+        typf->annotateTypeConv(node, cotype);
       }
       else {
+        // if the if expression is not in tail position, the branch type
+        // mismatch doesn't matter.
         if (node->isInTailPos() || node->isSingleTypeRequired()) {
-          // if the if expression is in tail position we should definitely have
-          // have an alternate branch.
-          errorf(node->srcpos(), E_IfAltTypeMismatch,
-                 "unspecified alternate branch do not match type with consequent");
-          node->setType(Type::makeAny(K(isValue)));
+          errorf(node->srcpos(), E_IfConsqTypeMismatch,
+                 "types for if consequent and alternate branch do not match");
         }
-        else {
-          node->setType(node->consequent()->type());
-        }
-        typf->annotateTypeConv(node->consequent(), node->type());
-        typf->annotateTypeConv(node, node->type());
+        node->setType(Type::makeAny(K(isValue)));
+        typf->annotateTypeConv(node->consequent(), Type::makeAny());
+        typf->annotateTypeConv(node->alternate(), Type::makeAny());
+        typf->annotateTypeConv(node, Type::makeAny());
       }
     }
-    // TODO
-    // else if (fPhase == kCheck) {
-    //   if (!isSameType(Type::makeBool(true), node->test()->type())) {
-    //     errorf(node->test(), E_BoolTypeExpected,
-    //            "Bool type in if test expected");
-    //   }
-    // }
+    else {
+      if (node->isInTailPos() || node->isSingleTypeRequired()) {
+        // if the if expression is in tail position we should definitely have
+        // have an alternate branch.
+        errorf(node->srcpos(), E_IfAltTypeMismatch,
+               "unspecified alternate branch do not match type with consequent");
+        node->setType(Type::makeAny(K(isValue)));
+      }
+      else {
+        node->setType(node->consequent()->type());
+      }
+      typf->annotateTypeConv(node->consequent(), node->type());
+      typf->annotateTypeConv(node, node->type());
+    }
   }
 };
 
@@ -841,46 +773,44 @@ struct NodeTypifier<std::shared_ptr<RangeNode>> {
       typf->typifyNode(node->by());
     }
 
-    if (typf->fPhase == Typifier::kTypify) {
-      Type fromType = node->from()->type();
-      Type toType = node->to()->type();
-      bool fromIsOpen = fromType.isOpen();
-      bool toIsOpen = toType.isOpen();
+    Type fromType = node->from()->type();
+    Type toType = node->to()->type();
+    bool fromIsOpen = fromType.isOpen();
+    bool toIsOpen = toType.isOpen();
 
-      if ((fromIsOpen || toIsOpen) && (fromIsOpen != toIsOpen)) {
+    if ((fromIsOpen || toIsOpen) && (fromIsOpen != toIsOpen)) {
+      errorf(node->srcpos(), E_RangeTypeMismatch,
+             "partial open types in range declaration defeats generics usage");
+      node->setType(makeRangeType(Type::makeAny(K(isValue))));
+      return;
+    }
+
+    if (!isSameType(fromType, toType, *node->scope(), node->srcpos())) {
+      errorf(node->srcpos(), E_RangeTypeMismatch, "type of range is ambiguous");
+      node->setType(makeRangeType(Type::makeAny(K(isValue))));
+      return;
+    }
+
+    if (node->by()) {
+      Type byType = node->by()->type();
+      bool byIsOpen = byType.isOpen();
+
+      if (byIsOpen && byIsOpen != fromIsOpen) {
         errorf(node->srcpos(), E_RangeTypeMismatch,
                "partial open types in range declaration defeats generics usage");
         node->setType(makeRangeType(Type::makeAny(K(isValue))));
         return;
       }
 
-      if (!isSameType(fromType, toType, *node->scope(), node->srcpos())) {
-        errorf(node->srcpos(), E_RangeTypeMismatch, "type of range is ambiguous");
+      if (!isSameType(fromType, byType, *node->scope(), node->by()->srcpos())) {
+        errorf(node->srcpos(), E_RangeTypeMismatch,
+               "step type does not match range type");
         node->setType(makeRangeType(Type::makeAny(K(isValue))));
         return;
       }
-
-      if (node->by()) {
-        Type byType = node->by()->type();
-        bool byIsOpen = byType.isOpen();
-
-        if (byIsOpen && byIsOpen != fromIsOpen) {
-          errorf(node->srcpos(), E_RangeTypeMismatch,
-                 "partial open types in range declaration defeats generics usage");
-          node->setType(makeRangeType(Type::makeAny(K(isValue))));
-          return;
-        }
-
-        if (!isSameType(fromType, byType, *node->scope(), node->by()->srcpos())) {
-          errorf(node->srcpos(), E_RangeTypeMismatch,
-                 "step type does not match range type");
-          node->setType(makeRangeType(Type::makeAny(K(isValue))));
-          return;
-        }
-      }
-
-      node->setType(makeRangeType(node->from()->type()));
     }
+
+    node->setType(makeRangeType(node->from()->type()));
   }
 };
 
@@ -892,9 +822,7 @@ struct NodeTypifier<std::shared_ptr<WhileNode>> {
     typf->typifyNode(node->test());
     typf->typifyNode(node->body());
 
-    if (typf->fPhase == Typifier::kTypify) {
-      typf->annotateTypeConv(node->test(), Type::makeBool());
-    }
+    typf->annotateTypeConv(node->test(), Type::makeBool());
 
     if (node->isInTailPos() || node->isSingleTypeRequired()) {
       // the while expression should never be in tail position
@@ -1021,26 +949,24 @@ struct NodeTypifier<std::shared_ptr<CastNode>> {
   {
     typf->typifyNode(node->base());
 
-    if (typf->fPhase == Typifier::kTypify) {
-      if (!node->type().isOpen()) {
-        Type type = node->scope()->lookupType(node->type());
-        if (!type.isDef()) {
-          errorf(node->srcpos(), E_UndefinedType, "undefined type '%s'",
-                 (zstring)StrHelper(node->type().toString()));
+    if (!node->type().isOpen()) {
+      Type type = node->scope()->lookupType(node->type());
+      if (!type.isDef()) {
+        errorf(node->srcpos(), E_UndefinedType, "undefined type '%s'",
+               (zstring)StrHelper(node->type().toString()));
+        node->setType(Type::makeAny(K(isValue)));
+      }
+      else {
+        if (isInvariant(node->base()->type(), type, *node->scope(), node->srcpos())) {
+          errorf(node->srcpos(), E_InvariantType, "Cast to invariant type");
           node->setType(Type::makeAny(K(isValue)));
         }
-        else {
-          if (isInvariant(node->base()->type(), type, *node->scope(), node->srcpos())) {
-            errorf(node->srcpos(), E_InvariantType, "Cast to invariant type");
-            node->setType(Type::makeAny(K(isValue)));
-          }
-          else
-            node->setType(type);
-        }
+        else
+          node->setType(type);
       }
-
-      typf->annotateTypeConv(node->base(), node->type());
     }
+
+    typf->annotateTypeConv(node->base(), node->type());
   }
 };
 
@@ -1072,10 +998,8 @@ template <>
 struct NodeTypifier<std::shared_ptr<BoolNode>> {
   static void typify(Typifier* typf, std::shared_ptr<BoolNode> node)
   {
-    if (typf->fPhase == Typifier::kTypify) {
-      typifyNodeType(node, Type(), Names::kBoolTypeName, !K(maybeImaginary));
-      typf->annotateTypeConv(node, node->type());
-    }
+    typifyNodeType(node, Type(), Names::kBoolTypeName, !K(maybeImaginary));
+    typf->annotateTypeConv(node, node->type());
   }
 };
 
@@ -1084,9 +1008,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<CharNode>> {
   static void typify(Typifier* typf, std::shared_ptr<CharNode> node)
   {
-    if (typf->fPhase == Typifier::kTypify) {
-      typifyNodeType(node, Type(), Names::kCharTypeName, !K(maybeImaginary));
-    }
+    typifyNodeType(node, Type(), Names::kCharTypeName, !K(maybeImaginary));
   }
 };
 
@@ -1095,9 +1017,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<RationalNode>> {
   static void typify(Typifier* typf, std::shared_ptr<RationalNode> node)
   {
-    if (typf->fPhase == Typifier::kTypify) {
-      typifyNodeType(node, node->type(), Names::kRationalTypeName, K(maybeImaginary));
-    }
+    typifyNodeType(node, node->type(), Names::kRationalTypeName, K(maybeImaginary));
   }
 };
 
@@ -1106,9 +1026,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<RealNode>> {
   static void typify(Typifier* typf, std::shared_ptr<RealNode> node)
   {
-    if (typf->fPhase == Typifier::kTypify) {
-      typifyNodeType(node, node->type(), Names::kFloat32TypeName, K(maybeImaginary));
-    }
+    typifyNodeType(node, node->type(), Names::kFloat32TypeName, K(maybeImaginary));
   }
 };
 
@@ -1117,9 +1035,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<IntNode>> {
   static void typify(Typifier* typf, std::shared_ptr<IntNode> node)
   {
-    if (typf->fPhase == Typifier::kTypify) {
-      typifyNodeType(node, node->type(), Names::kInt32TypeName, K(maybeImaginary));
-    }
+    typifyNodeType(node, node->type(), Names::kInt32TypeName, K(maybeImaginary));
   }
 };
 
@@ -1128,9 +1044,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<StringNode>> {
   static void typify(Typifier* typf, std::shared_ptr<StringNode> node)
   {
-    if (typf->fPhase == Typifier::kTypify) {
-      typifyNodeType(node, Type(), Names::kStringTypeName, !K(maybeImaginary));
-    }
+    typifyNodeType(node, Type(), Names::kStringTypeName, !K(maybeImaginary));
   }
 };
 
@@ -1139,29 +1053,14 @@ template <>
 struct NodeTypifier<std::shared_ptr<KeywordNode>> {
   static void typify(Typifier* typf, std::shared_ptr<KeywordNode> node)
   {
-    if (typf->fPhase == Typifier::kTypify) {
-      typifyNodeType(node, Type(), Names::kKeywordTypeName, !K(maybeImaginary));
-    }
+    typifyNodeType(node, Type(), Names::kKeywordTypeName, !K(maybeImaginary));
   }
 };
 
 
 //------------------------------------------------------------------------------
 
-Typifier::Typifier()
-    : fPhase(kTypify)
-{
-}
-
-
-void Typifier::typifyRecursively(std::shared_ptr<AstNode> node)
-{
-  fPhase = kTypify;
-  typifyNode(node);
-
-  fPhase = kCheck;
-  typifyNode(node);
-}
+Typifier::Typifier() {}
 
 
 void Typifier::typifyNode(std::shared_ptr<AstNode> node)
@@ -1755,7 +1654,7 @@ TypifyPass::TypifyPass(int level)
 std::shared_ptr<AstNode> TypifyPass::doApply(std::shared_ptr<AstNode> src)
 {
   auto ty = Typifier{};
-  ty.typifyRecursively(src);
+  ty.typifyNode(src);
   return src;
 }
 

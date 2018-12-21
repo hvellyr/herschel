@@ -4,7 +4,7 @@ def foo(a : Int) -> Int
 def foo(b : String) -> String
   b
 
-def foo(c : (Int, Bool)) -> Bool
+def foo(c : (Int | Bool)) -> Bool
   match (c)
     | x : Bool -> x
     | _ : Any -> false

@@ -40,15 +40,11 @@ using NodeList = std::vector<std::shared_ptr<AstNode>>;
  * types for each node in the abstract syntax tree.  After being
  * applied all nodes should have proper types and typeConversions set
  * which can be accessed via the @c AstNode::type(), @c
- * AstNode::dstType(), and @c AstNode::typeConv() methods.  The main
- * entry point is @c typifyRecursively().
+ * AstNode::dstType(), and @c AstNode::typeConv() methods.
  */
 class Typifier {
 public:
   Typifier();
-
-  /*! The main entry function, which starts a recursive processing on @p node. */
-  void typifyRecursively(std::shared_ptr<AstNode> node);
 
   void annotateTypeConv(std::shared_ptr<AstNode> toNode, const Type& type);
   void enforceAtomTypeConv(std::shared_ptr<AstNode> node, const Type& dstType);
@@ -122,10 +118,6 @@ public:
    * argidx.  If no matching argument can be found the returned structure
    * has the value <tt>{ nullptr, 0 }</tt>; */
   KeyargReturn findKeyedArg(const NodeList& args, size_t argidx, const String& key);
-
-  enum Phase { kTypify, kCheck };
-
-  Phase fPhase;
 };
 
 

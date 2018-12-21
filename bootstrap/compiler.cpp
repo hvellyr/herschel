@@ -28,6 +28,7 @@
 #include "scope.hpp"
 #include "str.hpp"
 #include "tokenizer.hpp"
+#include "typecheck.hpp"
 #include "typify.hpp"
 #include "utils.hpp"
 #include "xmlrenderer.hpp"
@@ -173,6 +174,8 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
 
       TypifyPass nodePass4{ 5 };
       ast = nodePass4.apply(ast, doTrace);
+      TypeCheckPass nodePass5{ 6 };
+      ast = nodePass5.apply(ast, doTrace);
     }
 
     return ast;
