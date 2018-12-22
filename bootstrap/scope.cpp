@@ -194,10 +194,9 @@ Scope::LookupResult Scope::lookupItemLocalImpl(const SrcPos& srcpos,
       else if (showError) {
         errorf(srcpos, E_AmbiguousSym, "ambiguous symbol '%s' usage",
                (zstring)StrHelper(base.fName));
-        for (BaseScopeMap::const_iterator vit = it->second.begin();
-             vit != it->second.end(); vit++) {
-          String fullKey = qualifyId(vit->first, it->first.fName);
-          errorf(vit->second->srcpos(), E_AmbiguousSym, "symbol '%s' was defined here",
+        for (const auto& space : it->second) {
+          String fullKey = qualifyId(space.first, it->first.fName);
+          errorf(space.second->srcpos(), E_AmbiguousSym, "symbol '%s' was defined here",
                  (zstring)StrHelper(fullKey));
         }
       }
@@ -210,9 +209,8 @@ Scope::LookupResult Scope::lookupItemLocalImpl(const SrcPos& srcpos,
     }
   }
 
-  for (ImportedScope::const_iterator it = fImportedScopes.begin();
-       it != fImportedScopes.end(); it++) {
-    auto lv = it->second->lookupItemLocalImpl(srcpos, name, showError, doAutoMatch);
+  for (const auto& impScope : fImportedScopes) {
+    auto lv = impScope.second->lookupItemLocalImpl(srcpos, name, showError, doAutoMatch);
     if (lv.fItem)
       return lv;
   }

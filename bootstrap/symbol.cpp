@@ -39,6 +39,8 @@ String qualifyId(const String& ns, const String& name)
     return name;
   else if (ns.isEmpty())
     return String(".") + name;
+  else if (!isQualified(ns))
+    return String(".") + ns + "." + name;
 
   return ns + "." + name;
 }

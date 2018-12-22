@@ -475,7 +475,9 @@ Token FirstPass::parseExport()
     TokenVector children = symbols.children();
     for (TokenVector::const_iterator it = children.begin(); it != children.end(); it++) {
       if (*it == kSymbol) {
-        String fullId = qualifyId(currentModuleName(), it->idValue());
+        String fullId = (isQualified(it->idValue()) || it->idValue() == String("*")
+                         ? it->idValue()
+                         : qualifyId(currentModuleName(), it->idValue()));
         fScope->registerSymbolForExport(Scope::kNormal, fullId, vizType, isFinal);
       }
     }
