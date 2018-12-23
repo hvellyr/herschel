@@ -172,6 +172,8 @@ public:
 
   const AstNode* lookupVarOrFunc(const String& name, bool showAmbiguousSymDef) const;
 
+  const AstNode* lookupBestFunctionOverload(const String& name, const std::vector<Type>& argTypes) const;
+
   bool isVarInOuterFunction(const String& name) const;
 
   //-------- register export symbols

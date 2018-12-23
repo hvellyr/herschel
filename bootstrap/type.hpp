@@ -716,6 +716,14 @@ bool isContravariant(const Type& left, const Type& right, const Scope& scope,
 //! @var{left}, i.e. there's no relation between @var{left} and @var{right}.
 bool isInvariant(const Type& left, const Type& right, const Scope& scope,
                  const SrcPos& srcpos, bool reportErrors = true);
+//! Returns the "variance distance" of the types @var{right} and
+//! @var{left}.  If @var{right} is covariant (i.e. narrower) to
+//! @var{left} the first member of the result is negative, if it is
+//! contravariant (i.e. wider) the first member of the result is
+//! positive.  If the types are equivalent the result is 0.  If the
+//! types are invariant the second member is false.
+std::pair<int, bool> varianceDistance(const Type& left, const Type& right,
+                                      const Scope& scope);
 bool containsAny(const Type& left, const SrcPos& srcpos, bool reportErrors = true);
 
 Type makeRangeType(const Type& generic);

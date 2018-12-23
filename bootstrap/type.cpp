@@ -3173,6 +3173,25 @@ bool isInvariant(const Type& left, const Type& right, const Scope& scope,
 }
 
 
+std::pair<int, bool> varianceDistance(const Type& left, const Type& right,
+                                      const Scope& scope)
+{
+  // TODO: measure the "real" distance (e.g. inheritance likeliness) for two types
+  if (isSameType(left, right, scope, SrcPos(), !K(reportErrors)))
+    return std::make_pair(0, true);
+  else if (isCovariant(left, right, scope, SrcPos(), !K(reportErrors)))
+    return std::make_pair(-1, true);
+  else if (isContravariant(left, right, scope, SrcPos(), !K(reportErrors)))
+    return std::make_pair(1, true);
+  else if (containsAny(right, SrcPos(), !K(reportErrors)))
+    return std::make_pair(2, true);
+  else if (containsAny(left, SrcPos(), !K(reportErrors)))
+    return std::make_pair(-2, true);
+  else
+    return std::make_pair(0, false);
+}
+
+
 //----------------------------------------------------------------------------
 
 Type makeRangeType(const Type& generic)

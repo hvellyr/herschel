@@ -238,9 +238,26 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
     if (node->isSimpleCall()) {
       auto funcNode = dynamic_cast<const FunctionNode*>(
           node->scope()->lookupFunction(node->simpleCallName(), K(showAmbiguousSymDef)));
+
       if (funcNode) {
-        // XmlRenderer out{new FilePort(stdout)};
-        // out.render(const_cast<FunctionNode*>(funcNode));
+        if (!funcNode->hasSpecializedParams()) {
+          std::vector<Type> prmTypes;
+          for (auto& arg : node->children()) {
+            // TODO: How are keyed or optional arguments handled?
+            prmTypes.push_back(arg->type());
+          }
+
+          if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
+                  node->simpleCallName(), prmTypes)) {
+            funcNode = dynamic_cast<const FunctionNode*>(bestFuncNode);
+            // TODO: remember the func-node chosen in node, such that
+            // we know which function to call later.
+          }
+          else {
+            error(node->srcpos(), E_NoMatchingFunction, String("no matching function"));
+          }
+        }
+
         typf->typifyMatchAndCheckParameters(node, funcNode);
 
         if (node->simpleCallName() == Names::kLangAllocateArray) {

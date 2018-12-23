@@ -19,6 +19,10 @@
 #include "typectx.hpp"
 #include "utils.hpp"
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 
 namespace herschel {
 
@@ -573,10 +577,12 @@ void Scope::registerFunction(const SrcPos& srcpos, const String& funcName,
 
     auto item = std::make_shared<FunctionScopeItem>(srcpos, kScopeItem_function, node);
     NsScopeMap::iterator it = fMap.find(base);
-    if (it != fMap.end())
+    if (it != fMap.end()) {
       it->second.insert(std::make_pair(ns, item));
-    else
+    }
+    else {
       fMap[base].insert(std::make_pair(ns, item));
+    }
   }
 }
 
@@ -624,6 +630,41 @@ const AstNode* Scope::lookupVarOrFunc(const String& name, bool showAmbiguousSymD
 
       // TODO: handle type overloading
       return defs.front().get();
+    }
+  }
+  return nullptr;
+}
+
+
+const AstNode* Scope::lookupBestFunctionOverload(const String& name,
+                                                 const std::vector<Type>& argTypes) const
+{
+  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), K(showAmbiguousSymDef));
+  if (lv.fItem) {
+    if (lv.fItem->kind() == kScopeItem_function) {
+      const auto& defs = dynamic_cast<const FunctionScopeItem*>(lv.fItem)->nodes();
+
+      std::vector<std::pair<int, std::shared_ptr<AstNode>>> candidates;
+
+      for (const auto& def : defs) {
+        if (auto funcDef = std::dynamic_pointer_cast<FunctionNode>(def)) {
+          const auto& params = funcDef->params();
+          if (params.size() == argTypes.size()) {
+            for (auto i = 0; i < params.size(); ++i) {
+              auto dist = varianceDistance(params[i]->type(), argTypes[i], *this);
+              if (dist.second && dist.first >= 0) {
+                candidates.push_back(std::make_pair(dist.first, def));
+              }
+            }
+          }
+        }
+      }
+
+      if (!candidates.empty()) {
+        std::sort(begin(candidates), end(candidates),
+                  [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
+        return candidates.front().second.get();
+      }
     }
   }
   return nullptr;
