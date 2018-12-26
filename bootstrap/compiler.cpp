@@ -389,7 +389,7 @@ void compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
           std::make_shared<CharPort>(std::make_shared<FilePort>(file, "rb")), file);
 
       if (doCompile) {
-        XmlRenderer out{ std::make_shared<FilePort>(stderr) };
+        XmlRenderer out{ std::make_shared<FilePort>(stderr), true };
         out.render(ast);
 
         hr_assert(ast);
