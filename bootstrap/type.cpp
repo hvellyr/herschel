@@ -12,6 +12,7 @@
 
 #include "errcodes.hpp"
 #include "log.hpp"
+#include "optional.hpp"
 #include "predefined.hpp"
 #include "rootscope.hpp"
 #include "scope.hpp"
@@ -26,6 +27,8 @@
 #include "typeprops-string.hpp"
 #include "utils.hpp"
 
+#include <cmath>
+#include <cstdlib>
 #include <typeinfo>
 
 
@@ -400,7 +403,7 @@ namespace {
       }
     }
     else if (right0.isArray()) {
-      // special case: Make lang/sliceable<K, E> match arrays, which are
+      // special case: Make lang.sliceable<K, E> match arrays, which are
       // otherwise not first class entities.
       if (typeName == Names::kSliceableTypeName ||
           typeName == Names::kSliceableXTypeName) {
@@ -2556,11 +2559,11 @@ String FunctionSignature::typeId() const
 {
   StringBuffer buf;
   if (fName.isEmpty())
-    buf << "lambda";
+    buf << "fn";
   else
     buf << fName;
   buf << "(" << fParameters << ")";
-  buf << ":" << fReturnType.typeId();
+  buf << "->" << fReturnType.typeId();
   return buf.toString();
 }
 
@@ -2847,6 +2850,86 @@ bool inheritsFrom(const Type& left0, const Type& right0, const Scope& scope,
   hr_invalid("unexpected type kind");
   return false;
 }
+
+
+namespace {
+  //! Indicates whether left0 is a subtype of right0.  This is tested by checking
+  //! whether right0 is in left0's inheritance list.
+  estd::optional<int> inheritanceDiffImpl(const Type& left0, const Type& right0,
+                                          const Scope& scope, const SrcPos& srcpos,
+                                          bool reportErrors, int level)
+  {
+    if (!left0.isDef() || !right0.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      return {};
+    }
+
+    auto left = resolveType(left0, scope);
+    auto right = resolveType(right0, scope);
+
+    if (!left.isDef() || !right.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      return {};
+    }
+
+    Type inheritance;
+    if (left.isType() || left.isRecord())
+      inheritance = left.typeInheritance();
+    else
+      return {};
+
+    if (!inheritance.isDef())
+      return {};
+    else if (inheritance.isRef())
+      inheritance = scope.lookupType(inheritance);
+
+    if (!inheritance.isDef()) {
+      if (reportErrors)
+        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      return {};
+    }
+
+    if (inheritance.isType() || inheritance.isRecord()) {
+      if (isSameType(inheritance, right, scope, srcpos, reportErrors))
+        return { level };
+
+      if (right.isOpen()) {
+        TypeCtx localCtx;
+        if (inheritance.matchGenerics(localCtx, right, scope, srcpos))
+          return { level };
+      }
+      return inheritanceDiffImpl(inheritance, right, scope, srcpos, reportErrors,
+                                 level - 1);
+    }
+
+    if (inheritance.isIntersection()) {
+      for (const auto& inhType : inheritance.intersectionTypes()) {
+        if (isSameType(inhType, right, scope, srcpos, reportErrors))
+          return { level };
+        if (auto var = inheritanceDiffImpl(inhType, right, scope, srcpos, reportErrors,
+                                           level - 1))
+          return var;
+      }
+
+      return {};
+    }
+
+    hr_invalid("unexpected type kind");
+    return {};
+  }
+
+
+  //! Indicates whether left0 is a subtype of right0.  This is tested by checking
+  //! whether right0 is in left0's inheritance list.
+  estd::optional<int> inheritanceDiff(const Type& left0, const Type& right0,
+                                      const Scope& scope, const SrcPos& srcpos,
+                                      bool reportErrors)
+  {
+    return inheritanceDiffImpl(left0, right0, scope, srcpos, reportErrors, -1);
+  }
+}  // namespace
 
 
 //----------------------------------------------------------------------------
@@ -3173,22 +3256,207 @@ bool isInvariant(const Type& left, const Type& right, const Scope& scope,
 }
 
 
-std::pair<int, bool> varianceDistance(const Type& left, const Type& right,
-                                      const Scope& scope)
+namespace {
+  estd::optional<int> covarianceDistance(const Type& left0, const Type& right0,
+                                         const Scope& scope, const SrcPos& srcpos,
+                                         bool reportErrors)
+  {
+    if (!left0.isDef() || !right0.isDef()) {
+      return {};
+    }
+
+    if (left0.isOpen() && right0.isOpen())
+      // TODO: handle complex generic types like 'T[]
+      return isSameType(left0, right0, scope, srcpos, reportErrors)
+                 ? estd::optional<int>{ 0 }
+                 : estd::optional<int>{};
+
+    Type right;
+    Type left;
+    if (left0.isOpenSelf()) {
+      right = resolveType(right0, scope);
+      if (!right.isDef()) {
+        return {};
+      }
+      if (auto var =
+              covarianceDistance(right, Type::makeAny(), scope, srcpos, reportErrors)) {
+        // a generic open type is covariant to Any.  This needs special treatment
+        // in the compiler though
+        return var;
+      }
+    }
+    else if (right0.isOpenSelf()) {
+      left = resolveType(left0, scope);
+
+      if (!left.isDef()) {
+        return {};
+      }
+
+      if (auto var =
+              covarianceDistance(left, Type::makeAny(), scope, srcpos, reportErrors)) {
+        // a generic open type is covariant to Any.  This needs special treatment
+        // in the compiler though
+        return var;
+      }
+    }
+    else {
+      right = resolveType(right0, scope);
+      left = resolveType(left0, scope);
+    }
+
+    if (!right.isDef()) {
+      return {};
+    }
+    if (!left.isDef()) {
+      return {};
+    }
+
+    if (right.isAny() || right.isClangAtom()) {
+      // everything is covariant to lang|Any
+      return { 9999 };
+    }
+
+#if 0
+    // TODO: check constraints
+    if (left.hasConstraints()) {
+      if (right.hasConstraints()) {
+        // TODO
+      }
+      return {};
+    }
+#endif
+
+    if (left.isArray()) {
+      auto rightTypeName = right.typeName();
+      if (right.isType() &&
+          (rightTypeName == Names::kSliceableTypeName ||
+           rightTypeName == Names::kSliceableXTypeName) &&
+          right.generics().size() == 2 &&
+          isSameType(right.generics()[0], Type::makeUInt32(), scope, srcpos,
+                     reportErrors) &&
+          isSameType(left.arrayBaseType(), right.generics()[1], scope, srcpos,
+                     reportErrors)) {
+        return { 0 };
+      }
+      else if (right.isArray() && right.arrayBaseType().isOpenSelf()) {
+        // a generic open type is covariant to Any.  This needs special treatment
+        // in the compiler though
+        return isCovariant(left.arrayBaseType(), Type::makeAny(), scope, srcpos,
+                           reportErrors)
+                   ? estd::optional<int>{ 9999 }
+                   : estd::optional<int>{};
+      }
+      return isSameType(left, right, scope, srcpos, reportErrors)
+                 ? estd::optional<int>{ 0 }
+                 : estd::optional<int>{};
+    }
+    else if (left.isUnion()) {
+      if (right.isUnion()) {
+        if (isSameType(left, right, scope, srcpos, reportErrors))
+          return { 0 };
+
+        return isCovariantForAllTypesInUnion(left.unionTypes(), right.unionTypes(), scope,
+                                             srcpos, reportErrors)
+                   ? estd::optional<int>{ -1 }
+                   : estd::optional<int>{};
+      }
+      return {};
+    }
+    else if (left.isIntersection()) {
+      if (right.isIntersection()) {
+        if (isSameType(left, right, scope, srcpos, reportErrors))
+          return { 0 };
+        return isCovariant(left.intersectionTypes(), right.intersectionTypes(), scope,
+                           srcpos, reportErrors)
+                   ? estd::optional<int>{ -1 }
+                   : estd::optional<int>{};
+      }
+      return {};
+    }
+    else if (left.isFunction()) {
+      if (isSameType(left, right, scope, srcpos, reportErrors))
+        return { 0 };
+      if (right.isFunction())
+        return isCovariant(left.functionSignature(), right.functionSignature(), scope,
+                           srcpos, reportErrors)
+                   ? estd::optional<int>{ -1 }
+                   : estd::optional<int>{};
+      else
+        return {};
+    }
+    else if (left.isType() || left.isRecord()) {
+      if (left.isOpen()) {
+        TypeCtx localCtx;
+        if (left.matchGenerics(localCtx, right, scope, srcpos))
+          return { 0 };
+      }
+      if (right.isOpen()) {
+        TypeCtx localCtx;
+        if (right.matchGenerics(localCtx, left, scope, srcpos))
+          return { 0 };
+      }
+      if (isSameType(left, right, scope, srcpos, reportErrors))
+        return { 0 };
+
+      if (right.isType() || right.isRecord()) {
+        // TODO
+        auto var = inheritanceDiff(left, right, scope, srcpos, reportErrors);
+        if (!var)
+          return false;
+        if (left.hasGenerics() && right.hasGenerics())
+          return isSameType(left.generics(), right.generics(), scope, srcpos,
+                            reportErrors)
+                     ? estd::optional<int>{ 0 }
+                     : estd::optional<int>{};
+        return var;
+      }
+      else if (right.isIntersection()) {
+        return isCovariantToEveryTypeInInters(left, right.intersectionTypes(), scope,
+                                              srcpos, reportErrors)
+                   ? estd::optional<int>{ 0 }
+                   : estd::optional<int>{};
+      }
+      else if (right.isUnion()) {
+        return isCoOrInvariantToEveryTypeInUnion(left, right.unionTypes(), scope, srcpos,
+                                                 reportErrors)
+                   ? estd::optional<int>{ 0 }
+                   : estd::optional<int>{};
+      }
+
+      return {};
+    }
+    else if (left.isAny() || left.isClangAtom()) {
+      return {};
+    }
+
+    tyerror(left, "LEFT");
+    tyerror(right, "RIGHT");
+    hr_invalid("unhandled type?");
+    return {};
+  }
+
+}  // namespace
+
+
+estd::optional<int> varianceDistance(const Type& left, const Type& right,
+                                     const Scope& scope, const SrcPos& srcpos,
+                                     bool reportErrors)
 {
-  // TODO: measure the "real" distance (e.g. inheritance likeliness) for two types
-  if (isSameType(left, right, scope, SrcPos(), !K(reportErrors)))
-    return std::make_pair(0, true);
-  else if (isCovariant(left, right, scope, SrcPos(), !K(reportErrors)))
-    return std::make_pair(-1, true);
-  else if (isContravariant(left, right, scope, SrcPos(), !K(reportErrors)))
-    return std::make_pair(1, true);
-  else if (containsAny(right, SrcPos(), !K(reportErrors)))
-    return std::make_pair(2, true);
-  else if (containsAny(left, SrcPos(), !K(reportErrors)))
-    return std::make_pair(-2, true);
+  if (isSameType(left, right, scope, srcpos, reportErrors))
+    return { 0 };
+  else if (isCovariant(left, right, scope, srcpos, reportErrors)) {
+    return covarianceDistance(left, right, scope, srcpos, reportErrors);
+  }
+  else if (isContravariant(left, right, scope, srcpos, reportErrors)) {
+    auto var = covarianceDistance(right, left, scope, srcpos, reportErrors);
+    return var ? estd::optional<int>{ -(*var) } : estd::optional<int>{};
+  }
+  else if (containsAny(right, srcpos, reportErrors))
+    return { 9999 };
+  else if (containsAny(left, srcpos, reportErrors))
+    return { -9999 };
   else
-    return std::make_pair(0, false);
+    return {};
 }
 
 

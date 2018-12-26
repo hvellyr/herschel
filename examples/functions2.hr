@@ -1,0 +1,19 @@
+def type Foo : Int
+def type Mno : Foo
+def type Xyz : Mno
+
+def make-foo() -> Foo ...
+def make-mno() -> Mno ...
+def make-xyz() -> Xyz ...
+
+def foo(a : Foo) -1
+def foo(a : Mno) -1
+def foo(a : Xyz) -1
+
+def app.main() {
+--  foo(42)
+  foo(make-foo())
+  foo(make-mno())
+  foo(make-xyz())
+  0
+}

@@ -248,13 +248,16 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
           }
 
           if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
-                  node->simpleCallName(), prmTypes)) {
+                  node->simpleCallName(), prmTypes, node->srcpos(),
+                  K(showAmbiguousSymDef))) {
             funcNode = dynamic_cast<const FunctionNode*>(bestFuncNode);
+            node->base()->setType(funcNode->type());
             // TODO: remember the func-node chosen in node, such that
             // we know which function to call later.
           }
           else {
-            error(node->srcpos(), E_NoMatchingFunction, String("no matching function"));
+            error(node->srcpos(), E_NoMatchingFunction,
+                  String("no matching function: ") + node->simpleCallName());
           }
         }
 

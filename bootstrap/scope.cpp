@@ -637,9 +637,11 @@ const AstNode* Scope::lookupVarOrFunc(const String& name, bool showAmbiguousSymD
 
 
 const AstNode* Scope::lookupBestFunctionOverload(const String& name,
-                                                 const std::vector<Type>& argTypes) const
+                                                 const std::vector<Type>& argTypes,
+                                                 const SrcPos& srcpos,
+                                                 bool showAmbiguousSymDef) const
 {
-  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), K(showAmbiguousSymDef));
+  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef);
   if (lv.fItem) {
     if (lv.fItem->kind() == kScopeItem_function) {
       const auto& defs = dynamic_cast<const FunctionScopeItem*>(lv.fItem)->nodes();
@@ -650,10 +652,16 @@ const AstNode* Scope::lookupBestFunctionOverload(const String& name,
         if (auto funcDef = std::dynamic_pointer_cast<FunctionNode>(def)) {
           const auto& params = funcDef->params();
           if (params.size() == argTypes.size()) {
-            for (auto i = 0; i < params.size(); ++i) {
-              auto dist = varianceDistance(params[i]->type(), argTypes[i], *this);
-              if (dist.second && dist.first >= 0) {
-                candidates.push_back(std::make_pair(dist.first, def));
+            if (params.size() == 0) {
+              candidates.push_back(std::make_pair(0, def));
+            }
+            else {
+              for (auto i = 0; i < params.size(); ++i) {
+                auto dist = varianceDistance(params[i]->type(), argTypes[i], *this,
+                                             srcpos, showAmbiguousSymDef);
+                if (dist && *dist >= 0) {
+                  candidates.push_back(std::make_pair(*dist, def));
+                }
               }
             }
           }

@@ -12,6 +12,7 @@
 
 #include "common.hpp"
 
+#include "optional.hpp"
 #include "token.hpp"
 
 #include <map>
@@ -90,7 +91,7 @@ public:
   //! Indicates whether the receiver is an "open" type, i.e. whether it has
   //! or is a generic (parameterized) type, which is not specified
   //! (e.g. takes the form 'T).  This predicate is recursive, i.e. if the
-  //! receiver is a complex type then any descendant being "open" make the
+  //! receiver is a complex type then any descendant being "open" makes the
   //! receiver "open", too.
   virtual bool isOpen() const = 0;
 
@@ -345,7 +346,6 @@ public:
   //! srcpos for possible error messages.
   bool matchGenerics(TypeCtx& localCtx, const Type& right0, const Scope& scope,
                      const SrcPos& srcpos) const;
-
 
   //@{ alias types
   bool isAlias() const;
@@ -722,8 +722,9 @@ bool isInvariant(const Type& left, const Type& right, const Scope& scope,
 //! contravariant (i.e. wider) the first member of the result is
 //! positive.  If the types are equivalent the result is 0.  If the
 //! types are invariant the second member is false.
-std::pair<int, bool> varianceDistance(const Type& left, const Type& right,
-                                      const Scope& scope);
+estd::optional<int> varianceDistance(const Type& left, const Type& right,
+                                     const Scope& scope, const SrcPos& srcpos,
+                                     bool reportErrors);
 bool containsAny(const Type& left, const SrcPos& srcpos, bool reportErrors = true);
 
 Type makeRangeType(const Type& generic);

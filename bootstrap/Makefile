@@ -105,6 +105,7 @@ LIBHRC_SOURCES =         \
 	typectx.cpp         \
 	typeenum.cpp        \
 	typify.cpp          \
+	typecheck.cpp       \
 	xmlrenderer.cpp
 
 
@@ -121,6 +122,7 @@ LIBHRC_HEADERS =         \
 	macro.hpp           \
 	nodifypass.hpp      \
 	numbers.hpp         \
+	optional.hpp        \
 	parsertypes.hpp     \
 	predefined.hpp      \
 	properties.hpp      \
@@ -145,6 +147,7 @@ LIBHRC_HEADERS =         \
 	typeprops-keyword.hpp \
 	typeprops-string.hpp \
 	typify.hpp          \
+	typecheck.hpp       \
 	xmlrenderer.hpp
 
 LIBHRC_SOURCES2 =        \

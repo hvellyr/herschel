@@ -13,4 +13,7 @@ def foo(c : (Int | Bool)) -> Bool
 def foo(x)
   x
 
--- def foo = 42
+def app.main() {
+  foo("hello world")
+  0
+}
