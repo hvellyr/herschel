@@ -280,6 +280,16 @@ struct NodeAnnotator<std::shared_ptr<ApplyNode>> {
 
 
 template <>
+struct NodeAnnotator<std::shared_ptr<WeakNode>> {
+  static void annotate(Annotator* ann, std::shared_ptr<WeakNode> node)
+  {
+    if (node->refNode())
+      ann->annotateNode(node->refNode());
+  }
+};
+
+
+template <>
 struct NodeAnnotator<std::shared_ptr<ArrayNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<ArrayNode> node)
   {

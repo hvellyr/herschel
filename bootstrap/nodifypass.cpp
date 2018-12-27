@@ -921,7 +921,7 @@ SecondPass::generateConstructor(const Token& typeExpr, const String& fullTypeNam
     funcNode->setIsRemoveable(true);
     initExpr->setIsRemoveable(true);
 
-    body->appendNode(initExpr);
+    body->appendNode(makeWeakNode(initExpr));
   }
 
   body->appendNode(makeSymbolNode(srcpos, selfParamSym));

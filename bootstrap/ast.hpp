@@ -1605,6 +1605,37 @@ inline std::shared_ptr<ApplyNode> makeApplyNode(const SrcPos& srcpos,
 }
 
 
+class WeakNode : public AstNode {
+public:
+  WeakNode(std::shared_ptr<AstNode> refNode)
+      : AstNode(refNode ? refNode->srcpos() : SrcPos())
+      , fRefNode(std::move(refNode))
+  {
+  }
+
+  std::shared_ptr<AstNode> clone() const override
+  {
+    return details::cloneScope(this,
+                               std::make_shared<WeakNode>(details::nodeClone(fRefNode)));
+  }
+
+  std::shared_ptr<AstNode> refNode() const { return fRefNode; }
+  void reset() { fRefNode = nullptr; }
+  NodeList child_nodes() override { return fRefNode ? NodeList{ fRefNode } : NodeList{}; }
+
+  bool isObsolete() const override { return fRefNode ? fRefNode->isObsolete() : false; }
+  bool isRemoveable() const override { return true; }
+
+private:
+  std::shared_ptr<AstNode> fRefNode;
+};
+
+inline std::shared_ptr<WeakNode> makeWeakNode(std::shared_ptr<AstNode> refNode)
+{
+  return std::make_shared<WeakNode>(std::move(refNode));
+}
+
+
 class KeyargNode : public AstNode {
 public:
   KeyargNode(const SrcPos& srcpos, const String& key, std::shared_ptr<AstNode> value)

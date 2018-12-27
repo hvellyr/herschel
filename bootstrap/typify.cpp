@@ -255,16 +255,21 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             // TODO: remember the func-node chosen in node, such that
             // we know which function to call later.
           }
+          else if (node->isRemoveable()) {
+            node->setIsObsolete(true);
+          }
           else {
             error(node->srcpos(), E_NoMatchingFunction,
                   String("no matching function: ") + node->simpleCallName());
           }
         }
 
-        typf->typifyMatchAndCheckParameters(node, funcNode);
+        if (!node->isObsolete()) {
+          typf->typifyMatchAndCheckParameters(node, funcNode);
 
-        if (node->simpleCallName() == Names::kLangAllocateArray) {
-          typf->checkAllocateArraySignature(node);
+          if (node->simpleCallName() == Names::kLangAllocateArray) {
+            typf->checkAllocateArraySignature(node);
+          }
         }
       }
     }
@@ -289,6 +294,17 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
     }
 
     typf->annotateTypeConv(node, node->type());
+  }
+};
+
+
+template <>
+struct NodeTypifier<std::shared_ptr<WeakNode>> {
+  static void typify(Typifier* typf, std::shared_ptr<WeakNode> node)
+  {
+    typf->typifyNodeList(node->child_nodes());
+    if (node->isObsolete())
+      node->reset();
   }
 };
 
@@ -1103,7 +1119,6 @@ bool Typifier::isNodeCallToGenericFunction(const AstNode* node) const
 {
   if (auto applyNode = dynamic_cast<const ApplyNode*>(node)) {
     if (applyNode->isSimpleCall()) {
-
       // special case lang|slice(array, idx)
       if (applyNode->simpleCallName() == Names::kLangSlice) {
         const NodeList& args = applyNode->children();

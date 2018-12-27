@@ -42,9 +42,6 @@ struct NodeRenderer<std::shared_ptr<ApplyNode>> {
     if (Properties::isTypeConvDump())
       attrs << xml::displayTypeConv(node);
 
-    if (node.isRemoveable())
-      attrs << " removeable='true'";
-
     renderer->displayOpenTagAttrs("apply", StrHelper(attrs.toString()));
     renderer->displayNode(nullptr, node.base());
     renderer->displayOpenTag("args");
@@ -601,8 +598,6 @@ struct NodeRenderer<std::shared_ptr<SymbolNode>> {
     StringBuffer attrs;
     if (renderer->fShowNodeType && node.type().isDef())
       attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
-    if (node.isRemoveable())
-      attrs << " removeable='true'";
 
     zstring referTag = nullptr;
     switch (node.refersTo()) {
@@ -762,6 +757,16 @@ struct NodeRenderer<std::shared_ptr<VectorNode>> {
     renderer->displayOpenTagAttrs("vector", StrHelper(attrs.toString()));
     renderer->displayNodeList(nullptr, node.children());
     renderer->displayCloseTag("vector");
+  }
+};
+
+
+template <>
+struct NodeRenderer<std::shared_ptr<WeakNode>> {
+  static void render(XmlRenderer* renderer, const WeakNode& node)
+  {
+    if (node.refNode())
+      renderer->displayNode(nullptr, node.refNode());
   }
 };
 

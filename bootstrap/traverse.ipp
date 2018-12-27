@@ -124,6 +124,9 @@ Ret dispatchNode(std::shared_ptr<AstNode> node, Functor&& functor)
   else if (auto vardefnd = std::dynamic_pointer_cast<VardefNode>(node)) {
     return std::forward<Functor>(functor)(vardefnd);
   }
+  else if (auto weaknd = std::dynamic_pointer_cast<WeakNode>(node)) {
+    return std::forward<Functor>(functor)(weaknd);
+  }
 
   return Ret();
 }
