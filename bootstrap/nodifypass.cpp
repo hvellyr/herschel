@@ -586,69 +586,6 @@ size_t SecondPass::getWhereOfs(const TokenVector& seq, size_t ofs) const
 }
 
 
-SecondPass::PrimeTuple SecondPass::parsePrime(const Token& primeToken)
-{
-  PrimeTuple result;
-
-  if (primeToken.isSeq() && primeToken.count() == 2 && primeToken[1].isNested() &&
-      primeToken[1].leftToken() == kParanOpen) {
-    String primeName;
-    if (primeToken[0] == kSymbol) {
-      primeName = primeToken[0].idValue();
-    }
-    else if (primeToken[0].isSeq() && primeToken[0].count() == 2) {
-      if (primeToken[0][0] == kSymbol) {
-        if (primeToken[0][1].isNested() && primeToken[0][1].leftToken() == kGenericOpen) {
-          primeName = primeToken[0][0].idValue();
-        }
-        else {
-          errorf(primeToken[0][1].srcpos(), E_GenericTypeList,
-                 "Expected '<' for generic class prime expression");
-          return result;
-        }
-      }
-      else {
-        errorf(primeToken[0][0].srcpos(), E_SymbolExpected,
-               "Expected generic class prime expression");
-        return result;
-      }
-    }
-    else {
-      errorf(primeToken[0][0].srcpos(), E_SymbolExpected,
-             "Expected generic class prime expression");
-      return result;
-    }
-
-    if (primeToken[1].isNested() && primeToken[1].leftToken() == kParanOpen) {
-      hr_assert(primeToken[1].rightToken() == kParanClose);
-      //NodeList args = parseFunCallArgs(primeToken[1].children());
-
-      Type referedType = fScope->lookupType(primeName, K(showAmbiguousSymDef));
-      if (!referedType.isDef())
-        referedType = Type::makeTypeRef(primeName, K(isValue));
-
-      result.fType = referedType;
-      result.fPrime = generateInitObjectCall(
-          primeToken.srcpos(), makeSymbolNode(primeToken.srcpos(), String("self")),
-          referedType, primeToken[1].children());
-      return result;
-    }
-    else {
-      errorf(primeToken[1].srcpos(), E_MissingParanOpen,
-             "Expected generic class prime expression");
-      return result;
-    }
-  }
-  else {
-    errorf(primeToken.srcpos(), E_BadClassOnAlloc,
-           "Unexpected 'on alloc' specifications");
-    return result;
-  }
-
-  return result;
-}
-
-
 size_t SecondPass::getWhereOfs(const Token& expr) const
 {
   return getWhereOfs(expr.children(), 0);
@@ -782,40 +719,12 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
   if (ofs == whereOfs)
     ofs++;
 
-  std::vector<PrimeTuple> primeTuples;
-  NodeList slotDefs;
-  //TypeSlotList slotTypes;
-
   NodeList slotParams;
   if (ofs < seq.size() && seq[ofs].isNested() && seq[ofs].leftToken() == kParanOpen) {
     parseSlotParams(&slotParams, seq[ofs].children());
     ofs++;
   }
 
-
-  std::vector<PrimeTuple> primes;
-  for (size_t i = 0; i < primeTuples.size(); i++) {
-    if (inheritsFrom.isIntersection()) {
-      if (!inheritsFrom.containsType(primeTuples[i].fType)) {
-        errorf(primeTuples[i].fPrime->srcpos(), E_BadClassOnAlloc,
-               "Super class initialization for unknown type %s",
-               (zstring)StrHelper(primeTuples[i].fType.typeId()));
-      }
-      else {
-        primes.push_back(primeTuples[i]);
-      }
-    }
-    else if (inheritsFrom.isDef()) {
-      if (inheritsFrom.typeName() != primeTuples[i].fType.typeName()) {
-        errorf(primeTuples[i].fPrime->srcpos(), E_BadClassOnAlloc,
-               "Super class initialization for unknown type %s",
-               (zstring)StrHelper(primeTuples[i].fType.typeId()));
-      }
-      else {
-        primes.push_back(primeTuples[i]);
-      }
-    }
-  }
 
   Type defType;
   if (isRecord) {
@@ -868,8 +777,8 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
       }
     }
 
-    auto ctor = generateConstructor(expr, fullTypeName, defType, defaultApplyParams,
-                                    slotParams, primes);
+    auto ctor =
+        generateConstructor(expr, fullTypeName, defType, defaultApplyParams, slotParams);
     result.push_back(ctor);
   }
 
@@ -880,8 +789,7 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
 std::shared_ptr<AstNode>
 SecondPass::generateConstructor(const Token& typeExpr, const String& fullTypeName,
                                 const Type& defType, const NodeList& defaultApplyParams,
-                                const NodeList& slotDefs,
-                                const std::vector<PrimeTuple>& primes)
+                                const NodeList& slotDefs)
 {
   hr_assert(defaultApplyParams.size() == slotDefs.size());
 
@@ -890,13 +798,13 @@ SecondPass::generateConstructor(const Token& typeExpr, const String& fullTypeNam
   String ctorFuncName = qualifyId(fullTypeName, Names::kInitFuncName);
   String selfParamSym = uniqueName("obj");
 
-  NodeList params = copyNodes(defaultApplyParams);
+  NodeList params = details::copyNodes(defaultApplyParams);
   params.insert(params.begin(),
                 makeParamNode(srcpos, String(), selfParamSym, kPosArg, defType, nullptr));
 
   auto body = makeBlockNode(srcpos);
 
-  generatePrimeInits(srcpos, body, defType, primes, selfParamSym);
+  generatePrimeInits(srcpos, body, defType, selfParamSym);
 
   // initialize slots
   for (auto i = 0u; i < slotDefs.size(); ++i) {
@@ -999,78 +907,16 @@ static std::vector<ReqTypeInitTuple> getDirectInheritedTypes(const Type& defType
 }
 
 
-std::shared_ptr<AstNode>
-SecondPass::findPrimeForType(const Type& reqTypeInit,
-                             const std::vector<PrimeTuple>& primes)
-{
-  String reqTypeId = reqTypeInit.typeId();
-
-  // call prime functions of super classes.  Before that replace the arguments
-  // to these functions with selfParamSym.
-  for (size_t i = 0; i < primes.size(); i++) {
-    if (primes[i].fType.typeId() == reqTypeId)
-      return primes[i].fPrime;
-  }
-
-  return nullptr;
-}
-
-
-std::shared_ptr<AstNode>
-SecondPass::getPrimeForType(const Type& reqTypeInit,
-                            const std::vector<PrimeTuple>& primes,
-                            const String& selfParamSym)
-{
-  auto prime0 = findPrimeForType(reqTypeInit, primes);
-  if (prime0) {
-    auto prime = prime0->clone();
-    auto apply = dynamic_cast<ApplyNode*>(prime.get());
-    hr_assert(apply);
-    hr_assert(apply->children().size() > 0);
-
-    apply->children()[0] = makeSymbolNode(apply->children()[0]->srcpos(), selfParamSym);
-    return prime;
-  }
-
-  return nullptr;
-}
-
-
 void SecondPass::generatePrimeInits(const SrcPos& srcpos, std::shared_ptr<ListNode> body,
-                                    const Type& defType,
-                                    const std::vector<PrimeTuple>& primes,
-                                    const String& selfParamSym)
+                                    const Type& defType, const String& selfParamSym)
 {
-  std::vector<ReqTypeInitTuple> reqTypeInits = getDirectInheritedTypes(defType, fScope);
-
-  for (size_t i = 0; i < reqTypeInits.size(); i++) {
+  for (const auto& reqTypeInit : getDirectInheritedTypes(defType, fScope)) {
     // does the super type requires an explicit prime?
-    if (reqTypeInits[i].fIsRecord) {
-      if (reqTypeInits[i].fReqExplicitPrime) {
-        auto apply = getPrimeForType(reqTypeInits[i].fType, primes, selfParamSym);
-        if (!apply) {
-          errorf(srcpos, E_BadClassOnAlloc,
-                 "No 'on alloc' prime call for super class '%s'",
-                 (zstring)StrHelper(reqTypeInits[i].fType.typeId()));
-        }
-        else
-          body->appendNode(apply);
-      }
-      else {
-        auto apply = getPrimeForType(reqTypeInits[i].fType, primes, selfParamSym);
-        if (!apply)
-          apply = generateInitObjectCall(SrcPos(), makeSymbolNode(SrcPos(), selfParamSym),
-                                         reqTypeInits[i].fType, TokenVector());
-        body->appendNode(apply);
-      }
-    }
-    else if (reqTypeInits[i].fType.isDef()) {
-      auto prime = findPrimeForType(reqTypeInits[i].fType, primes);
-      if (prime) {
-        errorf(srcpos, E_BadClassOnAlloc,
-               "Explicit 'on alloc' prime call for non allocable type '%s'",
-               (zstring)StrHelper(reqTypeInits[i].fType.typeId()));
-      }
+    if (reqTypeInit.fIsRecord) {
+      auto apply =
+          generateInitObjectCall(SrcPos(), makeSymbolNode(SrcPos(), selfParamSym),
+                                 reqTypeInit.fType, TokenVector());
+      body->appendNode(apply);
     }
   }
 }
@@ -2568,8 +2414,7 @@ static std::shared_ptr<AstNode> transformMatchNode(std::shared_ptr<MatchNode> no
   std::shared_ptr<AstNode> elseAlternate;
 
   for (size_t i = 0; i < node->mappingCount(); i++) {
-    if (node->mappingAt(i).fMatchType.isAny())
-    {
+    if (node->mappingAt(i).fMatchType.isAny()) {
       if (elseAlternate) {
         errorf(node->mappingAt(i).fSrcPos, E_MatchAmbiguousType,
                "redefinition of catch-all lang|Any branch in match");
@@ -2580,15 +2425,14 @@ static std::shared_ptr<AstNode> transformMatchNode(std::shared_ptr<MatchNode> no
         elseAlternate = node->mappingAt(i).fConsequent;
     }
     else {
-      auto isaCall = makeApplyNode(node->mappingAt(i).fSrcPos,
-                                   makeSymbolNode(node->mappingAt(i).fSrcPos,
-                                                  Names::kLangIsaQ));
+      auto isaCall =
+          makeApplyNode(node->mappingAt(i).fSrcPos,
+                        makeSymbolNode(node->mappingAt(i).fSrcPos, Names::kLangIsaQ));
       isaCall->appendNode(node->expr()->clone());
-      isaCall->appendNode(makeTypeNode(node->mappingAt(i).fSrcPos,
-                                       node->mappingAt(i).fMatchType));
+      isaCall->appendNode(
+          makeTypeNode(node->mappingAt(i).fSrcPos, node->mappingAt(i).fMatchType));
 
-      auto newIf = makeIfNode(node->mappingAt(i).fSrcPos,
-                              isaCall,
+      auto newIf = makeIfNode(node->mappingAt(i).fSrcPos, isaCall,
                               node->mappingAt(i).fConsequent, nullptr);
       if (lastIf) {
         lastIf->setAlternate(newIf);
@@ -2600,8 +2444,7 @@ static std::shared_ptr<AstNode> transformMatchNode(std::shared_ptr<MatchNode> no
   }
 
   if (!elseAlternate)
-    elseAlternate = makeSymbolNode(node->srcpos(),
-                                   Names::kLangUnspecified);
+    elseAlternate = makeSymbolNode(node->srcpos(), Names::kLangUnspecified);
 
   if (lastIf)
     lastIf->setAlternate(elseAlternate);

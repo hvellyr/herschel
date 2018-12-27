@@ -47,11 +47,6 @@ public:
   std::shared_ptr<AstNode> parse(const Token& exprs);
 
 private:
-  struct PrimeTuple {
-    std::shared_ptr<AstNode> fPrime;
-    Type fType;
-  };
-
   NodeList parseExpr(const Token& expr);
   NodeList parseSeq(const Token& expr);
 
@@ -83,20 +78,13 @@ private:
   std::shared_ptr<AstNode> parseParameter(const Token& expr);
 
   NodeList parseTypeDef(const Token& expr, size_t ofs, bool isType, bool isLocal);
-  std::shared_ptr<AstNode>
-  generateConstructor(const Token& typeExpr, const String& fullTypeName,
-                      const Type& defType, const NodeList& defaultApplyParams,
-                      const NodeList& slotDefs, const std::vector<PrimeTuple>& primes);
+  std::shared_ptr<AstNode> generateConstructor(const Token& typeExpr,
+                                               const String& fullTypeName,
+                                               const Type& defType,
+                                               const NodeList& defaultApplyParams,
+                                               const NodeList& slotDefs);
   void generatePrimeInits(const SrcPos& srcpos, std::shared_ptr<ListNode> body,
-                          const Type& defType, const std::vector<PrimeTuple>& primes,
-                          const String& selfParamSym);
-  std::shared_ptr<AstNode> findPrimeForType(const Type& reqTypeInit,
-                                            const std::vector<PrimeTuple>& primes);
-  std::shared_ptr<AstNode> getPrimeForType(const Type& reqTypeInit,
-                                           const std::vector<PrimeTuple>& primes,
-                                           const String& selfParamSym);
-
-  PrimeTuple parsePrime(const Token& primeToken);
+                          const Type& defType, const String& selfParamSym);
 
   std::shared_ptr<AstNode> parseAliasDef(const Token& expr, size_t ofs, bool isLocal);
   std::shared_ptr<AstNode> parseEnumDef(const Token& expr, size_t ofs, bool isLocal);
