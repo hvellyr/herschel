@@ -2541,16 +2541,36 @@ bool FunctionSignature::hasPositionalParam() const
 }
 
 
+StringBuffer& operator<<(StringBuffer& other, const FunctionParameter& prm)
+{
+  switch (prm.kind()) {
+  case FunctionParameter::kParamPos:
+    if (prm.isSpecialized())
+      other << "@";
+    other << prm.type().typeId();
+    break;
+  case FunctionParameter::kParamNamed:
+    other << prm.key() << ":" << prm.type().typeId();
+    break;
+  case FunctionParameter::kParamRest: other << prm.type().typeId() << " ..."; break;
+  }
+
+  return other;
+}
+
+
 StringBuffer& operator<<(StringBuffer& other, const FunctionParamVector& params)
 {
   if (!params.empty()) {
-    other << params.front().type().typeId();
-    std::for_each(std::next(params.begin()), params.end(),
-                  [&](const FunctionParameter& p) {
-                    other << ", ";
-                    other << p.type().typeId();
-                  });
+    other << params.front();
+    if (params.size() > 1) {
+      std::for_each(next(params.begin()), params.end(), [&](const auto& p) {
+        other << ", ";
+        other << p;
+      });
+    }
   }
+
   return other;
 }
 
