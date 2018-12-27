@@ -550,6 +550,8 @@ bool Scope::checkForFunctionRedefinition(const SrcPos& srcpos, ScopeDomain domai
 void Scope::registerFunction(const SrcPos& srcpos, const String& funcName,
                              std::shared_ptr<AstNode> node)
 {
+  hr_assert(dynamic_cast<FunctionNode*>(node.get()));
+
   const ScopeName& name = ScopeName(kNormal, funcName);
 
   auto result = lookupItemLocalImpl(srcpos, name, K(showError), !K(doAutoMatch));
@@ -587,16 +589,17 @@ void Scope::registerFunction(const SrcPos& srcpos, const String& funcName,
 }
 
 
-const AstNode* Scope::lookupFunction(const String& name, bool showAmbiguousSymDef) const
+std::shared_ptr<FunctionNode> Scope::lookupFunction(const String& name,
+                                                    bool showAmbiguousSymDef) const
 {
   auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef);
   if (lv.fItem && lv.fItem->kind() == kScopeItem_function) {
     const auto& defs = dynamic_cast<const FunctionScopeItem*>(lv.fItem)->nodes();
 
     // TODO: handle type overloading
-    return defs.front().get();
+    return std::dynamic_pointer_cast<FunctionNode>(defs.front());
   }
-  return nullptr;
+  return {};
 }
 
 
@@ -636,10 +639,9 @@ const AstNode* Scope::lookupVarOrFunc(const String& name, bool showAmbiguousSymD
 }
 
 
-const AstNode* Scope::lookupBestFunctionOverload(const String& name,
-                                                 const std::vector<Type>& argTypes,
-                                                 const SrcPos& srcpos,
-                                                 bool showAmbiguousSymDef) const
+std::shared_ptr<FunctionNode>
+Scope::lookupBestFunctionOverload(const String& name, const std::vector<Type>& argTypes,
+                                  const SrcPos& srcpos, bool showAmbiguousSymDef) const
 {
   auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef);
   if (lv.fItem) {
@@ -671,11 +673,11 @@ const AstNode* Scope::lookupBestFunctionOverload(const String& name,
       if (!candidates.empty()) {
         std::sort(begin(candidates), end(candidates),
                   [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
-        return candidates.front().second.get();
+        return std::dynamic_pointer_cast<FunctionNode>(candidates.front().second);
       }
     }
   }
-  return nullptr;
+  return {};
 }
 
 

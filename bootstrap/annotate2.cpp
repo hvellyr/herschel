@@ -173,6 +173,21 @@ struct NodeAnnotator2<std::shared_ptr<BlockNode>> {
 };
 
 
+template <>
+struct NodeAnnotator2<std::shared_ptr<ApplyNode>> {
+  static void annotate(Annotator2* ann, std::shared_ptr<ApplyNode> node)
+  {
+    ScopeHelper scopeHelper(ann->fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
+
+    ann->annotateNodeList(node->child_nodes());
+
+    if (std::shared_ptr<FunctionNode> refFuncNd = node->refFunction().lock()) {
+      node->base()->setType(refFuncNd->type());
+    }
+  }
+};
+
+
 //----------------------------------------------------------------------------
 
 Annotate2Pass::Annotate2Pass(int level, std::shared_ptr<Scope> scope, Compiler& compiler)

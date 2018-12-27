@@ -236,8 +236,8 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
     typf->typifyNodeList(node->children());
 
     if (node->isSimpleCall()) {
-      auto funcNode = dynamic_cast<const FunctionNode*>(
-          node->scope()->lookupFunction(node->simpleCallName(), K(showAmbiguousSymDef)));
+      auto funcNode =
+          node->scope()->lookupFunction(node->simpleCallName(), K(showAmbiguousSymDef));
 
       if (funcNode) {
         if (!funcNode->hasSpecializedParams()) {
@@ -250,8 +250,9 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
           if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
                   node->simpleCallName(), prmTypes, node->srcpos(),
                   K(showAmbiguousSymDef))) {
-            funcNode = dynamic_cast<const FunctionNode*>(bestFuncNode);
-            node->base()->setType(funcNode->type());
+            funcNode = bestFuncNode;
+            node->setRefFunction(funcNode);
+            //node->base()->setType(funcNode->type());
             // TODO: remember the func-node chosen in node, such that
             // we know which function to call later.
           }
@@ -265,7 +266,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
         }
 
         if (!node->isObsolete()) {
-          typf->typifyMatchAndCheckParameters(node, funcNode);
+          typf->typifyMatchAndCheckParameters(node, funcNode.get());
 
           if (node->simpleCallName() == Names::kLangAllocateArray) {
             typf->checkAllocateArraySignature(node);
@@ -1137,9 +1138,8 @@ bool Typifier::isNodeCallToGenericFunction(const AstNode* node) const
           return false;
       }
 
-      auto funcNode =
-          dynamic_cast<const FunctionNode*>(applyNode->scope()->lookupFunction(
-              applyNode->simpleCallName(), K(showAmbiguousSymDef)));
+      auto funcNode = applyNode->scope()->lookupFunction(applyNode->simpleCallName(),
+                                                         K(showAmbiguousSymDef));
       if (funcNode)
         return funcNode->hasSpecializedParams();
     }
@@ -1659,14 +1659,13 @@ bool Typifier::checkBinaryFunctionCall(std::shared_ptr<BinaryNode> node,
                                        std::shared_ptr<AstNode> leftArg,
                                        std::shared_ptr<AstNode> rightArg)
 {
-  const FunctionNode* funcNode = dynamic_cast<const FunctionNode*>(
-      node->scope()->lookupFunction(funcName, K(showAmbiguousSymDef)));
+  auto funcNode = node->scope()->lookupFunction(funcName, K(showAmbiguousSymDef));
 
   if (funcNode) {
     // XmlRenderer out{new FilePort(stdout)};
     // out.render(const_cast<FunctionNode*>(funcNode));
     Type type = typifyMatchAndCheckParameters(
-        node->srcpos(), makeNodeList({ leftArg, rightArg }), funcNode);
+        node->srcpos(), makeNodeList({ leftArg, rightArg }), funcNode.get());
     if (type.isDef()) {
       node->setType(type);
       return true;

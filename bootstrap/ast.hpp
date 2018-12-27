@@ -1450,9 +1450,9 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(this, std::make_shared<FunctionNode>(
-                                         fSrcPos, details::copyNodes(fChildren),
-                                         fRetType.clone(), details::nodeClone(fBody)));
+    auto nd = std::make_shared<FunctionNode>(fSrcPos, details::copyNodes(fChildren),
+                                             fRetType.clone(), details::nodeClone(fBody));
+    return details::cloneScope(this, nd);
   }
 
   const Type& retType() const { return fRetType; }
@@ -1583,6 +1583,7 @@ public:
   {
     auto apply = std::make_shared<ApplyNode>(fSrcPos, details::nodeClone(fBase));
     details::copyNodes(&apply->fChildren, &fChildren);
+    apply->fRefFunction = fRefFunction;
     return details::cloneScope(this, std::move(apply));
   }
 
@@ -1594,8 +1595,15 @@ public:
     return result;
   }
 
+  std::weak_ptr<FunctionNode> refFunction() { return fRefFunction; }
+  void setRefFunction(std::shared_ptr<FunctionNode> refFunction)
+  {
+    fRefFunction = refFunction;
+  }
+
 private:
   std::shared_ptr<AstNode> fBase;
+  std::weak_ptr<FunctionNode> fRefFunction;
 };
 
 inline std::shared_ptr<ApplyNode> makeApplyNode(const SrcPos& srcpos,

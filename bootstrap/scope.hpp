@@ -26,6 +26,7 @@
 namespace herschel {
 class Macro;
 class AstNode;
+class FunctionNode;
 
 
 enum ScopeLevel {
@@ -161,7 +162,8 @@ public:
 
   void registerFunction(const SrcPos& srcpos, const String& name,
                         std::shared_ptr<AstNode> node);
-  const AstNode* lookupFunction(const String& name, bool showAmbiguousSymDef) const;
+  std::shared_ptr<FunctionNode> lookupFunction(const String& name,
+                                               bool showAmbiguousSymDef) const;
 
 
   //-------- variables
@@ -172,10 +174,9 @@ public:
 
   const AstNode* lookupVarOrFunc(const String& name, bool showAmbiguousSymDef) const;
 
-  const AstNode* lookupBestFunctionOverload(const String& name,
-                                            const std::vector<Type>& argTypes,
-                                            const SrcPos& srcpos,
-                                            bool showAmbiguousSymDef) const;
+  std::shared_ptr<FunctionNode>
+  lookupBestFunctionOverload(const String& name, const std::vector<Type>& argTypes,
+                             const SrcPos& srcpos, bool showAmbiguousSymDef) const;
 
   bool isVarInOuterFunction(const String& name) const;
 
