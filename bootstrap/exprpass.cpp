@@ -927,12 +927,12 @@ Token FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
 
   if (fToken.isSeq() && fToken.count() >= 1) {
     size_t ofs = 0;
-    if (ofs < fToken.count()) {
-      if (fToken[ofs] == kKeyarg) {
-        paramType = kNamed;
-        ofs++;
-        doScanOn = false;
-      }
+    if (ofs + 2 < fToken.count() &&
+        fToken[ofs] == kSymbol &&
+        fToken[ofs + 1] == kMapTo) {
+      paramType = kNamed;
+      ofs += 2;
+      doScanOn = false;
     }
 
     if (ofs < fToken.count()) {
@@ -967,64 +967,69 @@ Token FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
 
 
   if (doScanOn) {
-    if (fToken == kKeyarg) {
+    if (fToken == kSymbol) {
+      paramSeq << fToken;
+      nextToken();
+    }
+
+    if (fToken == kMapTo) {
       paramSeq << fToken;
       nextToken();
       paramType = kNamed;
+
+      if (fToken == kSymbol) {
+        paramSeq << fToken;
+        nextToken();
+      }
+      else {
+        error(fToken.srcpos(), E_SymbolExpected,
+              String("parameter name expected: ") + fToken);
+        scanUntilNextParameter();
+        return Token();
+      }
     }
 
-    if (fToken != kSymbol) {
-      error(fToken.srcpos(), E_SymbolExpected,
-            String("parameter name expected: ") + fToken);
-      scanUntilNextParameter();
-      return Token();
-    }
-    else {
-      paramSeq << fToken;
+    Token typeIntroToken = fToken;
+    if (fToken == kColon || fToken == kAt) {
       nextToken();
 
-      Token typeIntroToken = fToken;
-      if (fToken == kColon || fToken == kAt) {
-        nextToken();
-
-        SrcPos pos = fToken.srcpos();
-        Token type = parseTypeSpec(K(onlyNestedConstr), K(needParans));
-        if (!type.isSet()) {
-          errorf(pos, E_MissingType, "type expression expected");
-          if (autoCompleteTypes)
-            paramSeq << typeIntroToken << makeAnySymbol(pos);
-        }
-        else
-          paramSeq << typeIntroToken << type;
+      SrcPos pos = fToken.srcpos();
+      Token type = parseTypeSpec(K(onlyNestedConstr), K(needParans));
+      if (!type.isSet()) {
+        errorf(pos, E_MissingType, "type expression expected");
+        if (autoCompleteTypes)
+          paramSeq << typeIntroToken << makeAnySymbol(pos);
       }
-      else if (autoCompleteTypes)
-        paramSeq << Token(typeIntroToken.srcpos(), kColon)
-                 << makeAnySymbol(typeIntroToken.srcpos());
+      else
+        paramSeq << typeIntroToken << type;
+    }
+    else if (autoCompleteTypes)
+      paramSeq << Token(typeIntroToken.srcpos(), kColon)
+               << makeAnySymbol(typeIntroToken.srcpos());
 
-      if (fToken == kAssign) {
-        Token assignToken = fToken;
-        nextToken();
+    if (fToken == kAssign) {
+      Token assignToken = fToken;
+      nextToken();
 
-        SrcPos pos = fToken.srcpos();
-        Token initExpr = parseExpr(!K(acceptComma));
-        if (!initExpr.isSet())
-          errorf(pos, E_MissingRHExpr, "no value in keyed argument");
-        else {
-          paramSeq << assignToken << initExpr;
-          paramType = kNamed;
-        }
+      SrcPos pos = fToken.srcpos();
+      Token initExpr = parseExpr(!K(acceptComma));
+      if (!initExpr.isSet())
+        errorf(pos, E_MissingRHExpr, "no value in keyed argument");
+      else {
+        paramSeq << assignToken << initExpr;
+        paramType = kNamed;
       }
-      else if (fToken == kEllipsis) {
-        Token restToken = fToken;
-        nextToken();
+    }
+    else if (fToken == kEllipsis) {
+      Token restToken = fToken;
+      nextToken();
 
-        if (paramType != kPositional) {
-          errorf(restToken.srcpos(), E_InvalidRestParam, "orphaned rest parameter");
-        }
-        else {
-          paramSeq << restToken;
-          paramType = kRest;
-        }
+      if (paramType != kPositional) {
+        errorf(restToken.srcpos(), E_InvalidRestParam, "orphaned rest parameter");
+      }
+      else {
+        paramSeq << restToken;
+        paramType = kRest;
       }
     }
   }

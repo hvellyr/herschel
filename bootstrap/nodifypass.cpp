@@ -1516,7 +1516,7 @@ std::shared_ptr<AstNode> SecondPass::parseParameter(const Token& expr)
 
   String key;
   ParamFlags paramType = kPosArg;
-  if (seq[ofs] == kKeyarg) {
+  if (expr.count() >= 3 && seq[ofs] == kSymbol && seq[ofs + 1] == kMapTo) {
     key = seq[ofs].idValue();
     if (hasNamespace(key)) {
       errorf(seq[ofs].srcpos(), E_QualifiedParamKey,
@@ -1524,8 +1524,7 @@ std::shared_ptr<AstNode> SecondPass::parseParameter(const Token& expr)
       key = baseName(key);
     }
 
-    hr_assert(expr.count() >= 2);
-    ofs++;
+    ofs += 2;
 
     paramType = kNamedArg;
   }
