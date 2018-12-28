@@ -130,6 +130,7 @@ enum ErrCodes {
   E_CtorArgNameConflict = 0x4109,
   E_ArrayReqDefaultCtor = 0x410a,
   E_NoMatchingFunction = 0x410b,
+  E_NoCallable = 0x410c,
 
   // loops
   E_BadForLoopClause = 0x4200,

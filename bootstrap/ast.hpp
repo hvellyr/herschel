@@ -872,6 +872,9 @@ public:
   //! indicates whether this is a position parameter.
   bool isPositional() const { return (fFlags & kPosArg) != 0; }
 
+  //! indicates whether this is a named parameter.
+  bool isNamed() const { return (fFlags & kNamedArg) != 0; }
+
   //! indicates whether this is a rest parameter ("...").
   bool isRestArg() const { return (fFlags & kRestArg) != 0; }
 

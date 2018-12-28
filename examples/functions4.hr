@@ -1,0 +1,5 @@
+def foo = function(a : Int) a
+
+def app.main() {
+  foo(42)
+}

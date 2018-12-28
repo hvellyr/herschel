@@ -43,6 +43,10 @@ namespace estd {
     optional(optional<T>&&) = default;
 #  endif
 
+    ~optional() {
+      reset();
+    }
+
     optional<T>& operator=(const optional<T>& rhs) = default;
 
 #  if defined(IS_VS2013)

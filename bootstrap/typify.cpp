@@ -240,29 +240,31 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
           node->scope()->lookupFunction(node->simpleCallName(), K(showAmbiguousSymDef));
 
       if (funcNode) {
-        if (!funcNode->hasSpecializedParams()) {
-          std::vector<Type> prmTypes;
-          for (auto& arg : node->children()) {
-            // TODO: How are keyed or optional arguments handled?
-            prmTypes.push_back(arg->type());
-          }
-
-          if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
-                  node->simpleCallName(), prmTypes, node->srcpos(),
-                  K(showAmbiguousSymDef))) {
-            funcNode = bestFuncNode;
-            node->setRefFunction(funcNode);
-            //node->base()->setType(funcNode->type());
-            // TODO: remember the func-node chosen in node, such that
-            // we know which function to call later.
-          }
-          else if (node->isRemoveable()) {
-            node->setIsObsolete(true);
+        std::vector<FunctionParameter> prmTypes;
+        for (auto& arg : node->children()) {
+          if (auto keyedParam = std::dynamic_pointer_cast<KeyargNode>(arg)) {
+            prmTypes.push_back(FunctionParameter(FunctionParameter::kParamNamed,
+                                                 !K(isSpec), keyedParam->key(),
+                                                 arg->type()));
           }
           else {
-            error(node->srcpos(), E_NoMatchingFunction,
-                  String("no matching function: ") + node->simpleCallName());
+            prmTypes.push_back(FunctionParameter(FunctionParameter::kParamPos, !K(isSpec),
+                                                 String(), arg->type()));
           }
+        }
+
+        if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
+                node->simpleCallName(), prmTypes, node->srcpos(),
+                K(showAmbiguousSymDef))) {
+          funcNode = bestFuncNode;
+          node->setRefFunction(funcNode);
+        }
+        else if (node->isRemoveable()) {
+          node->setIsObsolete(true);
+        }
+        else {
+          error(node->srcpos(), E_NoMatchingFunction,
+                String("no matching function: ") + node->simpleCallName());
         }
 
         if (!node->isObsolete()) {
@@ -271,6 +273,17 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
           if (node->simpleCallName() == Names::kLangAllocateArray) {
             typf->checkAllocateArraySignature(node);
           }
+        }
+      }
+      else {
+        auto varNode = node->scope()->lookupVarOrFunc(node->simpleCallName(),
+                                                      K(showAmbiguousSymDef));
+        if (varNode && varNode->type().isFunction()) {
+          node->base()->setType(varNode->type());
+          // TODO: check function signature of the function type
+        }
+        else {
+          errorf(node->srcpos(), E_NoCallable, "Non callable in function call context");
         }
       }
     }
@@ -1551,9 +1564,9 @@ Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeLis
     }
   }
 
-  if (argidx < args.size()) {
-    errorf(srcpos, E_BadArgNumber, "Too much arguments");
-  }
+  // if (argidx < args.size()) {
+  //   errorf(srcpos, E_BadArgNumber, "Too much arguments");
+  // }
 
   if (funcNode->retType().isOpen()) {
     Type retty = funcNode->retType().replaceGenerics(localCtx);

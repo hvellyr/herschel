@@ -14,12 +14,15 @@
 #include "errcodes.hpp"
 #include "log.hpp"
 #include "macro.hpp"
+#include "optional.hpp"
 #include "strbuf.hpp"
 #include "symbol.hpp"
 #include "typectx.hpp"
 #include "utils.hpp"
 
 #include <algorithm>
+#include <map>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -639,8 +642,86 @@ const AstNode* Scope::lookupVarOrFunc(const String& name, bool showAmbiguousSymD
 }
 
 
+namespace {
+  struct FunDefParamTypes {
+    std::vector<std::shared_ptr<ParamNode>> fPositional;
+    std::vector<std::shared_ptr<ParamNode>> fNamed;
+    std::shared_ptr<ParamNode> fRest;
+  };
+
+  FunDefParamTypes separateParams(const NodeList& params)
+  {
+    FunDefParamTypes result;
+
+    for (const auto& nd : params) {
+      auto param = std::dynamic_pointer_cast<ParamNode>(nd);
+      if (param->isPositional() || param->isSpecArg()) {
+        result.fPositional.push_back(param);
+      }
+      else if (param->isNamed()) {
+        result.fNamed.push_back(param);
+      }
+      else if (param->isRestArg()) {
+        result.fRest = param;
+      }
+    }
+
+    return result;
+  }
+
+  struct ArgParamTypes {
+    std::vector<FunctionParameter> fPositional;
+    std::map<String, FunctionParameter> fNamed;
+  };
+
+  ArgParamTypes separateArgTypes(const std::vector<FunctionParameter>& args)
+  {
+    ArgParamTypes result;
+
+    for (const auto& arg : args) {
+      switch (arg.kind()) {
+      case FunctionParameter::kParamPos:
+        result.fPositional.push_back(arg);
+        break;
+      case FunctionParameter::kParamNamed:
+        result.fNamed.insert(std::make_pair(arg.key(), arg));
+        break;
+      default: hr_invalid("");
+      }
+    }
+
+    return result;
+  }
+
+  struct VarDistKey {
+    void add(int val) { data.push_back(val); }
+    void reset() { data.clear(); }
+    explicit operator bool() const { return !data.empty(); }
+
+    bool operator<(const VarDistKey& rhs) const { return data < rhs.data; }
+
+    std::vector<int> data;
+  };
+
+  struct Candidate {
+    Candidate() = default;
+    Candidate(VarDistKey dist, std::shared_ptr<AstNode> node)
+      : fDist(std::move(dist))
+      , fNode(std::move(node))
+    {}
+    Candidate(const Candidate& other) = default;
+    Candidate& operator=(const Candidate& other) = default;
+
+    VarDistKey fDist;
+    std::shared_ptr<AstNode> fNode;
+  };
+
+}  // namespace
+
+
 std::shared_ptr<FunctionNode>
-Scope::lookupBestFunctionOverload(const String& name, const std::vector<Type>& argTypes,
+Scope::lookupBestFunctionOverload(const String& name,
+                                  const std::vector<FunctionParameter>& argTypes,
                                   const SrcPos& srcpos, bool showAmbiguousSymDef) const
 {
   auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef);
@@ -648,35 +729,115 @@ Scope::lookupBestFunctionOverload(const String& name, const std::vector<Type>& a
     if (lv.fItem->kind() == kScopeItem_function) {
       const auto& defs = dynamic_cast<const FunctionScopeItem*>(lv.fItem)->nodes();
 
-      std::vector<std::pair<int, std::shared_ptr<AstNode>>> candidates;
+      std::vector<Candidate> candidates;
 
       for (const auto& def : defs) {
         if (auto funcDef = std::dynamic_pointer_cast<FunctionNode>(def)) {
-          const auto& params = funcDef->params();
-          if (params.size() == argTypes.size()) {
-            if (params.size() == 0) {
-              candidates.push_back(std::make_pair(0, def));
+          const auto params = separateParams(funcDef->params());
+          const auto args = separateArgTypes(argTypes);
+
+          std::unique_ptr<Candidate> candidate;
+          auto argRestIdx = params.fPositional.size();
+          if ((params.fRest && (params.fPositional.size() <= args.fPositional.size())) ||
+              (params.fPositional.size() == args.fPositional.size())) {
+            if (params.fPositional.size() == 0) {
+              candidate = std::make_unique<Candidate>(VarDistKey(), def);
             }
             else {
-              for (auto i = 0; i < params.size(); ++i) {
-                auto dist = varianceDistance(params[i]->type(), argTypes[i], *this,
-                                             srcpos, showAmbiguousSymDef);
-                if (dist && *dist >= 0) {
-                  candidates.push_back(std::make_pair(*dist, def));
+              auto distKey = VarDistKey{};
+
+              for (auto i = 0; i < params.fPositional.size(); ++i) {
+                auto dist = varianceDistance(params.fPositional[i]->type(),
+                                             args.fPositional[i].type(), *this, srcpos,
+                                             showAmbiguousSymDef);
+                if (!dist || *dist < 0) {
+                  distKey.reset();
+                  break;
+                }
+                else {
+                  distKey.add(*dist);
+                }
+              }
+
+              if (distKey) {
+                candidate = std::make_unique<Candidate>(distKey, def);
+              }
+            }
+          }
+
+          if (candidate) {
+            if (args.fNamed.empty()) {
+              for (auto i = 0; i < params.fNamed.size(); ++i) {
+                candidate->fDist.add(0);
+              }
+            }
+            else {
+              std::set<String> testedNamedArgs;
+
+              for (const auto& nmParam : params.fNamed) {
+                testedNamedArgs.insert(nmParam->key());
+
+                auto iArg = args.fNamed.find(nmParam->key());
+                if (iArg != args.fNamed.end()) {
+                  auto dist = varianceDistance(nmParam->type(),
+                                               iArg->second.type(), *this, srcpos,
+                                               showAmbiguousSymDef);
+                  if (!dist || *dist < 0) {
+                    candidate.reset();
+                    break;
+                  }
+                  else {
+                    candidate->fDist.add(*dist);
+                  }
+                }
+                else {
+                  candidate->fDist.add(0);
+                }
+              }
+
+              for (const auto& nmArgP : args.fNamed) {
+                if (testedNamedArgs.count(nmArgP.first) == 0) {
+                  // an named argument which haven't been matched a
+                  // named parameter definition above makes this
+                  // function def not matching.
+                  candidate.reset();
+                  break;
                 }
               }
             }
+          }
+
+          if (candidate) {
+            if (args.fPositional.size() > argRestIdx) {
+              if (params.fRest) {
+                // TODO: build an array type of all rest arguments in
+                // args.fRest and see whether it is contravariant to
+                // params.fRest.  If all arg-types are identical it
+                // could be an array of T, if the not homogenous the
+                // array type is a lang.any.  For now every rest
+                // matches as equal (=0).
+                candidate->fDist.add(0);
+              }
+              else {
+                candidate.reset();
+              }
+            }
+          }
+
+          if (candidate) {
+            candidates.push_back(*candidate);
           }
         }
       }
 
       if (!candidates.empty()) {
         std::sort(begin(candidates), end(candidates),
-                  [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
-        return std::dynamic_pointer_cast<FunctionNode>(candidates.front().second);
+                  [](const auto& lhs, const auto& rhs) { return lhs.fDist < rhs.fDist; });
+        return std::dynamic_pointer_cast<FunctionNode>(candidates.front().fNode);
       }
     }
   }
+
   return {};
 }
 

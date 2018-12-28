@@ -175,7 +175,7 @@ public:
   const AstNode* lookupVarOrFunc(const String& name, bool showAmbiguousSymDef) const;
 
   std::shared_ptr<FunctionNode>
-  lookupBestFunctionOverload(const String& name, const std::vector<Type>& argTypes,
+  lookupBestFunctionOverload(const String& name, const std::vector<FunctionParameter>& argTypes,
                              const SrcPos& srcpos, bool showAmbiguousSymDef) const;
 
   bool isVarInOuterFunction(const String& name) const;
