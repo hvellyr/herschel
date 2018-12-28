@@ -476,8 +476,8 @@ Token FirstPass::parseExport()
     for (TokenVector::const_iterator it = children.begin(); it != children.end(); it++) {
       if (*it == kSymbol) {
         String fullId = (isQualified(it->idValue()) || it->idValue() == String("*")
-                         ? it->idValue()
-                         : qualifyId(currentModuleName(), it->idValue()));
+                             ? it->idValue()
+                             : qualifyId(currentModuleName(), it->idValue()));
         fScope->registerSymbolForExport(Scope::kNormal, fullId, vizType, isFinal);
       }
     }
@@ -927,9 +927,7 @@ Token FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
 
   if (fToken.isSeq() && fToken.count() >= 1) {
     size_t ofs = 0;
-    if (ofs + 2 < fToken.count() &&
-        fToken[ofs] == kSymbol &&
-        fToken[ofs + 1] == kMapTo) {
+    if (ofs + 2 < fToken.count() && fToken[ofs] == kSymbol && fToken[ofs + 1] == kMapTo) {
       paramType = kNamed;
       ofs += 2;
       doScanOn = false;
@@ -1309,8 +1307,8 @@ bool FirstPass::parseExprListUntilBrace(TokenVector* result, bool endAtToplevelI
                                         bool isLocal)
 {
   for (;;) {
-    if (fToken == kDefId || fToken == kExternId ||
-        fToken == kExportId || fToken == kImportId || fToken == kModuleId) {
+    if (fToken == kDefId || fToken == kExternId || fToken == kExportId ||
+        fToken == kImportId || fToken == kModuleId) {
       if (!endAtToplevelId) {
         error(fToken.srcpos(), E_UnexpectedTopExpr,
               String("unexpected top level expression: ") + fToken.toString());
@@ -1484,7 +1482,8 @@ struct SelectPatternParser : public BasePatternParser {
             else if (pass->fToken == kMapTo)
               break;
             else {
-              errorf(pass->fToken.srcpos(), E_BadPatternList, "unexpected token");
+              error(pass->fToken.srcpos(), E_BadPatternList,
+                    String("unexpected token: ") + pass->fToken.toString());
               return false;
             }
           }
@@ -2356,7 +2355,8 @@ Token FirstPass::parseWith()
       return Token();
   }
   else {
-    error(fToken.srcpos(), E_UnexpectedToken, String("unknown scope in 'with': ") + fToken);
+    error(fToken.srcpos(), E_UnexpectedToken,
+          String("unknown scope in 'with': ") + fToken);
     return scanUntilTopExprAndResume();
   }
 }

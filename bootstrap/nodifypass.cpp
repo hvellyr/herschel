@@ -1611,7 +1611,7 @@ std::shared_ptr<AstNode> SecondPass::parseClosure(const Token& expr)
 
   Type type;
   if (ofs + 1 < expr.count()) {
-    if (expr[ofs] == kColon) {
+    if (expr[ofs] == kMapTo) {
       type = parseTypeSpec(expr[ofs + 1]);
       ofs += 2;
     }
@@ -2992,7 +2992,7 @@ NodeList SecondPass::parseExpr(const Token& expr)
 
   case kPunct:
     // printf("{1} ---> %s\n", (zstring)StrHelper(expr.toString()));
-    errorf(expr.srcpos(), E_UnexpectedToken, "Unexpected token");
+    error(expr.srcpos(), E_UnexpectedToken, String("Unexpected token: ") + expr.toString());
     return NodeList();
   }
 
