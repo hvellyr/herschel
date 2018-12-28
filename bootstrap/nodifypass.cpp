@@ -2112,10 +2112,6 @@ std::shared_ptr<AstNode> SecondPass::transformLoopExpr(const SrcPos& srcpos,  //
   Token returnSym = Token::newUniqueSymbolToken(srcpos, "return");
   Token tmpTestSym = Token::newUniqueSymbolToken(srcpos, "test");
 
-  static int loopId = 0;
-  loopId++;
-
-  bool delayTypeSpec = false;
   if (requiresReturnValue) {
     Type retType;
 
@@ -2127,17 +2123,14 @@ std::shared_ptr<AstNode> SecondPass::transformLoopExpr(const SrcPos& srcpos,  //
       retType = Type::makeUnion(unionTypes, K(isValue));
       defaultRetVal = makeSymbolNode(srcpos, Names::kLangUnspecified);
     }
-    else {
+    else
       defaultRetVal = makeUndefNode();
-      delayTypeSpec = true;
-    }
 
     auto returnVardef = makeVardefNode(srcpos, returnSym.idValue(), kNormalVar,
                                        K(isLocal), retType, defaultRetVal);
-    returnVardef->setTypeSpecDelayed(delayTypeSpec);
+    returnVardef->setTypeSpecDelayed(K(delayTypeSpec));
 
     auto defReturnNode = makeLetNode(returnVardef);
-    defReturnNode->setLoopId(loopId);
     loopDefines.push_back(defReturnNode);
 
     if (hasAlternateBranch) {
@@ -2164,8 +2157,7 @@ std::shared_ptr<AstNode> SecondPass::transformLoopExpr(const SrcPos& srcpos,  //
   if (requiresReturnValue) {
     auto retNode = makeSymbolNode(srcpos, returnSym.idValue());
     auto saveRetNode = makeAssignNode(srcpos, retNode, body);
-    saveRetNode->setTypeSpecDelayed(delayTypeSpec);
-    saveRetNode->setLoopId(loopId);
+    saveRetNode->setTypeSpecDelayed(K(delayTypeSpec));
     bodyNode->appendNode(saveRetNode);
   }
   else
@@ -2178,7 +2170,6 @@ std::shared_ptr<AstNode> SecondPass::transformLoopExpr(const SrcPos& srcpos,  //
   auto loopNode = makeWhileNode(srcpos, testNode->clone(), bodyNode);
 
   auto returnNode = makeSymbolNode(srcpos, returnSym.idValue());
-  returnNode->setLoopId(loopId);
 
   if (hasAlternateBranch) {
     auto consequent = makeBlockNode(srcpos);

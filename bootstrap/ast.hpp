@@ -187,30 +187,6 @@ protected:
 };
 
 
-//! Mixin class to add support to \c AstNode subclasses as being part of a
-//! loop transformation.  All nodes having the same loopId belong to the
-//! same compiled loop construct.
-//!
-//! This is a kind of hack to help the \c Typifier identifier to find
-//! temporary variables and assigns for decomposed loop expressions.
-
-class LoopAnnotatable {
-public:
-  int loopId() const { return fLoopId; }
-
-  void setLoopId(int loopId) { fLoopId = loopId; }
-
-
-protected:
-  LoopAnnotatable()
-      : fLoopId(0)
-  {
-  }
-
-  int fLoopId;
-};
-
-
 //! Mixin class to add support for delayed type specification.  This is used
 //! on \c VardefNode and \c AssignNode to flag the variable type to be
 //! inferred not from the (probably undefined init expression) but the first
@@ -390,7 +366,7 @@ enum SymReferType {
 //!
 //! Symbols can be variable names, function names, language keywords, and
 //! alike.  Check \c refersTo() to get the kind of symbol.
-class SymbolNode : public AstNode, public LoopAnnotatable, public LinkableSymbol {
+class SymbolNode : public AstNode, public LinkableSymbol {
 public:
   SymbolNode(const SrcPos& srcpos, const String& value)
       : AstNode(srcpos)
@@ -711,7 +687,7 @@ protected:
 };
 
 
-class LetNode : public BaseDefNode, public LoopAnnotatable {
+class LetNode : public BaseDefNode {
 public:
   LetNode(std::shared_ptr<AstNode> node)
       : BaseDefNode(node->srcpos(), std::move(node))
@@ -1111,7 +1087,7 @@ inline std::shared_ptr<RangeNode> makeRangeNode(const SrcPos& srcpos,
 }
 
 
-class AssignNode : public AstNode, public LoopAnnotatable, public DelayTypeAnnotatable {
+class AssignNode : public AstNode, public DelayTypeAnnotatable {
 public:
   AssignNode(const SrcPos& srcpos, std::shared_ptr<AstNode> lvalue,
              std::shared_ptr<AstNode> rvalue)

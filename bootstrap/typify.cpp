@@ -337,8 +337,26 @@ struct NodeTypifier<std::shared_ptr<AssignNode>> {
       auto vardefNode = const_cast<VardefNode*>(dynamic_cast<const VardefNode*>(var));
       hr_assert(vardefNode);
 
-      symNode->setType(node->rvalue()->type());
-      vardefNode->setType(node->rvalue()->type());
+      if (vardefNode->type().isUnion()) {
+        TypeVector newUnionTypes;
+        for (auto ty : vardefNode->type().unionTypes()) {
+          if (ty.isAny()) {
+            newUnionTypes.push_back(node->rvalue()->type());
+          }
+          else {
+            newUnionTypes.push_back(ty);
+          }
+        }
+
+        auto newTy = Type::makeUnion(newUnionTypes, vardefNode->type().isValueType());
+
+        symNode->setType(newTy);
+        vardefNode->setType(newTy);
+      }
+      else {
+        symNode->setType(node->rvalue()->type());
+        vardefNode->setType(node->rvalue()->type());
+      }
 
       node->setTypeSpecDelayed(false);
       vardefNode->setTypeSpecDelayed(false);

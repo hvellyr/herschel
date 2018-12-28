@@ -172,83 +172,11 @@ struct NodeAnnotator<std::shared_ptr<FunctionNode>> {
 };
 
 
-class StripLoopNodesTraverseDelegate {
-public:
-  StripLoopNodesTraverseDelegate(int loopId)
-      : fLoopId(loopId)
-  {
-  }
-
-  bool apply(std::shared_ptr<AstNode> node, TraversePhase phase)
-  {
-    if (phase == TraversePhase::before) {
-      if (auto blockNode = std::dynamic_pointer_cast<BlockNode>(node)) {
-        NodeList& nl = blockNode->children();
-        for (size_t i = 0; i < nl.size();) {
-          if (auto symNode = std::dynamic_pointer_cast<SymbolNode>(nl[i])) {
-            if (symNode->loopId() == fLoopId) {
-              // replace the return symbol with a simple lang.unspecified.
-              // This is required to give the expression a concrete return
-              // value.  Otherwise SSA compilation in codegen becomes more
-              // complicated.
-              nl[i] = makeSymbolNode(nl[i]->srcpos(), Names::kLangUnspecified);
-            }
-          }
-          else if (auto letNode = std::dynamic_pointer_cast<LetNode>(nl[i])) {
-            if (letNode->loopId() == fLoopId) {
-              nl.erase(nl.begin() + i);
-              continue;
-            }
-          }
-          else if (auto assignNode = std::dynamic_pointer_cast<AssignNode>(nl[i])) {
-            if (assignNode->loopId() == fLoopId)
-              nl[i] = assignNode->rvalue();
-          }
-
-          i++;
-        }
-      }
-    }
-
-    return true;
-  }
-
-  int fLoopId;
-};
-
-
 template <>
 struct NodeAnnotator<std::shared_ptr<BlockNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<BlockNode> node)
   {
     ScopeHelper scopeHelper(ann->fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
-
-    if (!node->isInTailPos()) {
-      int loopId = 0;
-
-      NodeList& nl = node->children();
-      const size_t nlsize = nl.size();
-      for (size_t i = 0; i < nlsize; i++) {
-        if (auto symNode = std::dynamic_pointer_cast<SymbolNode>(nl[i])) {
-          if (symNode->loopId() > 0) {
-            loopId = symNode->loopId();
-            break;
-          }
-        }
-        else if (auto letNode = std::dynamic_pointer_cast<LetNode>(nl[i])) {
-          if (letNode->loopId() > 0) {
-            loopId = letNode->loopId();
-            break;
-          }
-        }
-      }
-
-      if (loopId > 0) {
-        StripLoopNodesTraverseDelegate delegate(loopId);
-        Traversator<StripLoopNodesTraverseDelegate>(delegate).traverseNode(node);
-      }
-    }
-
     ann->annotateNodeList(node->children(), node->isInTailPos(), !K(markSingleType));
   }
 };
