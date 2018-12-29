@@ -1,0 +1,9 @@
+def foo(c : Int, b : String, name -> nm : String = "N.N.", age : Int = 42, rest ...) ...
+
+
+def app.main() {
+  foo(age: 99, name: "Heinz", 42, "hello world", 1, 2, 3)
+  foo(42, "hello world")
+  foo(age: 99, 42, "hello world", 1, 2, 3, name: "Heinz")
+  0
+}

@@ -78,6 +78,8 @@ public:
   void checkArgParamType(TypeCtx& localCtx, const std::shared_ptr<ParamNode>& param,
                          std::shared_ptr<AstNode> arg, int idx);
 
+  void reorderArguments(std::shared_ptr<ApplyNode> node, const FunctionNode* funcNode);
+
   /*! Sequentially determine and check types for the arguments parameters of ApplyNode
    * @p node which is to be applied to @p funcNode.
    *

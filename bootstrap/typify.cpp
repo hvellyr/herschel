@@ -258,6 +258,13 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
                 K(showAmbiguousSymDef))) {
           funcNode = bestFuncNode;
           node->setRefFunction(funcNode);
+
+          typf->reorderArguments(node, funcNode.get());
+          typf->typifyMatchAndCheckParameters(node, funcNode.get());
+
+          if (node->simpleCallName() == Names::kLangAllocateArray) {
+            typf->checkAllocateArraySignature(node);
+          }
         }
         else if (node->isRemoveable()) {
           node->setIsObsolete(true);
@@ -265,14 +272,6 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
         else {
           error(node->srcpos(), E_NoMatchingFunction,
                 String("no matching function: ") + node->simpleCallName());
-        }
-
-        if (!node->isObsolete()) {
-          typf->typifyMatchAndCheckParameters(node, funcNode.get());
-
-          if (node->simpleCallName() == Names::kLangAllocateArray) {
-            typf->checkAllocateArraySignature(node);
-          }
         }
       }
       else {
@@ -1481,6 +1480,66 @@ Typifier::KeyargReturn Typifier::findKeyedArg(const NodeList& args, size_t argid
     }
   }
   return retval;
+}
+
+
+void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node, const FunctionNode* funcNode)
+{
+  const NodeList& funcParams = funcNode->params();
+
+  NodeList newArgs;
+  newArgs.reserve(funcParams.size());
+
+  NodeList posArgs;
+  posArgs.reserve(node->children().size());
+  std::map<String, std::shared_ptr<KeyargNode>> namedArgs;
+
+  for (auto arg : node->children()) {
+    if (auto keyArg = std::dynamic_pointer_cast<KeyargNode>(arg)) {
+      namedArgs.insert(std::make_pair(keyArg->key(), keyArg));
+    }
+    else {
+      posArgs.push_back(arg);
+    }
+  }
+
+  size_t posArgIdx = 0;
+  for (auto i = 0; i < funcParams.size(); ++i) {
+    auto param = std::dynamic_pointer_cast<ParamNode>(funcParams[i]);
+
+    if (param) {
+      if (param->flags() == kPosArg || param->flags() == kSpecArg) {
+        if (posArgIdx >= posArgs.size()) {
+          // there was an error before.  Not enough positional arguments
+          return;
+        }
+        newArgs.push_back(posArgs[posArgIdx]);
+        ++posArgIdx;
+      }
+      else if (param->flags() == kNamedArg) {
+        auto iArg = namedArgs.find(param->key());
+        if (iArg != namedArgs.end()) {
+          newArgs.push_back(iArg->second);
+        }
+        else {
+          newArgs.push_back(makeKeyargNode(param->srcpos(), param->key(),
+                                           param->initExpr()));
+        }
+      }
+      else if (param->flags() == kRestArg) {
+        // TODO: create code to generate a array on stack, and assign
+        // the remaining arguments to it; then pass the array as
+        // single parameter.
+        for (auto i = posArgIdx; i < posArgs.size(); ++i) {
+          newArgs.push_back(posArgs[i]);
+        }
+
+        break;
+      }
+    }
+  }
+
+  node->replaceChildren(newArgs);
 }
 
 

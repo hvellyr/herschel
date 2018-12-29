@@ -1192,7 +1192,10 @@ void SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
   if (ofs < seq.size()) {
     if (seq[ofs] == kEllipsis)
       data.fFlags |= kFuncIsAbstract;
-    else if (!fCompiler.isParsingInterface())
+    else if (!fCompiler.isParsingInterface()) // TODO: when inlining
+                                              // we actually need the
+                                              // body definition also
+                                              // in the header
       data.fBody = singletonNodeListOrNull(parseExpr(seq[ofs]));
     ofs++;
   }
@@ -1479,7 +1482,6 @@ NodeList SecondPass::parseDef(const Token& expr, bool isLocal)
 
 std::shared_ptr<AstNode> SecondPass::parseIf(const Token& expr)
 {
-  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.count() >= 3);
   hr_assert(expr[0] == kIfId);
   hr_assert(expr[1].isNested());
@@ -1562,8 +1564,7 @@ std::shared_ptr<AstNode> SecondPass::parseParameter(const Token& expr)
     if (seq[ofs] == kAssign) {
       hr_assert(ofs + 1 < expr.count());
 
-      if (!fCompiler.isParsingInterface())
-        initExpr = singletonNodeListOrNull(parseExpr(seq[ofs + 1]));
+      initExpr = singletonNodeListOrNull(parseExpr(seq[ofs + 1]));
       ofs += 2;
 
       paramType = kNamedArg;
@@ -1786,7 +1787,6 @@ NodeList SecondPass::parseFunCallArgs(const TokenVector& args)
 
 std::shared_ptr<AstNode> SecondPass::parseFunCall(const Token& expr)
 {
-  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.isSeq());
   hr_assert(expr.count() == 2);
   hr_assert(expr[1].isNested());
@@ -2192,8 +2192,6 @@ std::shared_ptr<AstNode> SecondPass::transformLoopExpr(const SrcPos& srcpos,  //
 
 std::shared_ptr<AstNode> SecondPass::parseFor(const Token& expr)
 {
-  hr_assert(!fCompiler.isParsingInterface());
-
   hr_assert(expr.isSeq());
   hr_assert(expr.count() == 3 || expr.count() == 5);
   hr_assert(expr[0] == kForId);
@@ -2238,8 +2236,6 @@ std::shared_ptr<AstNode> SecondPass::parseFor(const Token& expr)
 
 std::shared_ptr<AstNode> SecondPass::parseWhile(const Token& expr)
 {
-  hr_assert(!fCompiler.isParsingInterface());
-
   hr_assert(expr.isSeq());
   hr_assert(expr.count() == 3 || expr.count() == 5);
   hr_assert(expr[0] == kWhileId);
@@ -2269,8 +2265,6 @@ std::shared_ptr<AstNode> SecondPass::parseWhile(const Token& expr)
 
 std::shared_ptr<AstNode> SecondPass::parseSelect(const Token& expr)
 {
-  hr_assert(!fCompiler.isParsingInterface());
-
   hr_assert(expr.isSeq());
   hr_assert(expr.count() == 3);
   hr_assert(expr[0] == kSelectId);
@@ -2450,8 +2444,6 @@ static std::shared_ptr<AstNode> transformMatchNode(std::shared_ptr<MatchNode> no
 
 std::shared_ptr<AstNode> SecondPass::parseMatch(const Token& expr)
 {
-  hr_assert(!fCompiler.isParsingInterface());
-
   hr_assert(expr.isSeq());
   hr_assert(expr.count() == 3);
   hr_assert(expr[0] == kMatchId);
@@ -2531,7 +2523,6 @@ std::shared_ptr<AstNode> SecondPass::parseMatch(const Token& expr)
 
 std::shared_ptr<AstNode> SecondPass::parseTypeExpr(const Token& expr, bool inArrayType)
 {
-  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.isSeq());
   hr_assert(expr.count() == 2);
 
@@ -2753,7 +2744,6 @@ static bool doesNodeNeedBlock(const AstNode* node)
 
 std::shared_ptr<AstNode> SecondPass::parseBlock(const Token& expr)
 {
-  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.isNested());
   hr_assert(expr.leftToken() == kBraceOpen);
   hr_assert(expr.rightToken() == kBraceClose);
@@ -2784,7 +2774,6 @@ std::shared_ptr<AstNode> SecondPass::parseBlock(const Token& expr)
 
 std::shared_ptr<AstNode> SecondPass::parseLiteralVector(const Token& expr)
 {
-  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.isNested());
   hr_assert(expr.leftToken() == kLiteralVectorOpen);
   hr_assert(expr.rightToken() == kParanClose);
@@ -2805,7 +2794,6 @@ std::shared_ptr<AstNode> SecondPass::parseLiteralVector(const Token& expr)
 
 std::shared_ptr<AstNode> SecondPass::parseLiteralArray(const Token& expr)
 {
-  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.isNested());
   hr_assert(expr.leftToken() == kLiteralArrayOpen);
   hr_assert(expr.rightToken() == kBracketClose);
@@ -2826,7 +2814,6 @@ std::shared_ptr<AstNode> SecondPass::parseLiteralArray(const Token& expr)
 
 std::shared_ptr<AstNode> SecondPass::parseLiteralDict(const Token& expr)
 {
-  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.isNested());
   hr_assert(expr.leftToken() == kLiteralVectorOpen);
   hr_assert(expr.rightToken() == kParanClose);
@@ -2849,7 +2836,6 @@ std::shared_ptr<AstNode> SecondPass::parseLiteralDict(const Token& expr)
 
 NodeList SecondPass::parseNested(const Token& expr)
 {
-  hr_assert(!fCompiler.isParsingInterface());
   hr_assert(expr.isNested());
 
   switch (expr.leftToken()) {

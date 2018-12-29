@@ -238,6 +238,9 @@ public:
   //! notion 'children' depends on the specific subclass.
   const NodeList& children() const { return fChildren; }
 
+  //! Replaces the list of child nodes with @p newChildren.
+  void replaceChildren(NodeList newChildren) { fChildren = std::move(newChildren); }
+
   NodeList child_nodes() override { return children(); }
 
 
