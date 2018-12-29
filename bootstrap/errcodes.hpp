@@ -23,7 +23,6 @@ enum ErrCodes {
   E_BadParameterList = 0x0005,
   E_MissingParanClose = 0x0006,
   E_MissingBracketClose = 0x0007,
-  E_MissingGenericClose = 0x0008,
   E_GenericTypeList = 0x0009,
   E_UnexpectedEOF = 0x000a,
   E_MissingBraceOpen = 0x000b,
@@ -42,12 +41,9 @@ enum ErrCodes {
   E_UnterminatedString = 0x0105,
   E_BadCharNotation = 0x0106,
   E_BadNumberNotation = 0x0107,
-  E_UnitExpected = 0x0108,
   E_UnknownSymbolDomain = 0x0109,
   E_OrphanedMultiValue = 0x010b,
   E_OrphanedRestInd = 0x010c,
-  E_MisplacedThenWhile = 0x010d,
-  E_TypeHasNoBraces = 0x010e,
   E_UnexpectedRootedSymbol = 0x010f,
   E_InconsistentGroupType = 0x0110,
 
@@ -55,8 +51,6 @@ enum ErrCodes {
   E_StringExpected = 0x1002,
   E_UnexpectedTopExpr = 0x1003,
   E_ConstExprExpected = 0x1004,
-  E_UnexpectedDefExpr = 0x1005,
-  E_OnExprInType = 0x1006,
 
   E_AmbiguousSym = 0x2000,
   E_SymbolRedefined = 0x2001,
@@ -75,16 +69,9 @@ enum ErrCodes {
   E_MissingType = 0x4013,
   E_LocalTypeDef = 0x4021,
   E_NoSlotsInTypeDef = 0x4022,
-  E_NestedTypeDef = 0x4023,
-  E_SlotNotInClassDef = 0x4024,
-  E_UnexpDefInClass = 0x4025,
-  E_MissingBaseType = 0x4027,
-  E_MissingUnitSign = 0x4028,
-  E_UnknownSlotFlag = 0x4029,
   E_SuperGenericType = 0x4030,
   E_QualifiedLocalSym = 0x4031,
   E_QualifiedParamKey = 0x4032,
-  E_QualifiedSlot = 0x4033,
   E_QualifiedEnumDefSym = 0x4034,
   E_EnumNotBaseType = 0x4035,
   E_EnumInitTypeMismatch = 0x4036,
@@ -97,7 +84,6 @@ enum ErrCodes {
   E_InvariantType = 0x403d,
   E_MultiDimenArray = 0x403e,
   E_BadGenericType = 0x403f,
-  E_BadClassOnAlloc = 0x4040,
   E_UnknownType = 0x4041,
   E_SlotRefToNonClass = 0x4042,
   E_UnknownSlot = 0x4043,
@@ -110,7 +96,6 @@ enum ErrCodes {
   E_BadMacroPattern = 0x4080,
   E_BadMacroReplcment = 0x4081,
   E_MacroInconsistency = 0x4082,
-  E_InvalidPatternType = 0x4083,
   E_PatternNameMismatch = 0x4084,
   E_MacroParamType = 0x4085,
   E_MacroParamMismatch = 0x4086,
@@ -126,24 +111,13 @@ enum ErrCodes {
   E_GenericNoSpecPrm = 0x4105,
   E_NoGenericFunction = 0x4106,
   E_BadGenericReferrer = 0x4107,
-  E_BadFunctionArity = 0x4108,
-  E_CtorArgNameConflict = 0x4109,
   E_ArrayReqDefaultCtor = 0x410a,
   E_NoMatchingFunction = 0x410b,
   E_NoCallable = 0x410c,
   E_WrongOperatorFuncSign = 0x410d,
 
-  // loops
-  E_BadForLoopClause = 0x4200,
-  BadExplicitForClause = 0x4201,
-
   // literals
   E_InconsistentArgs = 0x4250,
-
-  // on
-  E_UnknownOnKey = 0x4301,
-  E_UnreachableCode = 0x4302,
-  E_OrphanedOnExit = 0x4303,
 
   // expressions
   E_MissingRHExpr = 0x4400,
@@ -175,7 +149,6 @@ enum ErrCodes {
   E_MatchAmbiguousType = 0x441d,
 
   // module parsing
-  E_MissingModName = 0x4500,
   E_MissingDefName = 0x4501,
 
   // import, export
@@ -183,7 +156,6 @@ enum ErrCodes {
   E_EmptyExportList = 0x4541,
   E_UnknownInputFile = 0x4542,
   E_UnknownVisibility = 0x4543,
-  E_MissingRequiredFile = 0x4544,
 
   // external C syntax
   E_BadCSyntax = 0xe000,
