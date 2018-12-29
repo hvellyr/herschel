@@ -131,6 +131,7 @@ enum ErrCodes {
   E_ArrayReqDefaultCtor = 0x410a,
   E_NoMatchingFunction = 0x410b,
   E_NoCallable = 0x410c,
+  E_WrongOperatorFuncSign = 0x410d,
 
   // loops
   E_BadForLoopClause = 0x4200,

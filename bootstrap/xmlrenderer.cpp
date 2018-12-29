@@ -143,6 +143,10 @@ struct NodeRenderer<std::shared_ptr<BinaryNode>> {
           std::make_pair(node.type().typeId(), node.type()));
     }
 
+    if (auto funcNode = node.refFunction().lock()) {
+      attrs << " opfunc='" << xmlEncode(funcNode->type().typeId()) << "'";
+    }
+
     renderer->displayOpenTagAttrs("binary", StrHelper(attrs.toString()));
     renderer->displayNode(nullptr, node.left());
     renderer->displayNode(nullptr, node.right());

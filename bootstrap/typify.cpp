@@ -228,6 +228,25 @@ struct NodeTypifier<std::shared_ptr<ParamNode>> {
 };
 
 
+namespace {
+  std::vector<FunctionParameter> typesForArgs(const NodeList& args)
+  {
+    std::vector<FunctionParameter> result;
+    for (auto& arg : args) {
+      if (auto keyedParam = std::dynamic_pointer_cast<KeyargNode>(arg)) {
+        result.push_back(FunctionParameter(FunctionParameter::kParamNamed, !K(isSpec),
+                                           keyedParam->key(), arg->type()));
+      }
+      else {
+        result.push_back(FunctionParameter(FunctionParameter::kParamPos, !K(isSpec),
+                                           String(), arg->type()));
+      }
+    }
+    return result;
+  }
+}  // namespace
+
+
 template <>
 struct NodeTypifier<std::shared_ptr<ApplyNode>> {
   static void typify(Typifier* typf, std::shared_ptr<ApplyNode> node)
@@ -240,27 +259,16 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
           node->scope()->lookupFunction(node->simpleCallName(), K(showAmbiguousSymDef));
 
       if (funcNode) {
-        std::vector<FunctionParameter> prmTypes;
-        for (auto& arg : node->children()) {
-          if (auto keyedParam = std::dynamic_pointer_cast<KeyargNode>(arg)) {
-            prmTypes.push_back(FunctionParameter(FunctionParameter::kParamNamed,
-                                                 !K(isSpec), keyedParam->key(),
-                                                 arg->type()));
-          }
-          else {
-            prmTypes.push_back(FunctionParameter(FunctionParameter::kParamPos, !K(isSpec),
-                                                 String(), arg->type()));
-          }
-        }
-
         if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
-                node->simpleCallName(), prmTypes, node->srcpos(),
+                node->simpleCallName(), typesForArgs(node->children()), node->srcpos(),
                 K(showAmbiguousSymDef))) {
-          funcNode = bestFuncNode;
-          node->setRefFunction(funcNode);
+          node->setRefFunction(bestFuncNode);
 
-          typf->reorderArguments(node, funcNode.get());
-          typf->typifyMatchAndCheckParameters(node, funcNode.get());
+          typf->reorderArguments(node, bestFuncNode.get());
+          Type type = typf->typifyMatchAndCheckParameters(
+              node->srcpos(), node->children(), bestFuncNode.get());
+          if (type.isDef())
+            node->setType(type);
 
           if (node->simpleCallName() == Names::kLangAllocateArray) {
             typf->checkAllocateArraySignature(node);
@@ -479,12 +487,9 @@ struct NodeTypifier<std::shared_ptr<BinaryNode>> {
                                         node->left(), node->right()))
         return;
 
-      tyerror(leftty, "left");
-      tyerror(rightty, "right");
-      // TODO: try to lookup a method which enables add(leftty, rightty) and use
-      // it's returntype
-      errorf(node->srcpos(), E_BinaryTypeMismatch,
-             "incompatible types in binary operation");
+      error(node->srcpos(), E_BinaryTypeMismatch,
+            String("incompatible types in binary operation (") + leftty.typeId() +
+                " and " + rightty.typeId() + ")");
       node->setType(Type::makeAny());
       typf->annotateTypeConv(node, node->type());
       break;
@@ -1483,7 +1488,8 @@ Typifier::KeyargReturn Typifier::findKeyedArg(const NodeList& args, size_t argid
 }
 
 
-void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node, const FunctionNode* funcNode)
+void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node,
+                                const FunctionNode* funcNode)
 {
   const NodeList& funcParams = funcNode->params();
 
@@ -1522,8 +1528,8 @@ void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node, const FunctionN
           newArgs.push_back(iArg->second);
         }
         else {
-          newArgs.push_back(makeKeyargNode(param->srcpos(), param->key(),
-                                           param->initExpr()));
+          newArgs.push_back(
+              makeKeyargNode(param->srcpos(), param->key(), param->initExpr()));
         }
       }
       else if (param->flags() == kRestArg) {
@@ -1546,50 +1552,6 @@ void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node, const FunctionN
 Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeList& args,
                                              const FunctionNode* funcNode)
 {
-  /*
-  def param.is-generic-type():
-    if isRef() && isGeneric(): -> true
-    if isRef() && constraints.containsGenericTypeRef(): -> true
-
-  def check-arg-param-type():
-    if param.is-generic-type:
-      if generic-type is known yet:
-        if not isSameType(generics-table().type(), arg.type():
-          error(type mismatch)
-      else:
-        register-generic-type(generic-type)
-    else if param.type().contains-generic-type:
-      ty = match-generic-type-recursivly(params.type(), arg.type()
-      if ty is known yet:
-        if not isSameType(ty, arg.type():
-          error(type mismatch)
-      else:
-        register-generic-type(ty)
-    else:
-      if not isContravariant(param.type, arg.type):
-        error
-
-  def create-sequence-type-from-rest-arg():
-    ...
-
-  for-each param in params:
-    if param.isPositional():
-      if not has-arg:
-        error(wrong number of args)
-      else:
-        check-arg-param-type(arg)
-    else if param.isNamed():
-      if has-named-arg:
-        check-arg-param-type(arg)
-      else:
-        check-arg-param-type(init-expr)
-    else if param.isRest():
-      create-sequence-type-from-rest-arg()
-
-  if more args than params (and not rest-param):
-    error(wrong number of args)
-  */
-
   const NodeList& funcParams = funcNode->params();
 
   TypeCtx localCtx;
@@ -1669,15 +1631,6 @@ Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeLis
 }
 
 
-void Typifier::typifyMatchAndCheckParameters(std::shared_ptr<ApplyNode> node,
-                                             const FunctionNode* funcNode)
-{
-  Type type = typifyMatchAndCheckParameters(node->srcpos(), node->children(), funcNode);
-  if (type.isDef())
-    node->setType(type);
-}
-
-
 void Typifier::checkAllocateArraySignature(std::shared_ptr<ApplyNode> node)
 {
   const NodeList& args = node->children();
@@ -1752,13 +1705,28 @@ bool Typifier::checkBinaryFunctionCall(std::shared_ptr<BinaryNode> node,
   auto funcNode = node->scope()->lookupFunction(funcName, K(showAmbiguousSymDef));
 
   if (funcNode) {
-    // XmlRenderer out{new FilePort(stdout)};
-    // out.render(const_cast<FunctionNode*>(funcNode));
-    Type type = typifyMatchAndCheckParameters(
-        node->srcpos(), makeNodeList({ leftArg, rightArg }), funcNode.get());
-    if (type.isDef()) {
-      node->setType(type);
-      return true;
+    auto args = makeNodeList({ leftArg, rightArg });
+
+    if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
+            funcName, typesForArgs(args), node->srcpos(), K(showAmbiguousSymDef))) {
+      if (bestFuncNode->params().size() > 2) {
+        error(node->srcpos(), E_WrongOperatorFuncSign,
+              String("operator implementation with wrong parameter count"));
+        return false;
+      }
+
+      node->setRefFunction(bestFuncNode);
+      //typf->reorderArguments(node, bestFuncNode.get());
+
+      Type type = typifyMatchAndCheckParameters(node->srcpos(), args, funcNode.get());
+      if (type.isDef()) {
+        node->setType(type);
+        return true;
+      }
+    }
+    else {
+      error(node->srcpos(), E_NoMatchingFunction,
+            String("no matching implementation for operator: ") + funcName);
     }
   }
 
@@ -1767,7 +1735,6 @@ bool Typifier::checkBinaryFunctionCall(std::shared_ptr<BinaryNode> node,
 
 
 //------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------
 
 TypifyPass::TypifyPass(int level)
     : AstNodeCompilePass(level, K(showNodeType))

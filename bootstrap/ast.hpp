@@ -981,10 +981,18 @@ public:
 
   NodeList child_nodes() override { return { fLeft, fRight }; }
 
+  std::weak_ptr<FunctionNode> refFunction() const { return fRefFunction; }
+  void setRefFunction(std::shared_ptr<FunctionNode> refFunction)
+  {
+    fRefFunction = refFunction;
+  }
+
 private:
   std::shared_ptr<AstNode> fLeft;
   std::shared_ptr<AstNode> fRight;
   OperatorType fOp;
+  //! Used when the operator uses a non-builtin method overload
+  std::weak_ptr<FunctionNode> fRefFunction;
 };
 
 inline std::shared_ptr<BinaryNode> makeBinaryNode(const SrcPos& srcpos,
@@ -1577,7 +1585,7 @@ public:
     return result;
   }
 
-  std::weak_ptr<FunctionNode> refFunction() { return fRefFunction; }
+  std::weak_ptr<FunctionNode> refFunction() const { return fRefFunction; }
   void setRefFunction(std::shared_ptr<FunctionNode> refFunction)
   {
     fRefFunction = refFunction;

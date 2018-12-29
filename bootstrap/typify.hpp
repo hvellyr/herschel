@@ -80,13 +80,6 @@ public:
 
   void reorderArguments(std::shared_ptr<ApplyNode> node, const FunctionNode* funcNode);
 
-  /*! Sequentially determine and check types for the arguments parameters of ApplyNode
-   * @p node which is to be applied to @p funcNode.
-   *
-   * @param node       the ApplyNode to typify
-   * @param funcNode   the FunctionNode as looked up from the scope. */
-  void typifyMatchAndCheckParameters(std::shared_ptr<ApplyNode> node,
-                                     const FunctionNode* funcNode);
   /*! Sequentially determine and check types for the arguments @p args
    * @p node which is to be applied to @p funcNode.
    *
