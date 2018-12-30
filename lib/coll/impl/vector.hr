@@ -186,7 +186,7 @@ def reserve!(cltn @ ^Vector<'T>, add-items : Ordinal) -> ^Vector<'T>
 ------------------------------------------------------------------------------
 -- from Sliceable!
 
-def record VectorSlice<T> : core.Slice<Ordinal, T>
+def record VectorSlice<T> : core.Slice<Int, T>
 (
   vector : Vector<T>,
   from : Oridnal,
@@ -196,7 +196,7 @@ def record VectorSlice<T> : core.Slice<Ordinal, T>
 
 with ns core
 {
-  def num-items(vsl @ VectorSlice<'T>) -> Ordinal
+  def num-items(vsl @ VectorSlice<'T>) -> Int
     vsl.to - vsl.from
 
 
@@ -204,24 +204,24 @@ with ns core
     vsl.num-items == 0
 
 
-  def slice(vsl @ VectorSlice<'T>, idx @ Ordinal) -> 'T
+  def slice(vsl @ VectorSlice<'T>, idx @ Int) -> 'T
     vsl.vector[vsl.from + idx]
 
 
-  def slice(vsl @ VectorSlice<'T>, from @ Ordinal, to @ Ordinal)
-      : Slice<Ordinal, 'T>
+  def slice(vsl @ VectorSlice<'T>, from @ Int, to @ Int)
+      : Slice<Int, 'T>
     vsl.vector.slice(vsl.from + from, vsl.from + to)
 
 
 
-  def slice(obj @ Vector<'T>, n @ Ordinal) -> 'T
+  def slice(obj @ Vector<'T>, n @ Int) -> 'T
   {
     if (n >= obj.items)
       OutOfBoundsException(obj.items, n, n).raise
     obj.data[n]
   }
 
-  def slice!(obj @ Vector<'T>, n @ Ordinal, value @ 'T) -> Vector<'T>
+  def slice!(obj @ Vector<'T>, n @ Int, value @ 'T) -> Vector<'T>
   {
     if (n >= obj.items)
       OutOfBoundsException(obj.items, n, n).raise
@@ -231,7 +231,7 @@ with ns core
 
 -- from OrderedSlicable
 
-  def slice(obj @ Vector<'T>, from @ Ordinal, to @ Ordinal) -> Slice<Ordinal, 'T>
+  def slice(obj @ Vector<'T>, from @ Int, to @ Int) -> Slice<Int, 'T>
   {
     if (from > obj.items or to > obj.items)
       OutOfBoundsException(obj.items, from, to).raise

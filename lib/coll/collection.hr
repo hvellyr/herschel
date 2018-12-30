@@ -148,7 +148,7 @@ def generic last(cltn @ 'C) -> 'T
 ------------------------------------------------------------------------------
 def type Sequence<T> : (Collection<T>,
                         OrderedCollection<T>,
-                        OrderedSliceable<Ordinal, T> )
+                        OrderedSliceable<Int, T> )
 
 def generic sort(cltn @ 'S) -> 'S
     where S isa Sequence<'T> ...
@@ -161,7 +161,7 @@ def generic index-of(cltn @ 'S, elt @ 'T) -> OrdinalOrFalse
 
 def type Sequence!<T> : (Sequence<T>,
                          Collection!<T>,
-                         Sliceable!<Ordinal, T>)
+                         Sliceable!<Int, T>)
 
 def generic sort!(cltn @ ^'S) -> ^'S
     where S isa Sequence!<'T> ...

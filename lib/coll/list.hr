@@ -58,7 +58,7 @@ def method on-alloc(self @ ^List<'Elt>) -> ^List<'Elt>
   self.last = find-last-node(self.root)
 
 
-def insert!(self @ List<'T>, value @ 'T, before-index : Ordinal) -> List<'T> {
+def insert!(self @ List<'T>, value @ 'T, before-index : Int) -> List<'T> {
   select ()
     | (before-index == self.num-items) -> {
         let nl = ListPair<'T>(car: value)
@@ -101,7 +101,7 @@ def insert!(self @ List<'T>, value @ 'T, before-index : Ordinal) -> List<'T> {
 }
 
 
-def remove-at!(self @ List<'T>, index : Ordinal) -> 'T {
+def remove-at!(self @ List<'T>, index : Int) -> 'T {
   let p = self.root
   let prev = nil
   let n = 0
@@ -139,15 +139,15 @@ def add!(self @ List<'T>, elt @ 'T) -> List<'T>
 def remove!(self @ List<'T>, elt @ 'T) -> List<'T>
   match (self.index-of(elt))
     | e : Bool      -> self
-    | idx : Ordinal -> {
-                         self.remove-at!(idx)
-                         self
-                       }
+    | idx : Int -> {
+                     self.remove-at!(idx)
+                     self
+                   }
 
 
-def index-of(self @ List<'T>, elt @ 'T) -> OrdinalOrFalse {
+def index-of(self @ List<'T>, elt @ 'T) -> IntOrFalse {
   let p = self.root
-  let n : Ordinal = 0
+  let n : Int = 0
 
   for (p <> nil) {
     if (p.cdr == elt)
@@ -160,19 +160,19 @@ def index-of(self @ List<'T>, elt @ 'T) -> OrdinalOrFalse {
 
 
 def contains?(self @ List<'T>, elt @ 'T) -> Bool
-  self.index-of(elt) isa Ordinal
+  self.index-of(elt) isa Int
 
 
-def core.size(self @ List<'T>) -> Ordinal {
-  let n : Ordinal = 0
+def core.size(self @ List<'T>) -> Int {
+  let n : Int = 0
   for (p = self.root then p.cdr while p <> nil)
     n.incr!(p.car.size)
   n
 }
 
 
-def num-items(self @ List<'T>) -> Ordinal {
-  let n : Ordinal = 0
+def num-items(self @ List<'T>) -> Int {
+  let n : Int = 0
   for (p = self.root then p.cdr while p <> nil)
     n.incr!
   n
@@ -245,7 +245,7 @@ def remove-all!(self @ List<'T>, other @ Collection<'T>) -> List<'T> {
 }
 
 
-def swap!(self @ List<'T>, from-idx : Ordinal, to-idx : Ordinal) -> List<'T> ...
+def swap!(self @ List<'T>, from-idx : Int, to-idx : Int) -> List<'T> ...
   -- TODO
 
 
@@ -321,8 +321,8 @@ def reverse!(self @ List<'T>) -> List<'T> {
 
 
 -- operators [] and [] =
-def slice(self @ List<'T>, index @ Ordinal) -> 'T {
-  let n : Ordinal = 0
+def slice(self @ List<'T>, index @ Int) -> 'T {
+  let n : Int = 0
   for (p = self.root then p.cdr while p <> nil) {
     if (n == index)
       return p.car
@@ -332,8 +332,8 @@ def slice(self @ List<'T>, index @ Ordinal) -> 'T {
 }
 
 
-def slice(self @ List<'T>, from @ Ordinal, to @ Ordinal) -> Collection<'T> {
-  let n : Ordinal = 0
+def slice(self @ List<'T>, from @ Int, to @ Int) -> Collection<'T> {
+  let n : Int = 0
   let result = List<'T>()
 
   for (p = self.root then p.cdr while p <> nil) {
@@ -350,9 +350,9 @@ def slice(self @ List<'T>, from @ Ordinal, to @ Ordinal) -> Collection<'T> {
 
 
 def slice!(self @ List<'T>,
-           index @ Ordinal,
+           index @ Int,
            value @ 'T) -> List<'T> {
-  let n : Ordinal = 0
+  let n : Int = 0
   for (p = self.root then p.cdr while p <> nil) {
     if (n == index) {
       p.car = value

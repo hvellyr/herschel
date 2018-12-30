@@ -408,7 +408,7 @@ namespace {
       if (typeName == Names::kSliceableTypeName ||
           typeName == Names::kSliceableXTypeName) {
         if (generics.size() == 2) {
-          localCtx.registerType(generics[0].typeName(), Type::makeUInt32());
+          localCtx.registerType(generics[0].typeName(), Type::makeInt32());
           localCtx.registerType(generics[1].typeName(), right0.arrayBaseType());
 
           return true;
@@ -3176,7 +3176,7 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
         (rightTypeName == Names::kSliceableTypeName ||
          rightTypeName == Names::kSliceableXTypeName) &&
         right.generics().size() == 2 &&
-        isSameType(right.generics()[0], Type::makeUInt32(), scope, srcpos,
+        isSameType(right.generics()[0], Type::makeInt32(), scope, srcpos,
                    reportErrors) &&
         isSameType(left.arrayBaseType(), right.generics()[1], scope, srcpos,
                    reportErrors)) {
@@ -3352,7 +3352,7 @@ namespace {
           (rightTypeName == Names::kSliceableTypeName ||
            rightTypeName == Names::kSliceableXTypeName) &&
           right.generics().size() == 2 &&
-          isSameType(right.generics()[0], Type::makeUInt32(), scope, srcpos,
+          isSameType(right.generics()[0], Type::makeInt32(), scope, srcpos,
                      reportErrors) &&
           isSameType(left.arrayBaseType(), right.generics()[1], scope, srcpos,
                      reportErrors)) {

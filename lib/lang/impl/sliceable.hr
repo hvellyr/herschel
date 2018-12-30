@@ -11,13 +11,13 @@ import "lang/comparable.hr"
 import "lang/sliceable.hr"
 
 
-def compare(one @ Sliceable<Ordinal, 'T>, two @ Sliceable<Ordinal, 'T>) -> Int
+def compare(one @ Sliceable<Int, 'T>, two @ Sliceable<Int, 'T>) -> Int
     reify (one @ 'T[], two @ 'T[]) -> Int,
-          (one @ 'T[], two @ Slice<Ordinal, 'T>) -> Int
+          (one @ 'T[], two @ Slice<Int, 'T>) -> Int
 {
   let n = one.num-items
   if (n == two.num-items) {
-    for (i : Ordinal in 0 .. n - 1) {
+    for (i : Int in 0 .. n - 1) {
       let cmpval = one[i] <=> two[i]
       if (cmpval <> 0)
         break(cmpval)

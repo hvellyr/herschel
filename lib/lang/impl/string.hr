@@ -27,8 +27,8 @@ def record StringImpl : String
 def record StringSlice : (Comparable, String)
 (
   str : String,
-  from : Ordinal,
-  to : Ordinal
+  from : Int,
+  to : Int
 )
 
 
@@ -56,15 +56,15 @@ def compare(one @ StringImpl, two @ StringImpl) -> Int
   h7_lang_string_compare(one, two) as Int
 
 
-def num-items(s @ StringImpl) -> Ordinal
-  h7_lang_string_length(s) as Ordinal
+def num-items(s @ StringImpl) -> Int
+  h7_lang_string_length(s) as Int
 
 
-def slice(s @ StringImpl, idx @ Ordinal) -> Char
+def slice(s @ StringImpl, idx @ Int) -> Char
   h7_lang_string_char_at_index(s, idx).to-char
 
 
-def slice*(str @ StringImpl, from @ Ordinal, to @ Ordinal) -> String
+def slice*(str @ StringImpl, from @ Int, to @ Int) -> String
   StringSlice(str, from, to)
 
 
@@ -76,41 +76,41 @@ def compare(one @ String, two @ String) -> Int
 {
   let result : Int = 0
 
-  for (i : UInt in 0u .. one.num-items - 1,
-       j : UInt in 0u .. two.num-items - 1,
+  for (i : Int in 0 .. one.num-items() - 1,
+       j : Int in 0 .. two.num-items() - 1,
        result == 0) {
     result = (one[i] <=> two[j])
   }
 
   if (result == 0)
-    one.num-items <=> two.num-items
+    one.num-items() <=> two.num-items()
   else
     result
 }
 
 
 def empty?(str @ String) -> Bool
-  str.num-items == 0u
+  str.num-items() == 0
 
-def length(str @ String) -> Ordinal
-  str.num-items
+def length(str @ String) -> Int
+  str.num-items()
 
 def concat(left @ String, right @ String) -> String
 {
-  let t = h7_allocate_string_n(left.num-items + right.num-items, \space) as String
-  let j = 0u
+  let t = h7_allocate_string_n(left.num-items() + right.num-items(), \space) as String
+  let j = 0
 
-  if (left.num-items > 0u) {
-    for (i : UInt in 0u .. left.num-items - 1) {
+  if (left.num-items() > 0) {
+    for (i : Int in 0 .. left.num-items() - 1) {
       h7_lang_string_set_char_at_index(t, j, left[i])
-      j = j + 1u
+      j = j + 1
     }
   }
 
-  if (right.num-items > 0u) {
-    for (i : UInt in 0u .. right.num-items - 1) {
+  if (right.num-items() > 0) {
+    for (i : Int in 0 .. right.num-items() - 1) {
       h7_lang_string_set_char_at_index(t, j, right[i])
-      j = j + 1u
+      j = j + 1
     }
   }
 
@@ -122,16 +122,16 @@ def concat(left @ String, right @ String) -> String
 -- Slice special for string
 ------------------------------------------------------------------------------
 
-def num-items(sl @ StringSlice) -> Ordinal
-  sl^to - sl^from
+def num-items(sl @ StringSlice) -> Int
+  sl.to - sl.from
 
-def slice(sl @ StringSlice, idx @ Ordinal) -> Char
-  sl^str[sl^from + idx]
+def slice(sl @ StringSlice, idx @ Int) -> Char
+  sl.str[sl.from + idx]
 
-def slice*(sl @ StringSlice, from @ Ordinal, to @ Ordinal) -> String
---  if (from > sl.num-items or to > sl.num-items)
---    OutOfBoundsException(sl.num-items, from, to).raise
-  StringSlice(sl^str, sl^from + from, sl^from + to)
+def slice*(sl @ StringSlice, from @ Int, to @ Int) -> String
+--  if (from > sl.num-items() or to > sl.num-items())
+--    OutOfBoundsException(sl.num-items(), from, to).raise
+  StringSlice(sl.str, sl.from + from, sl.from + to)
 
 
 
