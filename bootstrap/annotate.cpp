@@ -202,6 +202,31 @@ struct NodeAnnotator<std::shared_ptr<ApplyNode>> {
   {
     ann->annotateNode(node->base());
     ann->annotateNodeList(node->children(), !K(markTailPos), K(markSingleType));
+
+    if (node->isSimpleCall()) {
+      auto funcName = node->simpleCallName();
+      auto varNode = node->scope()->lookupVarOrFunc(node->srcpos(), funcName,
+                                                    !K(showAmbiguousSymDef));
+      if (!varNode && hasNamespace(funcName)) {
+        auto lastName = baseName(funcName);
+        if (auto varNode = node->scope()->lookupVarOrFunc(node->srcpos(), lastName,
+                                                          !K(showAmbiguousSymDef))) {
+          // foo.bar()     => bar(foo)
+          // foo.bar(gaz)  => bar(foo, gaz)
+
+          node->setBase(makeSymbolNode(node->srcpos(), lastName));
+          node->children().insert(node->children().begin(),
+                                  makeSymbolNode(node->srcpos(), nsName(funcName)));
+
+          // re-annotate the rewritten code
+          ann->annotateNode(node->base());
+          ann->annotateNodeList(node->children(), !K(markTailPos), K(markSingleType));
+        }
+      }
+      else {
+        // handled in later phases
+      }
+    }
   }
 };
 
