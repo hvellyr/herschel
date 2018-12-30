@@ -266,6 +266,8 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
           node->setRefFunction(bestFuncNode);
 
           typf->reorderArguments(node, bestFuncNode.get());
+          typf->typifyNodeList(node->children());
+
           Type type = typf->typifyMatchAndCheckParameters(
               node->srcpos(), node->children(), bestFuncNode.get());
           if (type.isDef())
