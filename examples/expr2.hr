@@ -1,5 +1,9 @@
 def enum abc.xyz.Color ( green = 1, red = 99 )
+def enum abc.xyz.Color2 ( green = 42, blue = 57 )
 
 def foo(a : Int) {
   a = .abc.xyz.Color.red
+  let b = abc.xyz.Color2.green
+  let blue = 11
+  let c = blue
 }

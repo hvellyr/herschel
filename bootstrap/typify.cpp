@@ -286,12 +286,21 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
       else {
         auto varNode = node->scope()->lookupVarOrFunc(
             node->srcpos(), node->simpleCallName(), K(showAmbiguousSymDef));
-        if (varNode && varNode->type().isFunction()) {
-          node->base()->setType(varNode->type());
-          // TODO: check function signature of the function type
+        if (varNode) {
+          if (varNode->type().isFunction()) {
+            node->base()->setType(varNode->type());
+            // TODO: check function signature of the function type
+          }
+          else {
+            errorf(node->srcpos(), E_NoCallable, "Non callable in function call context");
+          }
+        }
+        else if (node->isRemoveable()) {
+          node->setIsObsolete(true);
         }
         else {
-          errorf(node->srcpos(), E_NoCallable, "Non callable in function call context");
+          error(node->srcpos(), E_UnknownSymbol,
+                String("unknown symbol: ") + node->simpleCallName());
         }
       }
     }

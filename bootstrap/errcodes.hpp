@@ -115,6 +115,7 @@ enum ErrCodes {
   E_NoMatchingFunction = 0x410b,
   E_NoCallable = 0x410c,
   E_WrongOperatorFuncSign = 0x410d,
+  E_UnknownSymbol = 0x420e,
 
   // literals
   E_InconsistentArgs = 0x4250,
