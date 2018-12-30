@@ -291,6 +291,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
         if (varNode) {
           if (varNode->type().isFunction()) {
             node->base()->setType(varNode->type());
+            node->setType(varNode->type().functionSignature().returnType());
             // TODO: check function signature of the function type
           }
           else {
