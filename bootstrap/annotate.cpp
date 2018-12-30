@@ -58,11 +58,11 @@ struct NodeAnnotator<std::shared_ptr<ArrayTypeNode>> {
 };
 
 
-static void annotateVardefNode(Annotator* ann, std::shared_ptr<VardefNode> node, bool isLocal)
+static void annotateVardefNode(Annotator* ann, std::shared_ptr<VardefNode> node,
+                               bool isLocal)
 {
   if (isLocal) {
-    if (!ann->fScope->checkForRedefinition(node->srcpos(), Scope::kNormal,
-                                           node->name()))
+    if (!ann->fScope->checkForRedefinition(node->srcpos(), Scope::kNormal, node->name()))
       ann->fScope->registerVar(node->srcpos(), node->name(), node);
   }
 
@@ -79,7 +79,8 @@ static void annotateFuncdefNode(Annotator* ann, std::shared_ptr<FuncDefNode> nod
     ann->fScope->registerFunction(node->srcpos(), node->name(), node);
   }
   else if (node->isMethod()) {
-    auto var = node->scope()->lookupVarOrFunc(node->name(), K(showAmbiguousSymDef));
+    auto var = node->scope()->lookupVarOrFunc(node->srcpos(), node->name(),
+                                              K(showAmbiguousSymDef));
     if (!var) {
       errorf(node->srcpos(), E_NoGenericFunction,
              "No generic function definition found for method");
@@ -95,8 +96,7 @@ static void annotateFuncdefNode(Annotator* ann, std::shared_ptr<FuncDefNode> nod
     else {
       errorf(node->srcpos(), E_BadGenericReferrer,
              "Bad method binding type (referred symbol is not a generic function).");
-      errorf(var->srcpos(), E_BadGenericReferrer,
-             "Referred symbol definition was here");
+      errorf(var->srcpos(), E_BadGenericReferrer, "Referred symbol definition was here");
     }
   }
 
@@ -186,8 +186,7 @@ template <>
 struct NodeAnnotator<std::shared_ptr<ParamNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<ParamNode> node)
   {
-    if (!ann->fScope->checkForRedefinition(node->srcpos(), Scope::kNormal,
-                                           node->name()))
+    if (!ann->fScope->checkForRedefinition(node->srcpos(), Scope::kNormal, node->name()))
       ann->fScope->registerVar(node->srcpos(), node->name(), node);
 
     if (node->initExpr()) {
@@ -407,8 +406,8 @@ void Annotator::annotateNode(std::shared_ptr<AstNode> node)
 {
   node->setScope(fScope);
 
-  dispatchNode<void>(
-      node, [&](auto nd) { NodeAnnotator<decltype(nd)>::annotate(this, nd); });
+  dispatchNode<void>(node,
+                     [&](auto nd) { NodeAnnotator<decltype(nd)>::annotate(this, nd); });
 }
 
 

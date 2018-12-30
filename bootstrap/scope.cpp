@@ -616,18 +616,20 @@ void Scope::registerVar(const SrcPos& srcpos, const String& name,
 }
 
 
-const AstNode* Scope::lookupVar(const String& name, bool showAmbiguousSymDef) const
+const AstNode* Scope::lookupVar(const SrcPos& srcpos, const String& name,
+                                bool showAmbiguousSymDef) const
 {
-  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef);
+  auto lv = lookupItem(srcpos, ScopeName(kNormal, name), showAmbiguousSymDef);
   if (lv.fItem && lv.fItem->kind() == kScopeItem_variable)
     return dynamic_cast<const NodeScopeItem*>(lv.fItem)->node();
   return nullptr;
 }
 
 
-const AstNode* Scope::lookupVarOrFunc(const String& name, bool showAmbiguousSymDef) const
+const AstNode* Scope::lookupVarOrFunc(const SrcPos& srcpos, const String& name,
+                                      bool showAmbiguousSymDef) const
 {
-  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef);
+  auto lv = lookupItem(srcpos, ScopeName(kNormal, name), showAmbiguousSymDef);
   if (lv.fItem) {
     if (lv.fItem->kind() == kScopeItem_variable)
       return dynamic_cast<const NodeScopeItem*>(lv.fItem)->node();
@@ -680,9 +682,7 @@ namespace {
 
     for (const auto& arg : args) {
       switch (arg.kind()) {
-      case FunctionParameter::kParamPos:
-        result.fPositional.push_back(arg);
-        break;
+      case FunctionParameter::kParamPos: result.fPositional.push_back(arg); break;
       case FunctionParameter::kParamNamed:
         result.fNamed.insert(std::make_pair(arg.key(), arg));
         break;
@@ -706,9 +706,10 @@ namespace {
   struct Candidate {
     Candidate() = default;
     Candidate(VarDistKey dist, std::shared_ptr<AstNode> node)
-      : fDist(std::move(dist))
-      , fNode(std::move(node))
-    {}
+        : fDist(std::move(dist))
+        , fNode(std::move(node))
+    {
+    }
     Candidate(const Candidate& other) = default;
     Candidate& operator=(const Candidate& other) = default;
 
@@ -779,9 +780,8 @@ Scope::lookupBestFunctionOverload(const String& name,
 
                 auto iArg = args.fNamed.find(nmParam->key());
                 if (iArg != args.fNamed.end()) {
-                  auto dist = varianceDistance(nmParam->type(),
-                                               iArg->second.type(), *this, srcpos,
-                                               showAmbiguousSymDef);
+                  auto dist = varianceDistance(nmParam->type(), iArg->second.type(),
+                                               *this, srcpos, showAmbiguousSymDef);
                   if (!dist || *dist < 0) {
                     candidate.reset();
                     break;

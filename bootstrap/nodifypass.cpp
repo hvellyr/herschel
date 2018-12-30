@@ -1192,10 +1192,10 @@ void SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
   if (ofs < seq.size()) {
     if (seq[ofs] == kEllipsis)
       data.fFlags |= kFuncIsAbstract;
-    else if (!fCompiler.isParsingInterface()) // TODO: when inlining
-                                              // we actually need the
-                                              // body definition also
-                                              // in the header
+    else if (!fCompiler.isParsingInterface())  // TODO: when inlining
+                                               // we actually need the
+                                               // body definition also
+                                               // in the header
       data.fBody = singletonNodeListOrNull(parseExpr(seq[ofs]));
     ofs++;
   }
@@ -2944,7 +2944,7 @@ NodeList SecondPass::parseExpr(const Token& expr)
   case kId:  //
   {
     // if the id refers to a enum value inline the enum value directly
-    auto var = fScope->lookupVar(expr.idValue(), K(showAmbiguousSymDef));
+    auto var = fScope->lookupVar(expr.srcpos(), expr.idValue(), K(showAmbiguousSymDef));
     auto vardef = dynamic_cast<const VardefNode*>(var);
     if (vardef && vardef->isEnum() && vardef->initExpr()) {
       return makeNodeList(vardef->initExpr()->clone());
@@ -2978,7 +2978,8 @@ NodeList SecondPass::parseExpr(const Token& expr)
 
   case kPunct:
     // printf("{1} ---> %s\n", (zstring)StrHelper(expr.toString()));
-    error(expr.srcpos(), E_UnexpectedToken, String("Unexpected token: ") + expr.toString());
+    error(expr.srcpos(), E_UnexpectedToken,
+          String("Unexpected token: ") + expr.toString());
     return NodeList();
   }
 

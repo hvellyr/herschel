@@ -70,7 +70,7 @@ struct NodeAnnotator2<std::shared_ptr<SymbolNode>> {
   static void annotate(Annotator2* ann, std::shared_ptr<SymbolNode> node)
   {
     const AstNode* var =
-        node->scope()->lookupVarOrFunc(node->name(), K(showAmbiguousSymDef));
+        node->scope()->lookupVarOrFunc(node->srcpos(), node->name(), K(showAmbiguousSymDef));
     if (var) {
       takeFullNameFromNode(node.get(), var);
 

@@ -44,7 +44,8 @@ template <>
 struct NodeTypifier<std::shared_ptr<SymbolNode>> {
   static void typify(Typifier* typf, std::shared_ptr<SymbolNode> node)
   {
-    auto var = node->scope()->lookupVarOrFunc(node->name(), K(showAmbiguousSymDef));
+    auto var = node->scope()->lookupVarOrFunc(node->srcpos(), node->name(),
+                                              K(showAmbiguousSymDef));
     if (var) {
       if (auto fdn = dynamic_cast<const FuncDefNode*>(var))
         node->setLinkage(fdn->linkage());
@@ -283,8 +284,8 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
         }
       }
       else {
-        auto varNode = node->scope()->lookupVarOrFunc(node->simpleCallName(),
-                                                      K(showAmbiguousSymDef));
+        auto varNode = node->scope()->lookupVarOrFunc(
+            node->srcpos(), node->simpleCallName(), K(showAmbiguousSymDef));
         if (varNode && varNode->type().isFunction()) {
           node->base()->setType(varNode->type());
           // TODO: check function signature of the function type
@@ -340,7 +341,8 @@ struct NodeTypifier<std::shared_ptr<AssignNode>> {
       auto symNode = std::dynamic_pointer_cast<SymbolNode>(node->lvalue());
       hr_assert(symNode);
 
-      auto var = node->scope()->lookupVarOrFunc(symNode->name(), K(showAmbiguousSymDef));
+      auto var = node->scope()->lookupVarOrFunc(symNode->srcpos(), symNode->name(),
+                                                K(showAmbiguousSymDef));
       auto vardefNode = const_cast<VardefNode*>(dynamic_cast<const VardefNode*>(var));
       hr_assert(vardefNode);
 

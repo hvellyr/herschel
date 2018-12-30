@@ -64,8 +64,8 @@ struct NodeTypeChecker<std::shared_ptr<FuncDefNode>> {
       // function implementation.  The following conditions are checked in
       // annotate.cpp already.
       const FuncDefNode* genericDef;
-      const AstNode* var =
-          node->scope()->lookupVarOrFunc(node->name(), K(showAmbiguousSymDef));
+      const AstNode* var = node->scope()->lookupVarOrFunc(node->srcpos(), node->name(),
+                                                          K(showAmbiguousSymDef));
       if (var && (genericDef = dynamic_cast<const FuncDefNode*>(var)) &&
           genericDef->isGeneric()) {
         if (!isContravariant(genericDef->type(), node->type(), *node->scope(),
@@ -116,7 +116,8 @@ struct NodeTypeChecker<std::shared_ptr<AssignNode>> {
       auto symNode = std::dynamic_pointer_cast<SymbolNode>(node->lvalue());
       hr_assert(symNode);
 
-      auto var = node->scope()->lookupVarOrFunc(symNode->name(), K(showAmbiguousSymDef));
+      auto var = node->scope()->lookupVarOrFunc(symNode->srcpos(), symNode->name(),
+                                                K(showAmbiguousSymDef));
       auto vardefNode = const_cast<VardefNode*>(dynamic_cast<const VardefNode*>(var));
       hr_assert(vardefNode);
 
