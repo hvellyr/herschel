@@ -707,7 +707,7 @@ struct NodeTypifier<std::shared_ptr<SlotRefNode>> {
         }
         else {
           error(node->srcpos(), E_UnknownSlot,
-                String("reference to unknown slot '") + node->slotName() + "'");
+                String("reference to unknown slot '") + node->slotName() + "' in type: " + basety.typeId());
           node->setType(Type::makeAny());
           node->setDstType(Type::makeAny());
           typf->annotateTypeConv(node, node->type());
