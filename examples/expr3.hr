@@ -1,10 +1,24 @@
-def record Foo ( name, prof )
+def record Foo ( name : String, prof )
 
-def first-name(fs @ ^Foo[]) {
+def first-name(f : Foo[]) {
   f[0].name
 }
 
-
-def first-proc(p @ Function() -> ^Foo) {
+def first-proc(p : Function() -> Foo) {
   p().name
+}
+
+def gaz(x : String) -> String ...
+
+
+def app.main() {
+  let g : Foo
+  g.name()
+  g.name(force: false)
+  0
+}
+
+
+
+def name(f : Foo, force : Bool = true) {
 }

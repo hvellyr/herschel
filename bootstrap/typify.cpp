@@ -260,16 +260,12 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
           node->scope()->lookupFunction(node->simpleCallName(), K(showAmbiguousSymDef));
 
       if (funcNode) {
-        if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
-                node->simpleCallName(), typesForArgs(node->children()), node->srcpos(),
-                K(showAmbiguousSymDef))) {
-          node->setRefFunction(bestFuncNode);
-
-          typf->reorderArguments(node, bestFuncNode.get());
+        if (funcNode->hasSpecializedParams()) {
+          typf->reorderArguments(node, funcNode.get());
           typf->typifyNodeList(node->children());
 
           Type type = typf->typifyMatchAndCheckParameters(
-              node->srcpos(), node->children(), bestFuncNode.get());
+              node->srcpos(), node->children(), funcNode.get());
           if (type.isDef())
             node->setType(type);
 
@@ -277,12 +273,31 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             typf->checkAllocateArraySignature(node);
           }
         }
-        else if (node->isRemoveable()) {
-          node->setIsObsolete(true);
-        }
         else {
-          error(node->srcpos(), E_NoMatchingFunction,
-                String("no matching function: ") + node->simpleCallName());
+          if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
+                  node->simpleCallName(), typesForArgs(node->children()), node->srcpos(),
+                  K(showAmbiguousSymDef))) {
+            node->setRefFunction(bestFuncNode);
+
+            typf->reorderArguments(node, bestFuncNode.get());
+            typf->typifyNodeList(node->children());
+
+            Type type = typf->typifyMatchAndCheckParameters(
+                node->srcpos(), node->children(), bestFuncNode.get());
+            if (type.isDef())
+              node->setType(type);
+
+            if (node->simpleCallName() == Names::kLangAllocateArray) {
+              typf->checkAllocateArraySignature(node);
+            }
+          }
+          else if (node->isRemoveable()) {
+            node->setIsObsolete(true);
+          }
+          else {
+            error(node->srcpos(), E_NoMatchingFunction,
+                  String("no matching function: ") + node->simpleCallName());
+          }
         }
       }
       else {
