@@ -1191,20 +1191,21 @@ const TypeProperty& Type::typeProperty(bool mustExist) const
 
 bool Type::isAny() const
 {
-  return isBuiltinType(Names::kAnyTypeName);
+  return isDef() && isBuiltinType(Names::kAnyTypeName);
 }
 
 
 bool Type::isClangAtom() const
 {
-  return isBuiltinType(Names::kClangAtomTypeName);
+  return isDef() && isBuiltinType(Names::kClangAtomTypeName);
 }
 
 
 bool Type::isSigned() const
 {
-  if (isBuiltinType(Names::kNumberTypeName) || isBuiltinType(Names::kComplexTypeName) ||
-      isBuiltinType(Names::kRationalTypeName) || isBuiltinType(Names::kIntegerTypeName))
+  if (isDef() &&
+      (isBuiltinType(Names::kNumberTypeName) || isBuiltinType(Names::kComplexTypeName) ||
+       isBuiltinType(Names::kRationalTypeName) || isBuiltinType(Names::kIntegerTypeName)))
     return true;
 
   const TypeProperty& prop = typeProperty(!K(mustExist));
@@ -1216,8 +1217,9 @@ bool Type::isSigned() const
 
 bool Type::isAnyNumber() const
 {
-  if (isBuiltinType(Names::kNumberTypeName) || isBuiltinType(Names::kComplexTypeName) ||
-      isBuiltinType(Names::kRationalTypeName) || isBuiltinType(Names::kIntegerTypeName))
+  if (isDef() &&
+      (isBuiltinType(Names::kNumberTypeName) || isBuiltinType(Names::kComplexTypeName) ||
+       isBuiltinType(Names::kRationalTypeName) || isBuiltinType(Names::kIntegerTypeName)))
     return true;
 
   const auto& prop = typeProperty(!K(mustExist));
@@ -1229,69 +1231,67 @@ bool Type::isAnyNumber() const
 
 bool Type::isInteger() const
 {
-  if (isBuiltinType(Names::kIntegerTypeName))
-    return true;
-  return false;
+  return isDef() && isBuiltinType(Names::kIntegerTypeName);
 }
 
 
 bool Type::isInt32() const
 {
-  return isBuiltinType(Names::kInt32TypeName);
+  return isDef() && isBuiltinType(Names::kInt32TypeName);
 }
 
 
 bool Type::isString() const
 {
-  return isBuiltinType(Names::kStringTypeName);
+  return isDef() && isBuiltinType(Names::kStringTypeName);
 }
 
 
 bool Type::isKeyword() const
 {
-  return isBuiltinType(Names::kKeywordTypeName);
+  return isDef() && isBuiltinType(Names::kKeywordTypeName);
 }
 
 
 bool Type::isFloat32() const
 {
-  return isBuiltinType(Names::kFloat32TypeName);
+  return isDef() && isBuiltinType(Names::kFloat32TypeName);
 }
 
 
 bool Type::isNumber() const
 {
-  return isBuiltinType(Names::kNumberTypeName);
+  return isDef() && isBuiltinType(Names::kNumberTypeName);
 }
 
 
 bool Type::isComplex() const
 {
-  return (isBuiltinType(Names::kComplexTypeName) || isImaginary());
+  return isDef() && (isBuiltinType(Names::kComplexTypeName) || isImaginary());
 }
 
 
 bool Type::isRational() const
 {
-  return isBuiltinType(Names::kRationalTypeName);
+  return isDef() && isBuiltinType(Names::kRationalTypeName);
 }
 
 
 bool Type::isUInt32() const
 {
-  return isBuiltinType(Names::kUInt32TypeName);
+  return isDef() && isBuiltinType(Names::kUInt32TypeName);
 }
 
 
 bool Type::isChar() const
 {
-  return isBuiltinType(Names::kCharTypeName);
+  return isDef() && isBuiltinType(Names::kCharTypeName);
 }
 
 
 bool Type::isBool() const
 {
-  return isBuiltinType(Names::kBoolTypeName);
+  return isDef() && isBuiltinType(Names::kBoolTypeName);
 }
 
 
@@ -3176,8 +3176,7 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
         (rightTypeName == Names::kSliceableTypeName ||
          rightTypeName == Names::kSliceableXTypeName) &&
         right.generics().size() == 2 &&
-        isSameType(right.generics()[0], Type::makeInt32(), scope, srcpos,
-                   reportErrors) &&
+        isSameType(right.generics()[0], Type::makeInt32(), scope, srcpos, reportErrors) &&
         isSameType(left.arrayBaseType(), right.generics()[1], scope, srcpos,
                    reportErrors)) {
       return true;
