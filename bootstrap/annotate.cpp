@@ -53,7 +53,7 @@ template <>
 struct NodeAnnotator<std::shared_ptr<ArrayTypeNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<ArrayTypeNode> node)
   {
-    ann->annotateNode(node->typeNode());
+    node->setTypeNode(ann->annotateNode(node->typeNode()));
   }
 };
 
@@ -67,7 +67,7 @@ static void annotateVardefNode(Annotator* ann, std::shared_ptr<VardefNode> node,
   }
 
   if (node->initExpr()) {
-    ann->annotateNode(node->initExpr());
+    node->setInitExpr(ann->annotateNode(node->initExpr()));
   }
 }
 
@@ -105,7 +105,7 @@ static void annotateFuncdefNode(Annotator* ann, std::shared_ptr<FuncDefNode> nod
   ann->annotateNodeList(node->params(), !K(markTailPos), K(markSingleType));
   if (node->body()) {
     node->body()->setIsInTailPos(true);
-    ann->annotateNode(node->body());
+    node->setBody(ann->annotateNode(node->body()));
   }
 }
 
@@ -128,7 +128,7 @@ struct NodeAnnotator<std::shared_ptr<DefNode>> {
       return;
     }
 
-    ann->annotateNode(node->defNode());
+    node->setDefNode(ann->annotateNode(node->defNode()));
   }
 };
 
@@ -151,7 +151,7 @@ struct NodeAnnotator<std::shared_ptr<LetNode>> {
       return;
     }
 
-    ann->annotateNode(node->defNode());
+    node->setDefNode(ann->annotateNode(node->defNode()));
   }
 };
 
@@ -166,7 +166,7 @@ struct NodeAnnotator<std::shared_ptr<FunctionNode>> {
     ann->annotateNodeList(node->params(), !K(markTailPos), K(markSingleType));
     if (node->body()) {
       node->body()->setIsInTailPos(true);
-      ann->annotateNode(node->body());
+      node->setBody(ann->annotateNode(node->body()));
     }
   }
 };
@@ -190,7 +190,7 @@ struct NodeAnnotator<std::shared_ptr<ParamNode>> {
       ann->fScope->registerVar(node->srcpos(), node->name(), node);
 
     if (node->initExpr()) {
-      ann->annotateNode(node->initExpr());
+      node->setInitExpr(ann->annotateNode(node->initExpr()));
     }
   }
 };
@@ -200,10 +200,13 @@ template <>
 struct NodeAnnotator<std::shared_ptr<ApplyNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<ApplyNode> node)
   {
-    ann->annotateNode(node->base());
     ann->annotateNodeList(node->children(), !K(markTailPos), K(markSingleType));
 
     if (node->isSimpleCall()) {
+      // don't call ann->annotateNode(node->base()) here to avoid
+      // re-forming it into a slotref.
+      node->base()->setScope(ann->fScope);
+
       auto funcName = node->simpleCallName();
       auto varNode = node->scope()->lookupVarOrFunc(node->srcpos(), funcName,
                                                     !K(showAmbiguousSymDef));
@@ -219,13 +222,50 @@ struct NodeAnnotator<std::shared_ptr<ApplyNode>> {
                                   makeSymbolNode(node->srcpos(), nsName(funcName)));
 
           // re-annotate the rewritten code
-          ann->annotateNode(node->base());
+          node->setBase(ann->annotateNode(node->base()));
           ann->annotateNodeList(node->children(), !K(markTailPos), K(markSingleType));
         }
       }
       else {
         // handled in later phases
       }
+    }
+    else {
+      node->setBase(ann->annotateNode(node->base()));
+    }
+  }
+};
+
+
+namespace {
+  std::shared_ptr<AstNode> unrollSlotRefs(std::shared_ptr<AstNode> node,
+                                          const String& name)
+  {
+    if (hasNamespace(name)) {
+      auto slotName = baseName(name);
+      auto rootName = nsName(name);
+
+      auto var = node->scope()->lookupVarOrFunc(node->srcpos(), rootName,
+                                                K(showAmbiguouseSymDef));
+      return makeSlotRefNode(node->srcpos(),
+                             var ? makeSymbolNode(node->srcpos(), rootName)
+                                 : unrollSlotRefs(node, rootName),
+                             slotName);
+    }
+
+    return makeSymbolNode(node->srcpos(), name);
+  }
+}  // namespace
+
+
+template <>
+struct NodeAnnotator<std::shared_ptr<SymbolNode>> {
+  static void annotate(Annotator* ann, std::shared_ptr<SymbolNode> node)
+  {
+    auto var = node->scope()->lookupVarOrFunc(node->srcpos(), node->name(),
+                                              K(showAmbiguousSymDef));
+    if (!var && hasNamespace(node->name())) {
+      ann->replaceNode(ann->annotateNode(unrollSlotRefs(node, node->name())));
     }
   }
 };
@@ -236,7 +276,7 @@ struct NodeAnnotator<std::shared_ptr<WeakNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<WeakNode> node)
   {
     if (node->refNode())
-      ann->annotateNode(node->refNode());
+      node->setRefNode(ann->annotateNode(node->refNode()));
   }
 };
 
@@ -254,8 +294,8 @@ template <>
 struct NodeAnnotator<std::shared_ptr<AssignNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<AssignNode> node)
   {
-    ann->annotateNode(node->lvalue());
-    ann->annotateNode(node->rvalue());
+    node->setLvalue(ann->annotateNode(node->lvalue()));
+    node->setRvalue(ann->annotateNode(node->rvalue()));
   }
 };
 
@@ -264,8 +304,8 @@ template <>
 struct NodeAnnotator<std::shared_ptr<BinaryNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<BinaryNode> node)
   {
-    ann->annotateNode(node->left());
-    ann->annotateNode(node->right());
+    node->setLeft(ann->annotateNode(node->left()));
+    node->setRight(ann->annotateNode(node->right()));
   }
 };
 
@@ -274,7 +314,7 @@ template <>
 struct NodeAnnotator<std::shared_ptr<UnaryNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<UnaryNode> node)
   {
-    ann->annotateNode(node->base());
+    node->setBase(ann->annotateNode(node->base()));
   }
 };
 
@@ -283,13 +323,13 @@ template <>
 struct NodeAnnotator<std::shared_ptr<IfNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<IfNode> node)
   {
-    ann->annotateNode(node->test());
+    node->setTest(ann->annotateNode(node->test()));
 
     node->consequent()->setIsInTailPos(node->isInTailPos());
-    ann->annotateNode(node->consequent());
+    node->setConsequent(ann->annotateNode(node->consequent()));
     if (node->alternate()) {
       node->alternate()->setIsInTailPos(node->isInTailPos());
-      ann->annotateNode(node->alternate());
+      node->setAlternate(ann->annotateNode(node->alternate()));
     }
   }
 };
@@ -299,7 +339,7 @@ template <>
 struct NodeAnnotator<std::shared_ptr<KeyargNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<KeyargNode> node)
   {
-    ann->annotateNode(node->value());
+    node->setValue(ann->annotateNode(node->value()));
   }
 };
 
@@ -309,19 +349,20 @@ struct NodeAnnotator<std::shared_ptr<SelectNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<SelectNode> node)
   {
     // TODO : set tail node position
-    ann->annotateNode(node->test());
+    node->setTest(ann->annotateNode(node->test()));
     if (node->comparator())
-      ann->annotateNode(node->comparator());
+      node->setComparator(ann->annotateNode(node->comparator()));
 
     for (size_t i = 0; i < node->mappingCount(); i++) {
       if (node->mappingAt(i).fTestValues.empty()) {
-        ann->annotateNode(node->mappingAt(i).fConsequent);
+        node->mappingAt(i).fConsequent =
+            ann->annotateNode(node->mappingAt(i).fConsequent);
       }
       else {
         for (auto& testValue : node->mappingAt(i).fTestValues)
-          ann->annotateNode(testValue);
+          testValue = ann->annotateNode(testValue);
       }
-      ann->annotateNode(node->mappingAt(i).fConsequent);
+      node->mappingAt(i).fConsequent = ann->annotateNode(node->mappingAt(i).fConsequent);
     }
   }
 };
@@ -332,10 +373,10 @@ struct NodeAnnotator<std::shared_ptr<RangeNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<RangeNode> node)
   {
     // TODO : set tail node position
-    ann->annotateNode(node->from());
-    ann->annotateNode(node->to());
+    node->setFrom(ann->annotateNode(node->from()));
+    node->setTo(ann->annotateNode(node->to()));
     if (node->by())
-      ann->annotateNode(node->by());
+      node->setBy(ann->annotateNode(node->by()));
   }
 };
 
@@ -356,10 +397,10 @@ template <>
 struct NodeAnnotator<std::shared_ptr<WhileNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<WhileNode> node)
   {
-    ann->annotateNode(node->test());
+    node->setTest(ann->annotateNode(node->test()));
 
     node->body()->setIsInTailPos(node->isInTailPos());
-    ann->annotateNode(node->body());
+    node->setBody(ann->annotateNode(node->body()));
   }
 };
 
@@ -386,7 +427,7 @@ template <>
 struct NodeAnnotator<std::shared_ptr<CastNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<CastNode> node)
   {
-    ann->annotateNode(node->base());
+    node->setBase(ann->annotateNode(node->base()));
   }
 };
 
@@ -395,7 +436,7 @@ template <>
 struct NodeAnnotator<std::shared_ptr<SlotRefNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<SlotRefNode> node)
   {
-    ann->annotateNode(node->base());
+    node->setBase(ann->annotateNode(node->base()));
   }
 };
 
@@ -413,7 +454,7 @@ AnnotatePass::AnnotatePass(int level, std::shared_ptr<Scope> scope, Compiler& co
 std::shared_ptr<AstNode> AnnotatePass::doApply(std::shared_ptr<AstNode> src)
 {
   Annotator an{ fScope, fCompiler };
-  an.annotateNode(src);
+  src = an.annotateNode(src);
   return src;
 }
 
@@ -427,12 +468,15 @@ Annotator::Annotator(std::shared_ptr<Scope> scope, Compiler& compiler)
 }
 
 
-void Annotator::annotateNode(std::shared_ptr<AstNode> node)
+std::shared_ptr<AstNode> Annotator::annotateNode(std::shared_ptr<AstNode> node)
 {
   node->setScope(fScope);
 
   dispatchNode<void>(node,
                      [&](auto nd) { NodeAnnotator<decltype(nd)>::annotate(this, nd); });
+  auto retv = fNewNode ? fNewNode : node;
+  fNewNode = nullptr;
+  return retv;
 }
 
 
@@ -447,8 +491,17 @@ void Annotator::annotateNodeList(NodeList& nl, bool marktailpos, bool marksingle
     if (marksingletype)
       nl[i]->setIsSingleTypeRequired(true);
 
-    annotateNode(nl[i]);
+    nl[i] = annotateNode(nl[i]);
   }
 }
+
+
+void Annotator::replaceNode(std::shared_ptr<AstNode> newNode)
+{
+  hr_assert(!fNewNode);
+
+  fNewNode = newNode;
+}
+
 
 }  // namespace herschel

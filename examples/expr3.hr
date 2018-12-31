@@ -15,10 +15,15 @@ def app.main() {
   let g : Foo
   g.name()
   g.name(force: false)
+
+  let h : Foo
+  h.name
+  h.name.gaz()
   0
 }
 
 
 
 def name(f : Foo, force : Bool = true) {
+  f.name
 }

@@ -1,0 +1,15 @@
+def record Profession ( title : String, department : String )
+
+def record Worker ( first-name : String, name : String, prof : Profession )
+
+
+def id(w : Worker) -> String {
+  w.first-name ++ " " ++ w.name ++ " (" ++ w.prof.title ++ ", " ++ w.prof.department ++ ")"
+}
+
+
+def app.main() {
+  let g : Worker
+  g.id()
+  0
+}

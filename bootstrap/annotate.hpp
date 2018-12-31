@@ -35,13 +35,16 @@ namespace herschel
   public:
     Annotator(std::shared_ptr<Scope> scope, Compiler& compiler);
 
-    void annotateNode(std::shared_ptr<AstNode> node);
+    std::shared_ptr<AstNode> annotateNode(std::shared_ptr<AstNode> node);
     void annotateNodeList(NodeList& nl, bool marktailpos, bool marksingletype);
+
+    void replaceNode(std::shared_ptr<AstNode> newNode);
 
     //-------- data members
 
     std::shared_ptr<Scope> fScope;
     Compiler&  fCompiler;       // backlink to owning compiler
+    std::shared_ptr<AstNode> fNewNode;
   };
 
 

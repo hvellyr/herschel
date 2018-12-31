@@ -451,6 +451,7 @@ public:
   NodeList child_nodes() override { return { fTypeNode }; }
 
   std::shared_ptr<AstNode> typeNode() const { return fTypeNode; }
+  void setTypeNode(std::shared_ptr<AstNode> nd) { fTypeNode = nd; }
 
   std::shared_ptr<AstNode> clone() const override
   {
@@ -747,6 +748,7 @@ public:
   }
 
   std::shared_ptr<AstNode> initExpr() const { return fInitExpr; }
+  void setInitExpr(std::shared_ptr<AstNode> nd) { fInitExpr = nd; }
 
   const String& name() const override { return fSymbolName; }
 
@@ -1266,6 +1268,7 @@ public:
   size_t mappingCount() const { return fMappings.size(); }
 
   const SelectMapping& mappingAt(size_t i) const { return fMappings[i]; }
+  SelectMapping& mappingAt(size_t i) { return fMappings[i]; }
 
   void setConsequentAt(size_t i, std::shared_ptr<AstNode> consq)
   {
@@ -1618,6 +1621,7 @@ public:
   }
 
   std::shared_ptr<AstNode> refNode() const { return fRefNode; }
+  void setRefNode(std::shared_ptr<AstNode> refNode) { fRefNode = refNode; }
   void reset() { fRefNode = nullptr; }
   NodeList child_nodes() override { return fRefNode ? NodeList{ fRefNode } : NodeList{}; }
 
