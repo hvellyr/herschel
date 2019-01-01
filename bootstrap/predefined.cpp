@@ -51,6 +51,8 @@ const String Names::kUInt64TypeName = String(MID_UInt64TypeName);
 
 const String Names::kSliceableTypeName = String(MID_SliceableTypeName);
 const String Names::kSliceableXTypeName = String(MID_SliceableXTypeName);
+const String Names::kOrderedSliceableTypeName = String(MID_OrderedSliceableTypeName);
+const String Names::kOrderedSliceableXTypeName = String(MID_OrderedSliceableXTypeName);
 const String Names::kRangeTypeName = String(MID_RangeTypeName);
 const String Names::kCollectionTypeName = String(MID_CollectionTypeName);
 const String Names::kOrderedCollectionTypeName = String(MID_OrderedCollectionTypeName);

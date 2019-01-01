@@ -265,7 +265,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
           typf->typifyNodeList(node->children());
 
           Type type = typf->typifyMatchAndCheckParameters(
-              node->srcpos(), node->children(), funcNode.get());
+              node->srcpos(), node->children(), funcNode.get(), node->simpleCallName());
           if (type.isDef())
             node->setType(type);
 
@@ -283,7 +283,8 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             typf->typifyNodeList(node->children());
 
             Type type = typf->typifyMatchAndCheckParameters(
-                node->srcpos(), node->children(), bestFuncNode.get());
+                node->srcpos(), node->children(), bestFuncNode.get(),
+                node->simpleCallName());
             if (type.isDef())
               node->setType(type);
 
@@ -1473,21 +1474,26 @@ void Typifier::checkFunctionReturnType(std::shared_ptr<FunctionNode> node)
 
 void Typifier::checkArgParamType(TypeCtx& localCtx,
                                  const std::shared_ptr<ParamNode>& param,
-                                 std::shared_ptr<AstNode> arg, int idx)
+                                 std::shared_ptr<AstNode> arg, int idx,
+                                 const String& funcName)
 {
   if (param->type().isOpen()) {
     if (!param->type().matchGenerics(localCtx, arg->type(), *arg->scope(),
                                      arg->srcpos())) {
       tyerror(param->type(), "param");
       tyerror(arg->type(), "arg");
-      errorf(arg->srcpos(), E_TypeMismatch, "type mismatch for argument %d", idx);
+      error(arg->srcpos(), E_TypeMismatch,
+            String("type mismatch for argument ") + idx + " in call to function '" +
+                funcName + "'");
       return;
     }
   }
   else {
     if (!isContravariant(param->type(), arg->type(), *arg->scope(), arg->srcpos()) &&
         !containsAny(arg->type(), arg->srcpos())) {
-      errorf(arg->srcpos(), E_TypeMismatch, "type mismatch for argument %d", idx);
+      error(arg->srcpos(), E_TypeMismatch,
+            String("type mismatch for argument ") + idx + " in call to function '" +
+                funcName + "'");
       return;
     }
   }
@@ -1580,7 +1586,8 @@ void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node,
 
 
 Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeList& args,
-                                             const FunctionNode* funcNode)
+                                             const FunctionNode* funcNode,
+                                             const String& funcName)
 {
   const NodeList& funcParams = funcNode->params();
 
@@ -1598,7 +1605,7 @@ Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeLis
           errorf(srcpos, E_BadArgNumber, "not enough arguments");
           return Type();
         }
-        checkArgParamType(localCtx, param, arg, i);
+        checkArgParamType(localCtx, param, arg, i, funcName);
         argidx++;
       }
       else if (param->flags() == kNamedArg) {
@@ -1608,10 +1615,11 @@ Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeLis
           // expressions are not passed and therefore we don't need to check
           // them here.
           if (param->initExpr())
-            checkArgParamType(localCtx, param, param->initExpr(), i);
+            checkArgParamType(localCtx, param, param->initExpr(), i, funcName);
         }
         else {
-          checkArgParamType(localCtx, param, keyval.fKeyarg->value(), keyval.fIdx);
+          checkArgParamType(localCtx, param, keyval.fKeyarg->value(), keyval.fIdx,
+                            funcName);
           argIndicesUsed.insert(keyval.fIdx);
         }
       }
@@ -1748,7 +1756,8 @@ bool Typifier::checkBinaryFunctionCall(std::shared_ptr<BinaryNode> node,
       node->setRefFunction(bestFuncNode);
       //typf->reorderArguments(node, bestFuncNode.get());
 
-      Type type = typifyMatchAndCheckParameters(node->srcpos(), args, funcNode.get());
+      Type type =
+          typifyMatchAndCheckParameters(node->srcpos(), args, funcNode.get(), funcName);
       if (type.isDef()) {
         node->setType(type);
         return true;

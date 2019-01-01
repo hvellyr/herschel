@@ -406,7 +406,9 @@ namespace {
       // special case: Make lang.sliceable<K, E> match arrays, which are
       // otherwise not first class entities.
       if (typeName == Names::kSliceableTypeName ||
-          typeName == Names::kSliceableXTypeName) {
+          typeName == Names::kSliceableXTypeName ||
+          typeName == Names::kOrderedSliceableTypeName ||
+          typeName == Names::kOrderedSliceableXTypeName) {
         if (generics.size() == 2) {
           localCtx.registerType(generics[0].typeName(), Type::makeInt32());
           localCtx.registerType(generics[1].typeName(), right0.arrayBaseType());
@@ -3174,7 +3176,9 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
     auto rightTypeName = right.typeName();
     if (right.isType() &&
         (rightTypeName == Names::kSliceableTypeName ||
-         rightTypeName == Names::kSliceableXTypeName) &&
+         rightTypeName == Names::kSliceableXTypeName ||
+         rightTypeName == Names::kOrderedSliceableTypeName ||
+         rightTypeName == Names::kOrderedSliceableXTypeName) &&
         right.generics().size() == 2 &&
         isSameType(right.generics()[0], Type::makeInt32(), scope, srcpos, reportErrors) &&
         isSameType(left.arrayBaseType(), right.generics()[1], scope, srcpos,
@@ -3349,7 +3353,9 @@ namespace {
       auto rightTypeName = right.typeName();
       if (right.isType() &&
           (rightTypeName == Names::kSliceableTypeName ||
-           rightTypeName == Names::kSliceableXTypeName) &&
+           rightTypeName == Names::kSliceableXTypeName ||
+           rightTypeName == Names::kOrderedSliceableTypeName ||
+           rightTypeName == Names::kOrderedSliceableXTypeName) &&
           right.generics().size() == 2 &&
           isSameType(right.generics()[0], Type::makeInt32(), scope, srcpos,
                      reportErrors) &&

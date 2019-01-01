@@ -31,8 +31,9 @@ def type OrderedSliceable<K, E> : Sliceable<K, E>
     ~ An @type{OrderedSliceable} represents types which support
     range-slices. ~
 
-def generic slice*(obj @ 'T, from @ 'K, to @ 'K) -> 'T
-    where T isa OrderedSliceable<'K, 'E> ...
+def generic slice*(obj @ OrderedSliceable<'K, 'E>, from @ 'K, to @ 'K) -> OrderedSliceable<'K, 'E>
+    --where T isa OrderedSliceable<'K, 'E>
+    ...
     ~ Returns a new ordered sliceable (probably of different type than
     @var{obj}) containing the elements from @var{from} to @var{to}
     exclusive, i.e. [@var{from}, @var{to}).
@@ -52,7 +53,7 @@ def generic slice-rest(obj @ 'T, from @ 'K) -> 'T
 
     @example
     def slice-rest(obj, from)
-      obj.slice*(from, from + obj.num-items)
+      obj.slice*(from, from + obj.num-items())
     @end example ~
 
 

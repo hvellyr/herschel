@@ -76,7 +76,8 @@ public:
   void setupBindingNodeType(std::shared_ptr<BindingNode> node, zstring errdesc);
 
   void checkArgParamType(TypeCtx& localCtx, const std::shared_ptr<ParamNode>& param,
-                         std::shared_ptr<AstNode> arg, int idx);
+                         std::shared_ptr<AstNode> arg, int idx,
+                         const String& funcName);
 
   void reorderArguments(std::shared_ptr<ApplyNode> node, const FunctionNode* funcNode);
 
@@ -88,7 +89,8 @@ public:
    * @param funcNode   the FunctionNode as looked up from the scope.
    * @return the return type of the function applied */
   Type typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeList& args,
-                                     const FunctionNode* funcNode);
+                                     const FunctionNode* funcNode,
+                                     const String& funcName);
 
   /*! Looks up a matching function implementing the operator of the
    * binary node @p node and determine and set the types if applying the

@@ -173,6 +173,13 @@ namespace herschel {
   MID_core_ns "."              \
               "Sliceable!"
 
+#define MID_OrderedSliceableTypeName \
+  MID_core_ns "."             \
+              "OrderedSliceable"
+#define MID_OrderedSliceableXTypeName \
+  MID_core_ns "."              \
+              "OrderedSliceable!"
+
 #define MID_RangeTypeName \
   MID_core_ns "."         \
               "Range"
@@ -280,6 +287,8 @@ public:
 
   const static String kSliceableTypeName;
   const static String kSliceableXTypeName;
+  const static String kOrderedSliceableTypeName;
+  const static String kOrderedSliceableXTypeName;
 
   const static String kRangeTypeName;
   const static String kCollectionTypeName;

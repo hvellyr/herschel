@@ -1,0 +1,10 @@
+def app.main() {
+  let a : Int[]
+
+  a[5]         -- rewritten to slice(a, 5)
+  a[1] = 42    -- rewritten to slice!(a, 1, 42)
+
+  a[1 .. 2]    -- rewritten to slice*(a, 1, 2)
+
+  0 
+}
