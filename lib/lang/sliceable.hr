@@ -42,8 +42,9 @@ def generic slice*(obj @ OrderedSliceable<'K, 'E>, from @ 'K, to @ 'K) -> Ordere
     or @var{to} are too large.  When @var{from} is >= @var{to} the
     resulting sliceable is empty. ~
 
-def generic slice-rest(obj @ 'T, from @ 'K) -> 'T
-    where T isa OrderedSliceable<'K, 'E> ...
+def generic slice-rest(obj @ OrderedSliceable<'K, 'E>, from @ 'K) -> OrderedSliceable<'K, 'E>
+    -- where T isa OrderedSliceable<'K, 'E>
+    ...
     ~ Returns a new ordered sliceable (probably of different type than
     @var{obj}) containing all elements from @var{from} to the last element
     in @var{obj} (inclusive).

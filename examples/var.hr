@@ -1,0 +1,12 @@
+def app.main() {
+  let x = 42
+  let y = 127
+  let z = 20
+  let m : Int[]
+  let z2 : OrderedSliceable<Int, Int>
+
+  let a, b, c ... = m
+  x, y, z2 ... = m
+
+  0
+}

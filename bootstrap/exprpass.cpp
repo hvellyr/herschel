@@ -1902,7 +1902,7 @@ Token FirstPass::makeAssignToken(const TokenVector& exprs, const Token& expr2,
       Token sliceExpr = Token() << Token(op1Srcpos, funcName)
                                 << (Token(op1Srcpos, kParanOpen, kParanClose)
                                     << tempSymToken << Token(op1Srcpos, kComma)
-                                    << Token(op1Srcpos, kUInt, (int)i));
+                                    << Token(op1Srcpos, kInt, (int)i));
       Token retv;
       if (expr.isSymFuncall()) {
         // rename the function call in expr to name! and append expr2 as last
@@ -2553,7 +2553,7 @@ TokenVector FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken
       effInitExpr << Token(vardefSym.srcpos(), funcName)
                   << (Token(vardefSym.srcpos(), kParanOpen, kParanClose)
                       << initValueSym << Token(vardefSym.srcpos(), kComma)
-                      << Token(initExpr.srcpos(), kUInt, (int)i));
+                      << Token(initExpr.srcpos(), kInt, (int)i));
     }
     else
       effInitExpr = initExpr;
