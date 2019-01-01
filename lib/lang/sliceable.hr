@@ -19,7 +19,7 @@ def type Sliceable<K, E>
     access, i.e. index access.  Typical candidates are containers, strings,
     etc. ~
 
-def generic slice(obj @ Sliceable<'K, 'E>, key @ 'K) -> 'E ...
+def generic slice(obj @ ^Sliceable<'K, 'E>, key @ 'K) -> 'E ...
     ~ Returns the element from @var{obj} at position @var{key}.  It may be
     an error if @var{key} points to an non-existing element or
     (depending on the implementing class) is out of bounds of @var{obj}. ~
@@ -31,7 +31,7 @@ def type OrderedSliceable<K, E> : Sliceable<K, E>
     ~ An @type{OrderedSliceable} represents types which support
     range-slices. ~
 
-def generic slice*(obj @ OrderedSliceable<'K, 'E>, from @ 'K, to @ 'K) -> OrderedSliceable<'K, 'E>
+def generic slice*(obj @ ^OrderedSliceable<'K, 'E>, from @ 'K, to @ 'K) -> OrderedSliceable<'K, 'E>
     --where T isa OrderedSliceable<'K, 'E>
     ...
     ~ Returns a new ordered sliceable (probably of different type than
@@ -42,7 +42,7 @@ def generic slice*(obj @ OrderedSliceable<'K, 'E>, from @ 'K, to @ 'K) -> Ordere
     or @var{to} are too large.  When @var{from} is >= @var{to} the
     resulting sliceable is empty. ~
 
-def generic slice-rest(obj @ OrderedSliceable<'K, 'E>, from @ 'K) -> OrderedSliceable<'K, 'E>
+def generic slice-rest(obj @ ^OrderedSliceable<'K, 'E>, from @ 'K) -> OrderedSliceable<'K, 'E>
     -- where T isa OrderedSliceable<'K, 'E>
     ...
     ~ Returns a new ordered sliceable (probably of different type than
@@ -71,11 +71,11 @@ def generic slice!(obj @ ^Sliceable!<'K, 'E>, key @ 'K, value @ 'E) -> ^Sliceabl
 
 ----------------------------------------------------------------------
 
-def generic empty?(obj @ Any) -> Bool ...
+def generic empty?(obj @ ^Any) -> Bool ...
   ~ Indicates whether @var{obj} is an empty object, which is any kind of
   collection, e.g. an array, a slice, a container. ~
 
-def generic num-items(obj @ Any) -> Int ...
+def generic num-items(obj @ ^Any) -> Int ...
     ~ Returns the number of items in @var{obj}, which is any kind of
     collection, e.g. an array, a slice, a container. ~
 
