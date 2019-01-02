@@ -708,7 +708,34 @@ public:
   bool matchGenerics(TypeCtx& localCtx, const Type& right0, const Scope& scope,
                      const SrcPos& srcpos) const override
   {
-    return matchGenericsImpl(localCtx, fName, fGenerics, right0, scope, srcpos);
+    if (matchGenericsImpl(localCtx, fName, fGenerics, right0, scope, srcpos))
+      return true;
+
+    if (right0.isArray()) {
+      auto matchesIsaConstraint = [&](const auto& tyName, const auto& tyConstraint) {
+        auto sliceableTy = Type::makeTypeRef(tyName, tyConstraint.typeConstraint().generics(), K(isValue));
+        return isContravariant(tyConstraint.typeConstraint(), sliceableTy,
+                               scope, srcpos, K(reportErrors));
+      };
+
+      for (const auto& tyConst : fConstraints) {
+        if (tyConst.isTypeConstraint()) {
+          const auto& tyGen = tyConst.typeConstraint().generics();
+          if (tyGen.size() == 2) {
+            if (matchesIsaConstraint(Names::kSliceableTypeName, tyConst) ||
+                matchesIsaConstraint(Names::kSliceableXTypeName, tyConst) ||
+                matchesIsaConstraint(Names::kOrderedSliceableTypeName, tyConst) ||
+                matchesIsaConstraint(Names::kOrderedSliceableXTypeName, tyConst)) {
+              localCtx.registerType(tyGen[0].typeName(), Type::makeInt32());
+              localCtx.registerType(tyGen[1].typeName(), right0.arrayBaseType());
+              return true;
+            }
+          }
+        }
+      }
+    }
+
+    return false;
   }
 
 
@@ -1414,6 +1441,15 @@ String Type::typeId() const
     buffer << tyimpl->name();
     if (!tyimpl->generics().empty())
       buffer << "<" << tyimpl->generics() << ">";
+
+    if (!tyimpl->constraints().empty()) {
+      buffer << " constr:";
+      for (const auto& c : tyimpl->constraints()) {
+        if (c.isTypeConstraint())
+          buffer << " " << c.typeConstraint().typeId();
+      }
+      buffer << ">";
+    }
 
     if (fIsImaginary)
       buffer << ">";
