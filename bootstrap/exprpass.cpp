@@ -1891,9 +1891,16 @@ Token FirstPass::makeAssignToken(const TokenVector& exprs, const Token& expr2,
   if (exprs.size() > 1) {
     Token block = Token(op1Srcpos, kBraceOpen, kBraceClose);
 
-    Token tempSymToken = Token::newUniqueSymbolToken(op1Srcpos, "value");
-    block << (Token() << Token(op1Srcpos, kLetId) << tempSymToken
-                      << Token(op1Srcpos, kAssign) << expr2);
+    Token tempSymToken;
+    if (expr2 == kSymbol) {
+      tempSymToken = expr2;
+    }
+    else {
+      tempSymToken = Token::newUniqueSymbolToken(op1Srcpos, "value");
+
+      block << (Token() << Token(op1Srcpos, kLetId) << tempSymToken
+                        << Token(op1Srcpos, kAssign) << expr2);
+    }
 
     for (size_t i = 0; i < exprs.size(); i++) {
       const Token& expr = exprs[i];
@@ -2516,7 +2523,6 @@ TokenVector FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken
     if (!initExpr.isSet())
       errorf(pos, E_MissingRHExpr, "no value in var init");
   }
-
 
   TokenVector result;
 
