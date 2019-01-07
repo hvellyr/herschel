@@ -1,5 +1,1023 @@
 -*-org-*-
 
+Herschel 2
+
+
+  - remove record inheritance
+  - reference types, ref-counted types,
+  - remodel import/export/module system
+    - modifiers "mut", "pub", "prv"
+    - add "include" /import
+  - generate finalizer() calls for variables going out of scope (RAII)
+  - rewrite operators +=, *=, ++=, ... to set!( ....) etc.
+
+x - finish slot syntax compilation
+x - fix a.foo() -> foo(a) syntax
+x - method overloading
+x - keyed parameter behaviour of .init functions for records
+x - change "extends { }" to "with ns { }"
+x - clarify isQualified() -> does it mean rooted?
+x - simplify for-loop to support one test-expr only.
+x - "while" loops
+x - Token(typeIntroToken.srcpos(), kSymbol, "Any")
+x - rename in code union types -> variant types, seq types -> intersection types
+x - remove unicode macro delimiter
+x - re-design macro syntax
+x - transform slot access syntax
+x - unify namespace, slot, method notation
+x - enum values are per enum, not global symbols.
+x - remove the {} around match and select
+x  - reduce "for " -> to a simple "for (x in foo)"
+x - remove the () around the inheritance type list of records and types
+x - def enum () with round paranthesis
+x - add on-alloc() hook to generateCtor()
+x - transform "class" -> "record"
+x   - remove the complexity of class initialization code generation
+x - del kExtendId
+x - remove "on" machinery
+    - remove exceptions
+x - remove reify
+x - remove units and measures
+x - remove slot machinery
+x - remove method call shorthand (without parantheses)
+x - recognize and rewrite into  ctor/dtor protocol
+x - the for loop is rewritten into while + variable definitions too
+    early.  Therefor it is not properly detected in tail positions and
+    thus type deduction fails in some situations
+
+? - rename function() to fn(), and the type of it to Fn()
+? - remove keywords
+? - remove type constraints (value constraints ...)
+
+
+
+
+
+----------------------------------------------------------------------------------------
+
+ x   record objects (ADT?)
+ x   function oriented
+ x   runtime polymorphism (runtime type dispatch, multi-dispatch?)
+ x   compile time function overload
+
+     namespaces
+     modules
+
+     (hyginene) macros
+ x   generic types
+
+ x   type matching
+
+ x   no exceptions.  Error handling is done with return types (maybes, variants, match)
+
+
+
+
+clang –O4 –S –emit-llvm sumarr.c
+
+
+
+Example 1
+---------
+
+    def fibonacci(num : Int) -> Int
+      if (num <= 1)
+         1
+      else
+         fibonacci(num - 1) + fibonacci(num - 2)
+
+
+    def main(args ... : String[])
+      match (to-int(args[1]))
+        | num : Int -> fibonacci(to-int(num))
+        | _ : Error -> {
+                         display("requires number input", \nl)
+                         0
+                       }
+
+
+
+Base type notations
+-------------------
+
+String
+
+    "abc"
+    "hello\space;world"
+    "hello\u0020h;world"
+
+
+Characters
+
+    \nl
+    \nbsp
+    \tab
+    \u0041h
+
+
+Numbers
+
+    100                     -- decimal
+    100h                    -- hexadecimal
+    100y                    -- binary
+    100q                    -- octal
+
+    1234                    -- integer
+    123.4                   -- real
+    12/34                   -- rational
+    12 + 34i                -- complex
+    12.3+34j                -- complex
+    1.23e-45                -- integer (exp.@ not.)
+
+
+Bools
+
+    true
+    false
+
+Others
+
+    nil
+    eof
+    unspecified
+
+
+Memory model
+------------
+
+1. types are values; simply assigning makes copies (unless the
+  compiler can prove that moving it won't make a difference).  All
+  values in tail position can be moved.
+
+    def foo() {
+      let x = 42         -- x initialized to 42
+      let y = x          -- x moved into y
+      y                  -- y moved out
+    }
+
+    def foo(a) {
+      let x mut = a      -- a copied to x
+      ...
+
+      bar(a)             -- bar called with copy of a
+      a                  -- a moved out
+    }
+
+  - if the compiler can be sure that a called function will not modify
+    a variable value, it can call it with a reference (pointer) to the
+    variable.
+
+  - local copies of values can be avoided, if the new variable is only
+    a different name for the same value.
+
+2. types can be passed by reference explicitly:
+
+    def foo(a : ^Bar) {
+      display(a)
+    }
+
+  a is a pointer to a Bar variable.  Simply using it reads its value
+  (not the address!).  Assigning pointer variables:
+
+    let a = Student(...)
+    let b : ^ = a             -- let b point to a (with type deduction)
+
+    b.name = "Heinz"          -- change a through b
+    display(a.name)           -- => "Heinz"
+
+    b^ = Student(...)         -- copies a new value into the storage of b (here a!)
+    b = Student(...)          -- ERROR: b would point to unbound value
+    let c : ^ = a             -- let c point to a
+    c = b                     -- c points now to the same value as b
+
+    let d = Student(...)
+    b = d                     -- now b points to d
+    b^ = d                    -- copy d into the slot pointer to by b
+
+  pointers can't be reset to nil.
+
+
+  Certain expression use auto-dereferencing of references.  With two
+  bindings - p and v - they can be assigned with references or nor in
+  the following way:
+
+   v1 = v2                   -- copy value of v2 to v1
+   v1 = p1      v1 = p1^     -- copy value of p1^ to v1
+   p1 = v1                   -- let p1 point to v1
+   p1^ = v1                  -- copy value of v1 into p1
+   p1 = p2                   -- let p1 point to p2
+   p1^ = p2     p1^ = p2^    -- copy of value of p2^ into p1
+
+  with two function `foov(v)` and `foop(p)` the same rules apply:
+
+   foov(v)                   -- call foov with a copy of v
+   foov(p)      foov(p^)     -- call foov with a copy of p^
+   foop(v)                   -- call foop with a reference to v
+   foop(p)                   -- call foop with p as reference
+
+
+  traps:
+
+    def foo(a:^) {
+      let b = Student()
+      a = b                   -- error: pointer arg points to local variable
+    }
+
+    def foo() -> ^ {
+      let b = Student()
+      b                       -- error: returns reference to local variable
+    }
+
+
+  Shared pointers:
+
+  shared pointers are reference counted owner pointers holding a
+  value.  The reference counter is not intrusive, but organized by the
+  pointer itself.
+
+    let a = &Bar()
+    let b = a                 -- a and b point to the same object, with shared
+                                 ownership.
+
+    let a = Bar()
+    let b : & = a             -- a is copied into the shared pointer of b. a is
+                                 still a value.
+
+    let a : &Bar              -- ERROR: a is a shared ptr, but is not initialized.
+    let a : & = Bar()         -- Ok.
+
+    let a : (&Bar | Nil) = nil  -- shared ptr to a Bar|Nil initialized to nil.
+
+
+
+    def alias Bar? : Variant<Bar, Nil>
+    def alias Bar? : Variant<^Bar, Nil>
+    def alias Bar? : Variant<&Bar, Nil>
+
+    def alias Bar*OrError : &Bar | Error
+    def alias Bar/OrError : ^Bar | Error
+
+    def alias Nilable<T> : Variant<T, Nil>
+    def alias Bar? : Nilable<Bar>
+    def alias Bar*? : Nilable<&Bar>
+    def alias Bar/? : Nilable<^Bar>
+
+
+    def foo(a : (&Bar | Nil))
+    def foo(a : (^Bar | Nil))
+
+
+
+Operators
+---------
+
+  all operators are translated into function calls:
+
+    a = b       =>    set!(a, b)
+
+    a == b      =>    equal?(a, b)
+    a <> b      =>    not(equal?(a, b))
+    a > b       =>    greater?(a, b)
+    a >= b      =>    greater-equal?(a, b)
+    a < b       =>    less?(a, b)
+    a <= b      =>    less-equal?(a, b)
+    a <=> b     =>    compare(a, b)
+
+    a + b       =>    add(a, b)
+    a - b       =>    subtract(a, b)
+    a * b       =>    multiply(a, b)
+    a / b       =>    divide(a, b)
+    a ** b      =>    power(a, b)
+
+    a mod b     =>    modulo(a, b)
+    a OR b      =>    bitwise-or(a, b)
+    a XOR b     =>    bitwise-xor(a, b)
+    a AND b     =>    bitwise-and(a, b)
+    a or b      =>    logical-or(a, b)
+    a and b     =>    logical-and(a, b)
+    a << b      =>    shift-left(a, b)
+    a >> b      =>    shift-right(a, b)
+
+    a ++ b      =>    concat(a, b)
+
+    a += b      =>    set!(a, add(a, b))
+    a -= b      =>    set!(a, subtract(a, b))
+    a *= b      =>    set!(a, multiply(a, b))
+    a /= b      =>    set!(a, divide(a, b))
+    a **= b     =>    set!(a, power(a, b))
+    a ++= b     =>    set!(a, concat(a, b))
+    a OR= b     =>    set!(a, bitwise-or(a, b))
+    a AND= b    =>    set!(a, bitwise-and(a, b))
+    a XOR= b    =>    set!(a, bitwise-xor(a, b))
+    a or= b     =>    set!(a, logical-or(a, b))
+    a and= b    =>    set!(a, logical-and(a, b))
+
+    not a       =>    not(a)
+    - a         =>    negate(a)
+
+    a .. b      =>    range(a, b)
+    a .. b by c =>    range(a, b, c)
+
+    a^          =>    value(a)                  ??????????
+
+    a[x]        =>    slice(a, x)
+    a[x] = y    =>    slice!(a, x, y)
+    a[f..l]     =>    slice*(a, f, l)
+
+    let a, b ... = e     =>  {
+                               let tmp = e
+                               a = slice(tmp, 0)
+                               b = slice-rest(tmp, 1) }
+    a, b ... = e         =>  {
+                               let tmp = e
+                               a = slice(tmp, 0)
+                               b = slice-reset(tmp, 1)
+                             }
+
+
+
+Parameterized functions
+-----------------------
+
+    def reduce-left(proc : 'F, initial : 'K, range : 'R) -> 'K
+    {
+      let t mut = initial
+      while (not empty?(range)) {
+        t = proc(t, first(range))
+        range = subrange(1, size(range))
+      }
+      t
+    }
+
+and recursive reduce-right
+
+    def reduce-right(proc : 'F, initial : 'K, range : 'R) -> 'K
+    {
+      let loop(val : 'K, range : 'R) -> 'K
+        if (empty?(range))
+          val
+        else
+          loop(proc(val, last(range)), subrange(0, size(range) - 1))
+
+       loop(initial, range)
+    }
+
+
+Record types
+------------
+
+    def record Subject (
+      title : String
+    )
+    def record Student (
+      name : String = "",
+      birthday : Date = make<Date>(16, 5, 1971),
+      subjects : Subject[]
+    )
+
+
+    def main()
+      let s = Student("Walter", Data(16, 5, 1982), #[Subject("math"), Subject("history")])
+
+      display("Name: ", s.name,
+              " age: ", now() - s.birthday,
+              " subjects: ", reduce-left(fn(full, sj) { full + sj.title + ", " },
+                                         "",
+                                         s.subjects),
+              \nl)
+
+
+Types and type inheriting
+-------------------------
+
+    def type Port<T>
+
+    def type InPort<T> : Port<T>
+
+    def type OutPort<T> : Port<T>
+
+    def type SeekablePort<T> : Port<T>
+
+    def type RandomAccessPort<T> : InPort<T>, OutPort<T>, SeekablePort<T>
+
+
+    def record FilePort : RandomAccessPort<Octet>
+    (
+      fd : Int
+    )
+
+    def open(port : ^FilePort,
+             name-or-uri : variant<String, Uri>,
+             mode : FileMode, umask : UInt32) -> ^FilePort ...
+
+
+Parameterized record types
+--------------------------
+
+    def record Pair<K, V> (
+      key : K,
+      value : V
+    )
+
+    def record ValueMap<K, V> (
+      data : Pair<K, V>[]
+    )
+
+
+    -- type deduction
+    Pair(42, "hello")        equiv.   Pair<Int, String>(42, "hello")
+
+
+Variant and optional types
+--------------------------
+
+    (A | B | C)                 -- Union<A, B, C>
+    (A & B & C)                 -- Intersection<A, B, C>
+
+    def alias String? : (String | Nil)
+
+
+
+
+Enum types
+----------
+
+    def enum Color (
+      red, yellow, green, blue, black
+    )
+
+    def draw(obj, color : Color) ...
+
+    def main()
+      draw(Box(), Color.green)
+
+
+Mixin types
+-----------
+
+    def type BitmaskType<T>
+
+    def enum FileType : UInt32, BitmaskType<FileType> (
+      read = 1 << 0,
+      write = 1 << 1,
+      append = 1 << 2,
+      create = 1 << 3,
+      exclusive = 1 << 4,
+    )
+
+
+    def bitwise-or(lhs : BitmaskType<T>, rhs : BitmaskType<T>) -> T
+      ((lhs as UInt32) OR (rhs as UInt32)) as T
+
+
+
+Modules
+-------
+
+Define a module:
+
+    def module io
+    {
+      import (string)
+      export (Port, InPort, OutPort, SeekablePort, RandomAccessPort,
+              FilePort)
+      include ("io.hr", "file-port.hr")
+
+      def const val = 42
+    }
+
+import -> load a module by name (declarations and library dependency)
+export -> export symbols; instead of explicitly listing the symbols
+          here, mark declarations in the included files as "pub"
+include -> technically include the listed files
+
+module makes a loadable module and defines a namespace
+
+Accessing symbols in the namespace:
+
+    foo.val
+
+    with ns foo {
+      val
+    }
+
+Modules compile typically into static or dynamic libraries.
+
+
+export, importing
+-----------------
+
+    def pub foo() ...
+    def pub const length = 42
+
+or:
+
+    export (foo, length)
+
+
+    import printing
+
+
+
+
+Alternate approach:
+
+  - separate module from namespace: namespaces define the namespace,
+    modules define the component boundary.  Namespaces are orthogonal to visiblity
+
+  - import "symbols", not paths
+
+  - include "paths"
+
+
+
+      namespace io
+
+      def type Port          -- |= .io.Port
+
+
+  def module "org.eyestep.herschel.io" {
+    import ("org.eyestep.herschel.lang", "org.eyestep.herschel.core")
+
+    include ("port.hr", "file-port.hr", "memory-port.hr")
+  }
+
+
+In Diesel:
+
+"The set of files comprising a Diesel program is the transitive closure of the include declarations,
+starting from the given root file. There is no need for any other extra-linguistic mechanism such as
+Makefiles to define a program."
+
+
+
+
+
+
+Expressions
+-----------
+
+Function calls:
+
+    foo(a, b, c)
+    foo(a, bar(mar(42), gaz()))
+
+if/else
+
+    if (foo())
+      expr
+    else if (bar())
+      expr
+    else
+      expr
+
+select
+
+    select (foo())
+      | v1 -> expr
+      | v2, v3, v4 -> expr
+      | else -> expr
+
+loops
+
+    while (condition)
+      expr
+
+    while (condition)
+      expr
+    else
+      expr
+
+    for (v : type in range-expr)
+      expr
+
+    for (v : type in range-expr)
+      expr
+    else
+      expr
+
+  with range-expr: something which is of type Slicable, e.g.
+
+     #[1, 2, 3]
+     0..42
+
+
+
+Functions
+---------
+
+  standalone function:
+
+    def foo(a : Int, b : String, c ...) -> Bool
+      body
+
+  type overload with function selected at compile time by best type match:
+
+    def make-sound(a : Animal)     [1]
+    def make-sound(a : Mamal)      [2]
+    def make-sound(a : Dog)        [3]
+    def make-sound(a : Fish)       [4]
+
+
+    make-sound(Dog())      => variant [3] is called
+    make-sound(Spider())   => variant [1] is called
+    make-sound(Cat())      => variant [2] is called
+    make-sound(Shark())    => variant [4] is called
+
+  generic method (selected at runtime).  Matching parameters are
+  notated with the @ separator (instead of the :).
+
+    def generic draw(a @ GfxObject)
+
+    def method draw(a @ Square)
+    def method draw(a @ Line)
+
+  When multiple parameters match it's multiple dispatch:
+
+    def generic connect(inp @ Port, outp @ Port)
+
+    def method connect(inp @ AudioPort, outp @ AudioPort)
+    def method connect(inp @ MidiPort, outp @ AudioPort)
+    def method connect(inp @ AudioPort, outp @ MidiPort)
+
+
+  typical getter & setter method for OOP style:
+
+    def generic foo(self @ ^MyObject) -> T
+    def generic foo!(self mut @ ^MyObject, val : T) -> ^MyObject
+
+  keyed (named) parameters:
+
+    def foo(name -> nm : string = "hello", age -> y : Int) ...
+    def foo(name -> nm mut : ^&Int = "N.N.") ...
+
+    ... and at the call site:
+
+    foo(name: "world", age: 92)
+
+  keyed arguments can't be combined with generic functions.
+
+　signature definition of functions in headers:
+
+   def foo(a, b) ...
+   def foo(a, b) -> Int ...
+   def generic foo(a @ Bar) ...
+
+
+--------------------------------------------------------------------------------
+
+anonymous functions:
+
+  fn(a, b) -> C expr
+
+type is:
+  Fn(A, B) -> C
+
+
+--------------------------------------------------------------------------------
+
+namespaces:
+
+   module moo
+
+     def record Xyz ( slot )
+
+     def gaz() {
+       ixwick.ext.bar()
+     }
+
+   module ixwick
+
+     module ext
+
+       def bar() ...
+
+
+     module io
+
+       def record Abc ( name, prof )
+
+       def foo() {
+         let a = Abc()
+         a.name = ext.bar()
+
+         let b = moo.Xyz()
+         b.slot = moo.gaz()
+       }
+
+
+    def ixwick.io.zaza() ...
+
+
+  extend a.b.c {
+    def x() ...
+  }
+
+replace with?
+  with ns a.b.c {
+  }
+
+--------------------------------------------------------------------------------
+
+macros:
+
+  def macro nm
+    | « pattern1 » -> « ... »
+    | « pattern2 » -> « ... »
+
+
+--------------------------------------------------------------------------------
+
+Function overloading requires encoding parameter types into the C
+function name.  LLVM IR requires "simple" names, so we need one name
+for each function variant.
+
+We already use the QN mangling to encode special characters.  E.g.
+
+  encode->string!
+
+becomes
+
+  __QNencode/2d/3estring/21
+
+So our pattern is:
+
+For functions:
+
+  1. Start with __Q
+  2. Encode function type: M = generic, F = normal function
+  2. add a N, then the namespaces with each step prefixed with the length
+  3. add the symbol, prefixed with the length
+  4. add a S, encode return type
+  5. encode types of parameters
+
+encode one type
+
+  Use shortcuts for builtin types:
+
+  Bool         b
+  Int8         c
+  UInt8        o
+  Int16        s
+  UInt16       w
+  Int32        i
+  UInt32       u
+  Int64        I
+  UInt64       U
+  Float32      f
+  Float64      F
+  Float128     D
+  String       S
+  Unspecified  v
+  Eof          e
+  Nil          n
+
+  add a 'r' for reference to the type
+  add a 'R' for ref-counted type
+  add a 'A' for array
+
+  user       _[TREIU]N{ns}(sym)generics?
+
+  parameters can use a namespace shortcut: if parameter types are in
+  the same namespace as the function's use a Ns for the {Ns} part simply.
+
+  if the type is generic the generic type params are added recursively
+  enclosed in a P...x group.
+
+  Intersection and Union types are ended with x
+
+Example:
+
+  .io.foo(: .io.Port<Octet>, : Float32[]) -> BoolOrEof
+
+  _QFN2io3fooS_Ubex_TNs4PortPoxAf
+
+
+For global variables
+
+  1. Start with __Q
+     1. var type: V = variable
+  2. add the namespaces and symbol each prefixed with the length as digits
+
+For types:
+
+  1. Start with __Q
+     1. type kind: T = type, R = record, E = enum, I = intersection, U = union
+
+
+--------------------------------------------------------------------------------
+
+Various syntax patterns
+
+expression with arguments:
+
+  keyword ( arg, arg, arg )
+
+
+scope-expression with arguments:
+
+  keyword ( arg, arg, arg) value
+
+
+value: is
+
+  expression list:
+
+  expr[;] expr[;] expr
+
+
+option list
+
+  | cond -> result
+  | cond -> result
+
+
+declaration
+
+  def [what] name [modifier modifier modifier] [: type] [= initialization ]
+  let [what] name [modifier modifier modifier] [: type] [= initialization ]
+
+  what: const
+
+  modifier: mut
+            pub[lic]
+            priv[ate]
+
+  def [what] name (param, param, param) body
+
+    what: generic, method, macro
+
+  def what (param, param, param)
+
+  what -> record, type, enum
+
+  def enum (
+
+
+
+
+
+
+
+
+
+
+
+
+
+  A shared pointer implementation:
+
+    def record SharedObjBlock<T> (
+      ref-count : int,
+      val : T
+    )
+
+    def record SharedPtr<T> (
+      data^ : SharedObjBlock<T> | Nil
+    )
+
+    -- implementation of = operator
+    def set!(lhs : ^SharedPtr<T>, rhs : SharedPtr<T>) -> ^SharedPtr<T> {
+      if (not nil?(rhs.data)) {
+        inc!(rhs.data.ref-count)
+      }
+
+      if (not nil?(lhs.data)) {
+        if (lhs.data.ref-count == 1) {
+          lhs.data^ = nil
+        }
+        else {
+          dec!(lhs.data.ref-count)
+        }
+      }
+
+      lhs.data = rhs.data
+      lhs
+    }
+
+    -- destructor
+    def free!(self : ^SharedPtr<T>) {
+      if (not nil?(self.data)) {
+        if (self.data.ref-count == 1) {
+          lhs.data^ = nil
+        }
+        else {
+          dec!(self.data.ref-count)
+        }
+      }
+    }
+
+    def value(self : ^SharedPtr<T>) -> ^T {
+      match (self.data^)
+        | _ : Nil -> { display("Derefencing unset shared pointer")
+                       sys.exit(1)
+                     }
+        | x : ^SharedObjBlock<T> -> x.val
+    }
+
+
+----------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Documentation
 
   - Write assignment section.
@@ -171,3 +1189,30 @@ Language and ideas:
 
   - Function contracts (cf. doc/CHANGES)
 
+
+
+
+
+--------------------------------------------------------------------------------
+
+We need to add atomic stuff to the language.
+
+  - look into https://llvm.org/docs/LangRef.html#memory-model-for-concurrent-operations
+  - compare rust's std::sync::atomic  (https://doc.rust-lang.org/std/sync/atomic/)
+
+  As separate type (wrapper):
+
+    let x : lang.atomic.Atomic<Int>
+
+    x.load(lang.Ordering.seqcst)     -- = lang.atomic.load(x, lang.Ordering.seqcst)
+    x.store(lang.Ordering.acquire)   -- = lang.atomic.store(x, lang.Ordering.acquire)
+
+
+  Maybe with variable annotation syntactic sugar:
+
+    let x atomic : Int = ...         -- rewrites into the above
+
+
+  fences?
+
+    .lang.atomic.fence(lang.Ordering::Acquire)
