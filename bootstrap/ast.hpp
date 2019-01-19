@@ -187,6 +187,16 @@ protected:
 };
 
 
+namespace details {
+  template <typename T>
+  std::shared_ptr<T> enscope(std::shared_ptr<T> nd, std::shared_ptr<Scope> scope)
+  {
+    nd->setScope(scope);
+    return nd;
+  }
+}  // namespace details
+
+
 //! Mixin class to add support for delayed type specification.  This is used
 //! on \c VardefNode and \c AssignNode to flag the variable type to be
 //! inferred not from the (probably undefined init expression) but the first
@@ -282,9 +292,9 @@ public:
   }
 };
 
-inline std::shared_ptr<UndefNode> makeUndefNode()
+inline std::shared_ptr<UndefNode> makeUndefNode(std::shared_ptr<Scope> scope)
 {
-  return std::make_shared<UndefNode>();
+  return details::enscope(std::make_shared<UndefNode>(), scope);
 }
 
 
@@ -317,10 +327,11 @@ private:
   String fValue;
 };
 
-inline std::shared_ptr<StringNode> makeStringNode(const SrcPos& srcpos,
-                                                  const String& value)
+
+inline std::shared_ptr<StringNode>
+makeStringNode(std::shared_ptr<Scope> scope, const SrcPos& srcpos, const String& value)
 {
-  return std::make_shared<StringNode>(srcpos, value);
+  return details::enscope(std::make_shared<StringNode>(srcpos, value), scope);
 }
 
 
@@ -345,10 +356,10 @@ private:
   String fValue;
 };
 
-inline std::shared_ptr<KeywordNode> makeKeywordNode(const SrcPos& srcpos,
-                                                    const String& value)
+inline std::shared_ptr<KeywordNode>
+makeKeywordNode(std::shared_ptr<Scope> scope, const SrcPos& srcpos, const String& value)
 {
-  return std::make_shared<KeywordNode>(srcpos, value);
+  return details::enscope(std::make_shared<KeywordNode>(srcpos, value), scope);
 }
 
 
@@ -433,10 +444,12 @@ protected:
                    // frame (= closed variable)
 };
 
-inline std::shared_ptr<SymbolNode>
-makeSymbolNode(const SrcPos& srcpos, const String& value, const TypeVector& generics = {})
+inline std::shared_ptr<SymbolNode> makeSymbolNode(std::shared_ptr<Scope> scope,
+                                                  const SrcPos& srcpos,
+                                                  const String& value,
+                                                  const TypeVector& generics = {})
 {
-  return std::make_shared<SymbolNode>(srcpos, value, generics);
+  return details::enscope(std::make_shared<SymbolNode>(srcpos, value, generics), scope);
 }
 
 
@@ -463,10 +476,12 @@ private:
   std::shared_ptr<AstNode> fTypeNode;
 };
 
-inline std::shared_ptr<ArrayTypeNode> makeArrayTypeNode(const SrcPos& srcpos,
+inline std::shared_ptr<ArrayTypeNode> makeArrayTypeNode(std::shared_ptr<Scope> scope,
+                                                        const SrcPos& srcpos,
                                                         std::shared_ptr<AstNode> typeNode)
 {
-  return std::make_shared<ArrayTypeNode>(srcpos, std::move(typeNode));
+  return details::enscope(std::make_shared<ArrayTypeNode>(srcpos, std::move(typeNode)),
+                          scope);
 }
 
 
@@ -487,9 +502,10 @@ public:
   }
 };
 
-inline std::shared_ptr<TypeNode> makeTypeNode(const SrcPos& srcpos, const Type& type)
+inline std::shared_ptr<TypeNode> makeTypeNode(std::shared_ptr<Scope> scope,
+                                              const SrcPos& srcpos, const Type& type)
 {
-  return std::make_shared<TypeNode>(srcpos, type);
+  return details::enscope(std::make_shared<TypeNode>(srcpos, type), scope);
 }
 
 
@@ -549,10 +565,12 @@ public:
   }
 };
 
-inline std::shared_ptr<IntNode> makeIntNode(const SrcPos& srcpos, int64_t value,
+inline std::shared_ptr<IntNode> makeIntNode(std::shared_ptr<Scope> scope,
+                                            const SrcPos& srcpos, int64_t value,
                                             bool isImaginary, const Type& type)
 {
-  return std::make_shared<IntNode>(srcpos, value, isImaginary, type);
+  return details::enscope(std::make_shared<IntNode>(srcpos, value, isImaginary, type),
+                          scope);
 }
 
 
@@ -570,10 +588,12 @@ public:
   }
 };
 
-inline std::shared_ptr<RealNode> makeRealNode(const SrcPos& srcpos, double value,
+inline std::shared_ptr<RealNode> makeRealNode(std::shared_ptr<Scope> scope,
+                                              const SrcPos& srcpos, double value,
                                               bool isImaginary, const Type& type)
 {
-  return std::make_shared<RealNode>(srcpos, value, isImaginary, type);
+  return details::enscope(std::make_shared<RealNode>(srcpos, value, isImaginary, type),
+                          scope);
 }
 
 
@@ -592,11 +612,13 @@ public:
   }
 };
 
-inline std::shared_ptr<RationalNode> makeRationalNode(const SrcPos& srcpos,
+inline std::shared_ptr<RationalNode> makeRationalNode(std::shared_ptr<Scope> scope,
+                                                      const SrcPos& srcpos,
                                                       const Rational& value,
                                                       bool isImaginary, const Type& type)
 {
-  return std::make_shared<RationalNode>(srcpos, value, isImaginary, type);
+  return details::enscope(
+      std::make_shared<RationalNode>(srcpos, value, isImaginary, type), scope);
 }
 
 
@@ -619,9 +641,11 @@ private:
   Char fValue;
 };
 
-inline std::shared_ptr<CharNode> makeCharNode(const SrcPos& srcpos, Char value)
+
+inline std::shared_ptr<CharNode> makeCharNode(std::shared_ptr<Scope> scope,
+                                              const SrcPos& srcpos, Char value)
 {
-  return std::make_shared<CharNode>(srcpos, value);
+  return details::enscope(std::make_shared<CharNode>(srcpos, value), scope);
 }
 
 
@@ -644,9 +668,11 @@ private:
   bool fValue;
 };
 
-inline std::shared_ptr<BoolNode> makeBoolNode(const SrcPos& srcpos, bool value)
+
+inline std::shared_ptr<BoolNode> makeBoolNode(std::shared_ptr<Scope> scope,
+                                              const SrcPos& srcpos, bool value)
 {
-  return std::make_shared<BoolNode>(srcpos, value);
+  return details::enscope(std::make_shared<BoolNode>(srcpos, value), scope);
 }
 
 
@@ -665,9 +691,11 @@ public:
   }
 };
 
-inline std::shared_ptr<CompileUnitNode> makeCompileUnitNode(const SrcPos& srcpos)
+
+inline std::shared_ptr<CompileUnitNode> makeCompileUnitNode(std::shared_ptr<Scope> scope,
+                                                            const SrcPos& srcpos)
 {
-  return std::make_shared<CompileUnitNode>(srcpos);
+  return details::enscope(std::make_shared<CompileUnitNode>(srcpos), scope);
 }
 
 
@@ -705,9 +733,11 @@ public:
   }
 };
 
-inline std::shared_ptr<LetNode> makeLetNode(std::shared_ptr<AstNode> node)
+
+inline std::shared_ptr<LetNode> makeLetNode(std::shared_ptr<Scope> scope,
+                                            std::shared_ptr<AstNode> node)
 {
-  return std::make_shared<LetNode>(std::move(node));
+  return details::enscope(std::make_shared<LetNode>(std::move(node)), scope);
 }
 
 
@@ -725,9 +755,11 @@ public:
   }
 };
 
-inline std::shared_ptr<DefNode> makeDefNode(std::shared_ptr<AstNode> node)
+
+inline std::shared_ptr<DefNode> makeDefNode(std::shared_ptr<Scope> scope,
+                                            std::shared_ptr<AstNode> node)
 {
-  return std::make_shared<DefNode>(std::move(node));
+  return details::enscope(std::make_shared<DefNode>(std::move(node)), scope);
 }
 
 
@@ -808,12 +840,15 @@ private:
   VardefFlags fFlags;
 };
 
+
 inline std::shared_ptr<VardefNode>
-makeVardefNode(const SrcPos& srcpos, const String& symbolName, VardefFlags flags,
-               bool isLocal, const Type& type, std::shared_ptr<AstNode> initExpr)
+makeVardefNode(std::shared_ptr<Scope> scope, const SrcPos& srcpos,
+               const String& symbolName, VardefFlags flags, bool isLocal,
+               const Type& type, std::shared_ptr<AstNode> initExpr)
 {
-  return std::make_shared<VardefNode>(srcpos, symbolName, flags, isLocal, type,
-                                      std::move(initExpr));
+  return details::enscope(std::make_shared<VardefNode>(srcpos, symbolName, flags, isLocal,
+                                                       type, std::move(initExpr)),
+                          scope);
 }
 
 
@@ -867,12 +902,15 @@ private:
   ParamFlags fFlags;
 };
 
+
 inline std::shared_ptr<ParamNode>
-makeParamNode(const SrcPos& srcpos, const String& keyName, const String& symbolName,
-              ParamFlags flags, const Type& type, std::shared_ptr<AstNode> initExpr)
+makeParamNode(std::shared_ptr<Scope> scope, const SrcPos& srcpos, const String& keyName,
+              const String& symbolName, ParamFlags flags, const Type& type,
+              std::shared_ptr<AstNode> initExpr)
 {
-  return std::make_shared<ParamNode>(srcpos, keyName, symbolName, flags, type,
-                                     std::move(initExpr));
+  return details::enscope(std::make_shared<ParamNode>(srcpos, keyName, symbolName, flags,
+                                                      type, std::move(initExpr)),
+                          scope);
 }
 
 
@@ -898,13 +936,16 @@ private:
   unsigned int fFlags;
 };
 
-inline std::shared_ptr<SlotdefNode> makeSlotdefNode(const SrcPos& srcpos,
+
+inline std::shared_ptr<SlotdefNode> makeSlotdefNode(std::shared_ptr<Scope> scope,
+                                                    const SrcPos& srcpos,
                                                     const String& symbolName,
                                                     unsigned int flags, const Type& type,
                                                     std::shared_ptr<AstNode> initExpr)
 {
-  return std::make_shared<SlotdefNode>(srcpos, symbolName, flags, type,
-                                       std::move(initExpr));
+  return details::enscope(
+      std::make_shared<SlotdefNode>(srcpos, symbolName, flags, type, std::move(initExpr)),
+      scope);
 }
 
 
@@ -923,9 +964,11 @@ public:
   }
 };
 
-inline std::shared_ptr<ArrayNode> makeArrayNode(const SrcPos& srcpos)
+
+inline std::shared_ptr<ArrayNode> makeArrayNode(std::shared_ptr<Scope> scope,
+                                                const SrcPos& srcpos)
 {
-  return std::make_shared<ArrayNode>(srcpos);
+  return details::enscope(std::make_shared<ArrayNode>(srcpos), scope);
 }
 
 
@@ -944,9 +987,11 @@ public:
   }
 };
 
-inline std::shared_ptr<VectorNode> makeVectorNode(const SrcPos& srcpos)
+
+inline std::shared_ptr<VectorNode> makeVectorNode(std::shared_ptr<Scope> scope,
+                                                  const SrcPos& srcpos)
 {
-  return std::make_shared<VectorNode>(srcpos);
+  return details::enscope(std::make_shared<VectorNode>(srcpos), scope);
 }
 
 
@@ -997,12 +1042,15 @@ private:
   std::weak_ptr<FunctionNode> fRefFunction;
 };
 
-inline std::shared_ptr<BinaryNode> makeBinaryNode(const SrcPos& srcpos,
+
+inline std::shared_ptr<BinaryNode> makeBinaryNode(std::shared_ptr<Scope> scope,
+                                                  const SrcPos& srcpos,
                                                   std::shared_ptr<AstNode> left,
                                                   OperatorType op,
                                                   std::shared_ptr<AstNode> right)
 {
-  return std::make_shared<BinaryNode>(srcpos, std::move(left), op, std::move(right));
+  return details::enscope(
+      std::make_shared<BinaryNode>(srcpos, std::move(left), op, std::move(right)), scope);
 }
 
 
@@ -1041,10 +1089,13 @@ private:
   UnaryOperatorType fOp;
 };
 
-inline std::shared_ptr<UnaryNode>
-makeUnaryNode(const SrcPos& srcpos, UnaryOperatorType op, std::shared_ptr<AstNode> base)
+inline std::shared_ptr<UnaryNode> makeUnaryNode(std::shared_ptr<Scope> scope,
+                                                const SrcPos& srcpos,
+                                                UnaryOperatorType op,
+                                                std::shared_ptr<AstNode> base)
 {
-  return std::make_shared<UnaryNode>(srcpos, op, std::move(base));
+  return details::enscope(std::make_shared<UnaryNode>(srcpos, op, std::move(base)),
+                          scope);
 }
 
 
@@ -1090,13 +1141,15 @@ private:
   std::shared_ptr<AstNode> fBy;
 };
 
-inline std::shared_ptr<RangeNode> makeRangeNode(const SrcPos& srcpos,
+inline std::shared_ptr<RangeNode> makeRangeNode(std::shared_ptr<Scope> scope,
+                                                const SrcPos& srcpos,
                                                 std::shared_ptr<AstNode> from,
                                                 std::shared_ptr<AstNode> to,
                                                 std::shared_ptr<AstNode> by)
 {
-  return std::make_shared<RangeNode>(srcpos, std::move(from), std::move(to),
-                                     std::move(by));
+  return details::enscope(
+      std::make_shared<RangeNode>(srcpos, std::move(from), std::move(to), std::move(by)),
+      scope);
 }
 
 
@@ -1134,11 +1187,13 @@ private:
   std::shared_ptr<AstNode> fRValue;
 };
 
-inline std::shared_ptr<AssignNode> makeAssignNode(const SrcPos& srcpos,
+inline std::shared_ptr<AssignNode> makeAssignNode(std::shared_ptr<Scope> scope,
+                                                  const SrcPos& srcpos,
                                                   std::shared_ptr<AstNode> lvalue,
                                                   std::shared_ptr<AstNode> rvalue)
 {
-  return std::make_shared<AssignNode>(srcpos, std::move(lvalue), std::move(rvalue));
+  return details::enscope(
+      std::make_shared<AssignNode>(srcpos, std::move(lvalue), std::move(rvalue)), scope);
 }
 
 
@@ -1185,13 +1240,16 @@ private:
   std::shared_ptr<AstNode> fAlternate;
 };
 
-inline std::shared_ptr<IfNode> makeIfNode(const SrcPos& srcpos,
+inline std::shared_ptr<IfNode> makeIfNode(std::shared_ptr<Scope> scope,
+                                          const SrcPos& srcpos,
                                           std::shared_ptr<AstNode> test,
                                           std::shared_ptr<AstNode> consequent,
                                           std::shared_ptr<AstNode> alternate)
 {
-  return std::make_shared<IfNode>(srcpos, std::move(test), std::move(consequent),
-                                  std::move(alternate));
+  return details::enscope(std::make_shared<IfNode>(srcpos, std::move(test),
+                                                   std::move(consequent),
+                                                   std::move(alternate)),
+                          scope);
 }
 
 
@@ -1308,11 +1366,14 @@ private:
   SelectMappingVector fMappings;
 };
 
-inline std::shared_ptr<SelectNode> makeSelectNode(const SrcPos& srcpos,
+inline std::shared_ptr<SelectNode> makeSelectNode(std::shared_ptr<Scope> scope,
+                                                  const SrcPos& srcpos,
                                                   std::shared_ptr<AstNode> test,
                                                   std::shared_ptr<AstNode> comparator)
 {
-  return std::make_shared<SelectNode>(srcpos, std::move(test), std::move(comparator));
+  return details::enscope(
+      std::make_shared<SelectNode>(srcpos, std::move(test), std::move(comparator)),
+      scope);
 }
 
 
@@ -1402,10 +1463,11 @@ private:
   MatchMappingVector fMappings;
 };
 
-inline std::shared_ptr<MatchNode> makeMatchNode(const SrcPos& srcpos,
+inline std::shared_ptr<MatchNode> makeMatchNode(std::shared_ptr<Scope> scope,
+                                                const SrcPos& srcpos,
                                                 std::shared_ptr<AstNode> expr)
 {
-  return std::make_shared<MatchNode>(srcpos, std::move(expr));
+  return details::enscope(std::make_shared<MatchNode>(srcpos, std::move(expr)), scope);
 }
 
 
@@ -1424,9 +1486,10 @@ public:
   }
 };
 
-inline std::shared_ptr<BlockNode> makeBlockNode(const SrcPos& srcpos)
+inline std::shared_ptr<BlockNode> makeBlockNode(std::shared_ptr<Scope> scope,
+                                                const SrcPos& srcpos)
 {
-  return std::make_shared<BlockNode>(srcpos);
+  return details::enscope(std::make_shared<BlockNode>(srcpos), scope);
 }
 
 
@@ -1484,12 +1547,14 @@ protected:
   std::shared_ptr<AstNode> fBody;
 };
 
-inline std::shared_ptr<FunctionNode> makeFunctionNode(const SrcPos& srcpos,
+inline std::shared_ptr<FunctionNode> makeFunctionNode(std::shared_ptr<Scope> scope,
+                                                      const SrcPos& srcpos,
                                                       const NodeList& params,
                                                       const Type& retType,
                                                       std::shared_ptr<AstNode> body)
 {
-  return std::make_shared<FunctionNode>(srcpos, params, retType, std::move(body));
+  return details::enscope(
+      std::make_shared<FunctionNode>(srcpos, params, retType, std::move(body)), scope);
 }
 
 
@@ -1534,14 +1599,14 @@ private:
   unsigned int fFlags;
 };
 
-inline std::shared_ptr<FuncDefNode> makeFuncDefNode(const SrcPos& srcpos,
-                                                    const String& sym, unsigned int flags,
-                                                    const NodeList& params,
-                                                    const Type& retType,
-                                                    std::shared_ptr<AstNode> body)
+inline std::shared_ptr<FuncDefNode>
+makeFuncDefNode(std::shared_ptr<Scope> scope, const SrcPos& srcpos, const String& sym,
+                unsigned int flags, const NodeList& params, const Type& retType,
+                std::shared_ptr<AstNode> body)
 {
-  return std::make_shared<FuncDefNode>(srcpos, sym, flags, params, retType,
-                                       std::move(body));
+  return details::enscope(
+      std::make_shared<FuncDefNode>(srcpos, sym, flags, params, retType, std::move(body)),
+      scope);
 }
 
 
@@ -1599,10 +1664,11 @@ private:
   std::weak_ptr<FunctionNode> fRefFunction;
 };
 
-inline std::shared_ptr<ApplyNode> makeApplyNode(const SrcPos& srcpos,
+inline std::shared_ptr<ApplyNode> makeApplyNode(std::shared_ptr<Scope> scope,
+                                                const SrcPos& srcpos,
                                                 std::shared_ptr<AstNode> base)
 {
-  return std::make_shared<ApplyNode>(srcpos, std::move(base));
+  return details::enscope(std::make_shared<ApplyNode>(srcpos, std::move(base)), scope);
 }
 
 
@@ -1632,9 +1698,10 @@ private:
   std::shared_ptr<AstNode> fRefNode;
 };
 
-inline std::shared_ptr<WeakNode> makeWeakNode(std::shared_ptr<AstNode> refNode)
+inline std::shared_ptr<WeakNode> makeWeakNode(std::shared_ptr<Scope> scope,
+                                              std::shared_ptr<AstNode> refNode)
 {
-  return std::make_shared<WeakNode>(std::move(refNode));
+  return details::enscope(std::make_shared<WeakNode>(std::move(refNode)), scope);
 }
 
 
@@ -1669,10 +1736,12 @@ private:
   std::shared_ptr<AstNode> fValue;
 };
 
-inline std::shared_ptr<KeyargNode> makeKeyargNode(const SrcPos& srcpos, const String& key,
+inline std::shared_ptr<KeyargNode> makeKeyargNode(std::shared_ptr<Scope> scope,
+                                                  const SrcPos& srcpos, const String& key,
                                                   std::shared_ptr<AstNode> value)
 {
-  return std::make_shared<KeyargNode>(srcpos, key, std::move(value));
+  return details::enscope(std::make_shared<KeyargNode>(srcpos, key, std::move(value)),
+                          scope);
 }
 
 
@@ -1710,11 +1779,13 @@ private:
   std::shared_ptr<AstNode> fBody;
 };
 
-inline std::shared_ptr<WhileNode> makeWhileNode(const SrcPos& srcpos,
+inline std::shared_ptr<WhileNode> makeWhileNode(std::shared_ptr<Scope> scope,
+                                                const SrcPos& srcpos,
                                                 std::shared_ptr<AstNode> test,
                                                 std::shared_ptr<AstNode> body)
 {
-  return std::make_shared<WhileNode>(srcpos, std::move(test), std::move(body));
+  return details::enscope(
+      std::make_shared<WhileNode>(srcpos, std::move(test), std::move(body)), scope);
 }
 
 
@@ -1756,12 +1827,14 @@ private:
   Type fIsa;
 };
 
-inline std::shared_ptr<TypeDefNode> makeTypeDefNode(const SrcPos& srcpos,
+inline std::shared_ptr<TypeDefNode> makeTypeDefNode(std::shared_ptr<Scope> scope,
+                                                    const SrcPos& srcpos,
                                                     const String& typeName, bool isRecord,
                                                     const Type& isa,
                                                     const NodeList& slots)
 {
-  return std::make_shared<TypeDefNode>(srcpos, typeName, isRecord, isa, slots);
+  return details::enscope(
+      std::make_shared<TypeDefNode>(srcpos, typeName, isRecord, isa, slots), scope);
 }
 
 
@@ -1792,10 +1865,13 @@ private:
   std::shared_ptr<AstNode> fBase;
 };
 
-inline std::shared_ptr<CastNode>
-makeCastNode(const SrcPos& srcpos, std::shared_ptr<AstNode> base, const Type& type)
+inline std::shared_ptr<CastNode> makeCastNode(std::shared_ptr<Scope> scope,
+                                              const SrcPos& srcpos,
+                                              std::shared_ptr<AstNode> base,
+                                              const Type& type)
 {
-  return std::make_shared<CastNode>(srcpos, std::move(base), type);
+  return details::enscope(std::make_shared<CastNode>(srcpos, std::move(base), type),
+                          scope);
 }
 
 
@@ -1827,11 +1903,13 @@ private:
   String fSlotName;
 };
 
-inline std::shared_ptr<SlotRefNode> makeSlotRefNode(const SrcPos& srcpos,
+inline std::shared_ptr<SlotRefNode> makeSlotRefNode(std::shared_ptr<Scope> scope,
+                                                    const SrcPos& srcpos,
                                                     std::shared_ptr<AstNode> base,
                                                     const String& slotName)
 {
-  return std::make_shared<SlotRefNode>(srcpos, std::move(base), slotName);
+  return details::enscope(
+      std::make_shared<SlotRefNode>(srcpos, std::move(base), slotName), scope);
 }
 
 
@@ -1842,12 +1920,13 @@ public:
   {
   }
 
-  void addPair(std::shared_ptr<AstNode> key, std::shared_ptr<AstNode> value)
+  void addPair(std::shared_ptr<Scope> scope, std::shared_ptr<AstNode> key,
+               std::shared_ptr<AstNode> value)
   {
     hr_assert(key);
     hr_assert(value);
 
-    appendNode(makeBinaryNode(key->srcpos(), key, kOpMapTo, std::move(value)));
+    appendNode(makeBinaryNode(scope, key->srcpos(), key, kOpMapTo, std::move(value)));
   }
 
   std::shared_ptr<AstNode> clone() const override
@@ -1858,9 +1937,11 @@ public:
   }
 };
 
-inline std::shared_ptr<DictNode> makeDictNode(const SrcPos& srcpos)
+
+inline std::shared_ptr<DictNode> makeDictNode(std::shared_ptr<Scope> scope,
+                                              const SrcPos& srcpos)
 {
-  return std::make_shared<DictNode>(srcpos);
+  return details::enscope(std::make_shared<DictNode>(srcpos), scope);
 }
 
 

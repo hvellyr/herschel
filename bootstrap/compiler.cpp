@@ -8,8 +8,6 @@
    This source code is released under the BSD License.
 */
 
-#include <map>
-
 #include "compiler.hpp"
 
 #include "annotate.hpp"
@@ -32,6 +30,9 @@
 #include "typify.hpp"
 #include "utils.hpp"
 #include "xmlrenderer.hpp"
+
+#include <map>
+#include <set>
 
 
 namespace herschel {
@@ -67,10 +68,16 @@ const Token Compiler::typeToken = Token(SrcPos(), kSymbol, "type");
 //----------------------------------------------------------------------------
 
 Compiler::Compiler(bool isParsingInterface)
+    : Compiler(isParsingInterface, type::newRootScope())
+{
+}
+
+
+Compiler::Compiler(bool isParsingInterface, std::shared_ptr<Scope> rootScope)
     : fState(CompilerState(
           std::make_shared<CharRegistry>(),
           std::make_shared<ConfigVarRegistry>(Properties::globalConfigVarRegistry()),
-          type::newRootScope()))
+          rootScope))
     , fIsParsingInterface(isParsingInterface)
     , fReferredFunctionCache(makeScope(kScopeL_CompileUnit))
 {
@@ -132,7 +139,8 @@ std::shared_ptr<AstNode> Compiler::process(std::shared_ptr<Port<Char>> port,
                                            const String& srcName)
 {
   fState.fScope = makeScope(kScopeL_CompileUnit, fState.fScope);
-  importSystemHeaders(srcName);
+  importSystemHeaders();
+
   return processImpl(port, srcName, K(doTrace));
 }
 
@@ -166,13 +174,13 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
       // the symbols may not be exportable at all).
       fState.fScope = nodifyPass.currentScope();
 
-      AnnotatePass nodePass2{ 3, fState.fScope, *this };
+      AnnotatePass nodePass2{ 3, *this };
       ast = nodePass2.apply(ast, doTrace);
 
       TypifyPass nodePass3{ 4 };
       ast = nodePass3.apply(ast, doTrace);
 
-      Annotate2Pass nodePass4{ 5, fState.fScope, *this };
+      Annotate2Pass nodePass4{ 5, *this };
       ast = nodePass4.apply(ast, doTrace);
 
       TypeCheckPass nodePass5{ 6 };
@@ -189,6 +197,14 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
 }
 
 
+TokenVector Compiler::includeFile(const SrcPos& srcpos, const String& srcName,
+                                  const std::function<TokenVector()>& functor)
+{
+  String absPath = lookupFile(srcName, K(isPublic));
+  return includeFileImpl(srcpos, srcName, absPath, functor);
+}
+
+
 bool Compiler::importFile(const SrcPos& srcpos, const String& srcName, bool isPublic,
                           std::shared_ptr<Scope> currentScope)
 {
@@ -197,18 +213,12 @@ bool Compiler::importFile(const SrcPos& srcpos, const String& srcName, bool isPu
 }
 
 
-bool Compiler::importSystemHeader(const String& header, const String& fullAvoidPath)
+bool Compiler::importSystemHeader(const String& header)
 {
   String absPath = lookupFile(header, !K(isPublic));
 
   if (Properties::isTraceImportFile())
-    log(kDebug, String("Load: ") + absPath + String(" while loading ") + fullAvoidPath);
-
-  if (absPath == fullAvoidPath) {
-    if (Properties::isTraceImportFile())
-      logf(kDebug, "Don't preload '%s'", (zstring)StrHelper(header));
-    return false;
-  }
+    log(kDebug, String("Load: ") + absPath);
 
   if (Properties::isTraceImportFile())
     logf(kDebug, "Preload '%s'", (zstring)StrHelper(header));
@@ -218,29 +228,81 @@ bool Compiler::importSystemHeader(const String& header, const String& fullAvoidP
 }
 
 
-void Compiler::importSystemHeaders(const String& avoidPath)
+void Compiler::importSystemHeaders()
 {
-  String fullAvoidPath = file::canonicalPathName(avoidPath);
+  if (!importSystemHeader(String("builtin:lang/lang.hr")))
+    return;
+}
 
-  if (!importSystemHeader(String("builtin:lang/types.hr"), fullAvoidPath))
-    return;
 
-  if (!importSystemHeader(String("builtin:lang/numbers.hr"), fullAvoidPath))
-    return;
+namespace {
+  std::set<String> sPathsInLoading;
 
-  if (!importSystemHeader(String("builtin:lang/comparable.hr"), fullAvoidPath))
-    return;
+  struct PathLoadingGuard {
+    String fPath;
+    bool fOwns = false;
 
-  if (!importSystemHeader(String("builtin:lang/runtime.hr"), fullAvoidPath))
-    return;
+    PathLoadingGuard(String p)
+        : fPath(std::move(p))
+    {
+      fOwns = sPathsInLoading.insert(fPath).second;
+    }
 
-  if (!importSystemHeader(String("builtin:lang/sliceable.hr"), fullAvoidPath))
-    return;
+    ~PathLoadingGuard()
+    {
+      if (fOwns)
+        sPathsInLoading.erase(fPath);
+    }
+  };
+}  // namespace
 
-  if (!importSystemHeader(String("builtin:lang/copyable.hr"), fullAvoidPath))
-    return;
-  if (!importSystemHeader(String("builtin:lang/string.hr"), fullAvoidPath))
-    return;
+
+TokenVector Compiler::includeFileImpl(const SrcPos& srcpos, const String& srcName,
+                                      const String& absPath,
+                                      const std::function<TokenVector()>& functor)
+{
+  TokenVector result;
+
+  if (absPath.isEmpty()) {
+    errorf(srcpos, E_UnknownInputFile, "include '%s' failed: Unknown file\n",
+           (zstring)StrHelper(srcName));
+    return result;
+  }
+
+  if (sPathsInLoading.count(absPath) > 0) {
+    if (Properties::isTraceImportFile())
+      logf(kDebug, "File '%s' is currently included.  Avoid loop",
+           (zstring)StrHelper(absPath));
+    return result;
+  }
+
+  PathLoadingGuard guard(absPath);
+
+  if (Properties::isTraceImportFile())
+    logf(kDebug, "Include '%s'", (zstring)StrHelper(srcName));
+
+  try {
+    fCompilerStates.push_front(fState);
+    fState = CompilerState(charRegistry(), configVarRegistry(), fState.fScope);
+    fState.fPort = std::make_shared<FileTokenPort>(
+        std::make_shared<CharPort>(std::make_shared<FilePort>(absPath, "rb")), srcName,
+        fState.fCharRegistry);
+
+    result = functor();
+
+    CompilerState current = fState;
+    fState = fCompilerStates.front();
+    fCompilerStates.pop_front();
+
+    unreadToken(fState.fToken);
+  }
+  catch (const Exception& e) {
+    errorf(srcpos, E_UnknownInputFile, "import '%s' failed: %s\n",
+           (zstring)StrHelper(absPath), (zstring)StrHelper(e.message()));
+    return {};
+  }
+
+  return result;
 }
 
 
@@ -256,6 +318,15 @@ bool Compiler::importFileImpl(const SrcPos& srcpos, const String& srcName,
            (zstring)StrHelper(srcName));
     return false;
   }
+
+  if (sPathsInLoading.count(absPath) > 0) {
+    if (Properties::isTraceImportFile())
+      logf(kDebug, "File '%s' is currently imported.  Avoid loop",
+           (zstring)StrHelper(absPath));
+    return true;
+  }
+
+  PathLoadingGuard guard(absPath);
 
   if (currentScope->hasScopeForFile(absPath)) {
     if (Properties::isTraceImportFile())
@@ -277,7 +348,7 @@ bool Compiler::importFileImpl(const SrcPos& srcpos, const String& srcName,
   try {
     auto compiler = Compiler{ K(isParsingInterface) };
     if (preload)
-      compiler.importSystemHeaders(absPath);
+      compiler.importSystemHeaders();
 
     auto ast = compiler.processImpl(
         std::make_shared<CharPort>(std::make_shared<FilePort>(absPath, "rb")), srcName,
@@ -384,7 +455,7 @@ void compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
 {
   try {
     if (doParse) {
-      Compiler compiler{};
+      Compiler compiler(!K(isParsingInterface));
       auto ast = compiler.process(
           std::make_shared<CharPort>(std::make_shared<FilePort>(file, "rb")), file);
 
@@ -424,10 +495,8 @@ void compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
 
 void parseFiles(const std::vector<String>& files, const String& outputFile)
 {
-  for (std::vector<String>::const_iterator it = files.begin(), e = files.end(); it != e;
-       it++) {
-    compileFile(*it, K(doParse), !K(doCompile), !K(doLink), outputFile);
-  }
+  for (const auto& f : files)
+    compileFile(f, K(doParse), !K(doCompile), !K(doLink), outputFile);
 }
 
 
@@ -438,10 +507,8 @@ void compileFiles(const std::vector<String>& files, const String& outputFile)
   if (!outputFile.isEmpty() && files.size() > 1)
     logf(kError, "Outputfile and multiple compile files are given.");
 
-  for (std::vector<String>::const_iterator it = files.begin(), e = files.end(); it != e;
-       it++) {
-    compileFile(*it, K(doParse), K(doCompile), !K(doLink), outputFile);
-  }
+  for (const auto& f : files)
+    compileFile(f, K(doParse), K(doCompile), !K(doLink), outputFile);
 }
 
 }  // namespace herschel

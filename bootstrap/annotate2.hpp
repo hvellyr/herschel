@@ -26,12 +26,11 @@ using NodeList = std::vector<std::shared_ptr<AstNode>>;
 //! Defines the 2nd annotate pass over the abstract parse tree.
 class Annotator2 {
 public:
-  Annotator2(std::shared_ptr<Scope> scope, Compiler& compiler);
+  Annotator2(Compiler& compiler);
 
   void annotateNode(std::shared_ptr<AstNode> node);
   void annotateNodeList(const NodeList& nl);
 
-  std::shared_ptr<Scope> fScope;
   Compiler& fCompiler;  // backlink to owning compiler
 };
 
@@ -40,11 +39,10 @@ public:
 //! process pipeline as fourth pass.
 class Annotate2Pass : public AstNodeCompilePass {
 public:
-  Annotate2Pass(int level, std::shared_ptr<Scope> scope, Compiler& compiler);
+  Annotate2Pass(int level, Compiler& compiler);
   std::shared_ptr<AstNode> doApply(std::shared_ptr<AstNode> src) override;
 
 private:
-  std::shared_ptr<Scope> fScope;
   Compiler& fCompiler;  // backlink to owning compiler
 };
 

@@ -50,6 +50,7 @@ private:
   NodeList parseExpr(const Token& expr);
   NodeList parseSeq(const Token& expr);
 
+  std::shared_ptr<AstNode> parseLibrary(const Token& expr);
   std::shared_ptr<AstNode> parseModule(const Token& expr);
   std::shared_ptr<AstNode> parseExport(const Token& expr);
   std::shared_ptr<AstNode> parseImport(const Token& expr);
@@ -78,11 +79,10 @@ private:
   std::shared_ptr<AstNode> parseParameter(const Token& expr);
 
   NodeList parseTypeDef(const Token& expr, size_t ofs, bool isType, bool isLocal);
-  std::shared_ptr<AstNode> generateConstructor(const Token& typeExpr,
-                                               const String& fullTypeName,
-                                               const Type& defType,
-                                               const NodeList& defaultApplyParams,
-                                               const NodeList& slotDefs);
+  std::shared_ptr<AstNode>
+  generateConstructor(std::shared_ptr<Scope> recScope, const Token& typeExpr,
+                      const String& fullTypeName, const Type& defType,
+                      const NodeList& defaultApplyParams, const NodeList& slotDefs);
   void generatePrimeInits(const SrcPos& srcpos, std::shared_ptr<ListNode> body,
                           const Type& defType, const String& selfParamSym);
 

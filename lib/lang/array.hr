@@ -6,11 +6,11 @@
 -- This source code is released under the BSD License.
 
 module lang
-export public(*)
+export public *
 
 
 def generic realloc(array @ 'T[],
-                    new-size : Ordinal,
+                    new-size : Int,
                     init-value : 'T = class<'T>.null-value) -> 'T[] ...
   ~ Reallocates @var{array} by copying it into a new array of
   @var{new-size} items.
@@ -26,6 +26,3 @@ def generic realloc(array @ 'T[],
 
   @returns the new allocated @var{array} with all copied resp. initialized
            values. ~
-
-
--- end of array.hr

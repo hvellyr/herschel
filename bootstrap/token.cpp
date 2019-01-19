@@ -682,6 +682,7 @@ bool Token::operator<(const Token& other) const
       case kIfId:
       case kImportId:
       case kLetId:
+      case kLibraryId:
       case kMatchId:
       case kModuleId:
       case kNamespaceId:
@@ -769,6 +770,7 @@ String Token::toString() const
     case kIfId: return String(MID_ifid);
     case kImportId: return String(MID_importid);
     case kLetId: return String(MID_letid);
+    case kLibraryId: return String(MID_libraryid);
     case kMatchId: return String(MID_matchid);
     case kModuleId: return String(MID_moduleid);
     case kNamespaceId: return String(MID_namespaceid);
@@ -879,6 +881,7 @@ ExprType Token::type() const
   case kImportId:
   case kKeyarg:
   case kLetId:
+  case kLibraryId:
   case kMacroParam:
   case kMacroParamAsStr:
   case kMatchId:
@@ -1078,6 +1081,7 @@ String Token::idValue() const
   case kIfId:
   case kImportId:
   case kLetId:
+  case kLibraryId:
   case kMatchId:
   case kModuleId:
   case kNamespaceId:
@@ -1393,6 +1397,7 @@ void Token::toPort(Port<Octet>& port) const
     case kIfId:
     case kImportId:
     case kLetId:
+    case kLibraryId:
     case kMatchId:
     case kModuleId:
     case kNamespaceId:
@@ -1441,9 +1446,9 @@ bool Token::isCharOrUnitName() const
       fType == kDefId || fType == kElseId || fType == kEofId || fType == kExportId ||
       fType == kWithId || fType == kNamespaceId || fType == kNsId || fType == kExternId ||
       fType == kForId || fType == kFUNCTIONId || fType == kFunctionId || fType == kIfId ||
-      fType == kImportId || fType == kLetId || fType == kMatchId || fType == kModuleId ||
-      fType == kNilId || fType == kNotId || fType == kSelectId || fType == kWhenId ||
-      fType == kWhereId || fType == kWhileId);
+      fType == kImportId || fType == kLetId || fType == kLibraryId || fType == kMatchId ||
+      fType == kModuleId || fType == kNilId || fType == kNotId || fType == kSelectId ||
+      fType == kWhenId || fType == kWhereId || fType == kWhileId);
 }
 
 

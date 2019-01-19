@@ -6,10 +6,7 @@
 -- This source code is released under the BSD License.
 
 module lang
-export public(*)
-
-import "lang/numbers.hr"
-import "lang/types.hr"
+export public *
 
 
 ----------------------------------------------------------------------
@@ -70,12 +67,10 @@ def generic slice!(obj @ ^Sliceable!<'K, 'E>, key @ 'K, value @ 'E)
 
 ----------------------------------------------------------------------
 
-def generic empty?(obj @ ^Any) -> Bool ...
+def generic empty?(obj @ ^'T) -> Bool ...
   ~ Indicates whether @var{obj} is an empty object, which is any kind of
   collection, e.g. an array, a slice, a container. ~
 
-def generic num-items(obj @ ^Any) -> Int ...
+def generic num-items(obj @ ^'T) -> Int ...
     ~ Returns the number of items in @var{obj}, which is any kind of
     collection, e.g. an array, a slice, a container. ~
-
--- end of sliceable.hr

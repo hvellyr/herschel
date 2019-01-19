@@ -6,8 +6,9 @@
 -- This source code is released under the BSD License.
 
 module lang
-export public(Copyable,
-              copy, deepen, deep-copy)
+export public (
+  Copyable,
+  copy, deepen, deep-copy)
 
 
 def type Copyable
@@ -25,7 +26,3 @@ def generic deepen(obj @ 'T) -> 'T
 def generic deep-copy(obj @ 'T) -> 'T
     where T isa Copyable ...
     ~ Returns a deep copy of @var{obj}.~
-
-
--- end of copyable.hr
-

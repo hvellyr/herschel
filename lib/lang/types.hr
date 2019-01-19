@@ -5,8 +5,8 @@
 --
 -- This source code is released under the BSD License.
 
-module lang
-export public (*)
+module lang {
+export public *
 
 ------------------------------------------------------------------------------
 -- Common Union types
@@ -39,12 +39,15 @@ def type CharOrEof : (Char | Eof)
 def type OrdinalOrFalse : (Ordinal | Bool == false)
     ~ A union type as typically used by find or lookup functions to either
     return the index of an element or indicate failure.~
+
+-- def type Nullabel?<T> : (T | Nil)
 }
+
+
 
 def type Any
 def type Object
 def type Bool
 def type Char
 def type Keyword
-
--- end of types.hr
+}

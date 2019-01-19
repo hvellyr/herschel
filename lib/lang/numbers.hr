@@ -6,10 +6,7 @@
 -- This source code is released under the BSD License.
 
 module lang
-
-export public (*)
-
-import "lang/types.hr"
+export public *
 
 
 ------------------------------------------------------------------------------
@@ -38,25 +35,27 @@ def type Integer : Number
 ------------------------------------------------------------------------------
 
 def type Exact
-    ~ Marker typer to declare a number type as being an (arbitrary) exact
+    ~ Marker type to declare a number type as being an (arbitrary) exact
     representation of the value.~
 
 def type Approximate
-    ~ Marker type to declare a number type as being an approximate
-    (inexact) representation of the value. ~
+    ~ Marker type to declare a number type as being an approximate (inexact)
+    representation of the value. ~
 
 def type BoundedBelow
-    ~ Marker type to declare a number type as being bounded on the below range. ~
+    ~ Marker type to declare a number type as being bounded on the below
+    range. ~
 def type BoundedAbove
-    ~ Marker type to declare a number type as being bounded on the above range. ~
+    ~ Marker type to declare a number type as being bounded on the above
+    range. ~
 
 def type Bounded : (BoundedBelow, BoundedAbove)
-    ~ Marker type to declare a number type as being bounded on the below
-    and above range. ~
+    ~ Marker type to declare a number type as being bounded on the below and
+    above range. ~
 
 def type Unsigned
-    ~ Marker type to declare a number type as being not capable of
-    representing signed numbers. ~
+    ~ Marker type to declare a number type as being not capable of representing
+    signed numbers. ~
 
 
 ------------------------------------------------------------------------------
@@ -153,5 +152,3 @@ def generic divide(dividend @ 'T, divisor @ 'V) -> 'T ...
 def to-char(i : UInt) -> Char ...
   ~ Creates a char instance from @var{i}.  @var{i} must a valid unicode
   codepoint. ~
-
--- end of lang/numbers

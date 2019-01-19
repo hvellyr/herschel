@@ -1,0 +1,42 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2019 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+library lang {
+  export public (*)
+
+  import (
+         "lang/types.hr",
+         "lang/numbers.hr",
+  --   "array.hr",
+  --   "assert.hr",
+         "lang/comparable.hr",
+         "lang/copyable.hr",
+  --   "iterable.hr",
+  --   "charnm.hr",
+  --   "comparable.hr",
+  --   "copyable.hr",
+  --   "iterable.hr",
+  --   "iterator.hr",
+  --   "numbers.hr",
+  --   "runtime.hr",
+        "lang/sliceable.hr",
+  --   "sys.hr",
+        "lang/string.hr",
+  --   "types.hr",
+  --   "ctypes.hr")
+
+  -- import -- private
+  -- (
+  --   "impl/array.hr",
+  --   "impl/comparable.hr",
+  --   "impl/numbers.hr",
+  --   "impl/sliceable.hr",
+  -- import "lang/impl/string.hr"
+  --   "impl/types.hr",
+  --   "cstdlib.hr")
+  )
+}

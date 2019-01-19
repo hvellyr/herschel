@@ -1,52 +1,25 @@
 -- This file is part of the herschel package
 --
--- Copyright (c) 2006, 2007, 2008 Gregor Klinke
+-- Copyright (c) 2006-2019 Gregor Klinke
 -- All rights reserved.
 --
--- Redistribution and use in source and binary forms, with or without
--- modification, are permitted provided that the following conditions are
--- met:
---
--- - Redistributions of source code must retain the above copyright notice,
---   this list of conditions and the following disclaimer.
---
--- - Redistributions in binary form must reproduce the above copyright
---   notice, this list of conditions and the following disclaimer in the
---   documentation and/or other materials provided with the distribution.
---
--- - Neither the name of the author nor the names of other contributors may
---   be used to endorse or promote products derived from this software
---   without specific prior written permission.
---
--- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
--- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
--- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
--- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
--- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
--- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
--- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
--- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
--- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
--- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
--- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-- This source code is released under the BSD License.
+
 
 module coll
-export public(ForEachVisitor,
-              Collection,               Collection!,
-              OrderedCollection,
-              Sequence,                 Sequence!,
-              Assoc,
-              AssocCollection,          AssocCollection!,
-              Set, SortedSet,           Set!, SortedSet!,
-              Bag, SortedBag,           Bag!, SortedBag!,
-              Vector,                   Vector!,
-              List, Deque,              List!, Deque!,
-              HashMap, Tree,            HashMap!, Tree!,
-              MultiMap, SortedMultiMap, MultiMap!, SortedMultiMap!)
-
-import "core/sliceable.hr"
-import "lang/iterable.hr"
-import "lang/iterator.hr"
+export public (
+  ForEachVisitor,
+  Collection,               Collection!,
+  OrderedCollection,
+  Sequence,                 Sequence!,
+  Assoc,
+  AssocCollection,          AssocCollection!,
+  Set, SortedSet,           Set!, SortedSet!,
+  Bag, SortedBag,           Bag!, SortedBag!,
+  Vector,                   Vector!,
+  List, Deque,              List!, Deque!,
+  HashMap, Tree,            HashMap!, Tree!,
+  MultiMap, SortedMultiMap, MultiMap!, SortedMultiMap!)
 
 
 ------------------------------------------------------------------------------
@@ -63,7 +36,7 @@ def type Collection<T>
 def generic has-all?(cltn @ 'C, coll @ 'X) -> Bool
     where C isa Collection<'T> ...
 
-def generic num-items(cltn @ 'C) -> Ordinal
+def generic num-items(cltn @ 'C) -> Int
     where C isa Collection<'T> ...
     ~ Returns the number of contained elements of @var{cltn}.~
 
@@ -85,7 +58,7 @@ def generic contains?(cltn @ 'C, elt @ 'T) -> Bool
 
 def generic for-each(cltn @ 'C, func : ForEachVisitor<'T>) -> 'C
     where C isa Collection<'T> ...
-    ~ Apply @var{functor} on ach contained element in @var{cltn}
+    ~ Apply @var{functor} on each contained element in @var{cltn}
 
     @returns @var{cltn} ~
 
@@ -155,7 +128,7 @@ def generic sort(cltn @ 'S) -> 'S
 def generic reverse(cltn @ 'S) -> 'S
     where S isa Sequence<'T> ...
 
-def generic index-of(cltn @ 'S, elt @ 'T) -> OrdinalOrFalse
+def generic index-of(cltn @ 'S, elt @ 'T) -> IntOrFalse
     where S isa Sequence<'T> ...
 
 
@@ -166,12 +139,12 @@ def type Sequence!<T> : (Sequence<T>,
 def generic sort!(cltn @ ^'S) -> ^'S
     where S isa Sequence!<'T> ...
 
-def generic insert!(cltn @ ^'S, value @ 'T, before-index : Ordinal) -> ^'S
+def generic insert!(cltn @ ^'S, value @ 'T, before-index : Int) -> ^'S
     where S isa Sequence!<'T> ...
-def generic remove-at!(cltn @ ^'S, index : Ordinal) -> 'T
+def generic remove-at!(cltn @ ^'S, index : Int) -> 'T
     where S isa Sequence!<'T> ...
 
-def generic swap!(cltn @ ^'S, from-idx : Ordinal, to-idx : Ordinal) -> ^'S
+def generic swap!(cltn @ ^'S, from-idx : Int, to-idx : Int) -> ^'S
     where S isa Sequence!<'T> ...
 
 def generic reverse!(cltn @ ^'S) -> ^'S
@@ -269,7 +242,7 @@ def record Vector<T> : Sequence<T>
 def record Vector!<T> : (Vector<T>, Sequence!<T>)
 ()
 
-def generic resize!(cltn @ ^'C, new-size : Ordinal,
+def generic resize!(cltn @ ^'C, new-size : Int,
                     new-value : 'T = Type<'T>.null-value) -> ^'C ...
     where C isa Vector<'T>
     ~ Resizes @var{cltn} to @var{new-size} slots.
@@ -281,7 +254,7 @@ def generic resize!(cltn @ ^'C, new-size : Ordinal,
     initialized to @var{new-value}. ~
 
 
-def generic reserve!(cltn @ ^'C, add-items : Ordinal) -> ^'C ...
+def generic reserve!(cltn @ ^'C, add-items : Int) -> ^'C ...
     where C isa Vector<'T>
     ~ Reserve space so that adds and inserts won't lead to reallocations.
 
@@ -351,6 +324,3 @@ def record SortedMultiMap!<K, V> : (SortedMultiMap<K, V>,
                                     AssocCollection!<K, V>,
                                     Sliceable!<K, V>)
 ()
-
-
--- end of collection

@@ -1,0 +1,23 @@
+-- This file is part of the herschel package 
+--
+-- Copyright (c) 2019 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+
+library coll {
+  export (*)
+
+  use library (lang,
+               core)
+
+  import public ("collection.hr",
+                 "hash-map.hr",
+                 "list.hr",
+                 "pair.hr")
+
+  import private ("impl/common.hr",
+                  "impl/hash-map.hr",
+                  "impl/vector.hr")
+}

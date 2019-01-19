@@ -6,10 +6,7 @@
 -- This source code is released under the BSD License.
 
 module lang
-export public(*)
-
-import "lang/numbers.hr"
-import "lang/types.hr"
+export public *
 
 
 def type Type<T>
@@ -35,10 +32,7 @@ def generic isa?(obj @ 'T, ty @ Type<'V>) -> Bool ...
 ------------------------------------------------------------------------------
 
 def generic null-value(ty @ Type<'T>) -> 'T ...
-  ~ Returns the default null value for type @type{T}.
-
-  For reference types this is normally always @val{nil}, for integers this
-  is @val{0}, for chars @val{#\\0000}, etc. ~
+  ~ Returns the default null value for type @type{T}.~
 
 
 def generic min-value(ty @ Type<'T>) -> 'T ...
@@ -56,7 +50,7 @@ def generic allocate(ty @ Type<'T>) -> 'T ...
 
 
 def generic allocate*(ty @ Type<'T>,
-                      value : 'T = null-value(ty),
+                      value : 'T = ty.null-value(),
                       sizes ...) -> 'T[] ...
     ~ Allocate an array of @var{ty} with @var{sizes} slots.  Each slot is
     initialized to @var{value}.  The size is computed from all the product of
@@ -74,6 +68,3 @@ module Range
 
   def init(range : Range<'T>, from : 'T, to : 'T, step : 'T) -> Range<'T> ...
 }
-
-
--- end of runtime

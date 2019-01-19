@@ -5,9 +5,9 @@
 --
 -- This source code is released under the BSD License.
 
-export public (*)
+module clang
+export public *
 
-import "clang/types.hr"
 
 extern ("C") {
   void exit(int retv);

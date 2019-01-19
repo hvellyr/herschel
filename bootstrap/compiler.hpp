@@ -13,12 +13,14 @@
 #include "common.hpp"
 
 #include "ast.hpp"
+#include "log.hpp"
 #include "macro.hpp"
 #include "port.hpp"
 #include "scope.hpp"
 #include "token.hpp"
 #include "tokenport.hpp"
 
+#include <functional>
 #include <memory>
 
 
@@ -53,13 +55,17 @@ public:
 
 class Compiler {
 public:
-  Compiler(bool isParsingInterface = false);
+  Compiler(bool isParsingInterface);
+  Compiler(bool isParsingInterface, std::shared_ptr<Scope> rootScope);
 
   virtual std::shared_ptr<AstNode> process(std::shared_ptr<Port<Char>> port,
                                            const String& srcName);
 
   std::shared_ptr<CharRegistry> charRegistry() const;
   std::shared_ptr<ConfigVarRegistry> configVarRegistry() const;
+
+  TokenVector includeFile(const SrcPos& srcpos, const String& srcName,
+                          const std::function<TokenVector()>& functor);
 
   bool importFile(const SrcPos& srcpos, const String& srcName, bool isPublic,
                   std::shared_ptr<Scope> currentScope);
@@ -116,11 +122,14 @@ private:
 
   std::shared_ptr<AstNode> processImpl(std::shared_ptr<Port<Char>> port,
                                        const String& srcName, bool doTrace);
+  TokenVector includeFileImpl(const SrcPos& srcpos, const String& srcName,
+                              const String& absPath,
+                              const std::function<TokenVector()>& functor);
   bool importFileImpl(const SrcPos& srcpos, const String& srcName, const String& absPath,
                       std::shared_ptr<Scope> currentScope, bool preload);
 
-  void importSystemHeaders(const String& avoidPath);
-  bool importSystemHeader(const String& header, const String& avoidPath);
+  void importSystemHeaders();
+  bool importSystemHeader(const String& header);
 
   class CompilerState {
   public:
@@ -136,7 +145,6 @@ private:
     std::shared_ptr<ConfigVarRegistry> fConfigVarRegistry;
     std::shared_ptr<Scope> fScope;
   };
-
 
   CompilerState fState;
   std::list<CompilerState> fCompilerStates;

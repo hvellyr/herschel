@@ -6,7 +6,7 @@
 -- This source code is released under the BSD License.
 
 module lang
-export public(*)
+export public (*)
 
 def record Charset
     ~ @author: Gregor Klinke
@@ -161,5 +161,3 @@ def generic contains?(cs @ Charset, c : Char) -> Bool ...
 def generic inverted-set(cs @ Charset) -> Charset ...
     ~ Returns a character set containing only characters that @em{don't}
      exist in the receiver. ~
-
--- end of charset.hr

@@ -6,16 +6,10 @@
 -- This source code is released under the BSD License.
 
 module lang
-export public(*)
-
-import "lang/types.hr"
-import "lang/numbers.hr"
-import "lang/comparable.hr"
-import "lang/copyable.hr"
-import "lang/sliceable.hr"
+export public (*)
 
 
-def type String : (Copyable, Comparable, OrderedSliceable<Int, Char>)
+def record String : Copyable, Comparable, OrderedSliceable<Int, Char>
     ~ The @type{String} class represents character strings.
 
     This is the basic string type of which all literal strings in Herschel,
@@ -31,6 +25,10 @@ def type String : (Copyable, Comparable, OrderedSliceable<Int, Char>)
     Strings are 0-based and can be of arbitrary length.  They are
     @emph{not} 0-terminated, i.e. strings can easily contain binary data
     (as far as representable as Unicode characters). ~
+(
+  data : Char[],
+  length : Int
+)
 
 def generic length(str @ String) -> Int ...
   ~ Returns the length of @var{str} in characters. ~
@@ -88,6 +86,3 @@ def generic to-string(obj @ Any) -> String ...
   ~ Creates a string representation of @var{obj}.  The representation is
   not required to be auto-parseable.  Depending on the kind of object the
   return value's sole purpose may be debugging. ~
-
-
--- end of string

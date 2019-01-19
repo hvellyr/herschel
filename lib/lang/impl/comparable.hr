@@ -7,8 +7,6 @@
 
 module lang
 
-import "lang/comparable.hr"
-
 
 -- Default implementations for the standard compare operators in terms of
 -- the designated @fun{lang.compare} function of @type{lang.Comparable}.
@@ -32,5 +30,3 @@ def greater?(one @ Comparable, two @ Comparable) -> Bool
 
 def greater-equal?(one @ Comparable, two @ Comparable) -> Bool
   (one <=> two) >= 0
-
--- end of comparable

@@ -7,15 +7,14 @@
 
 
 module lang
-export public (Iterable,
-               iterator)
-
-import "lang/iterator.hr"
+export public (
+  Iterable,
+  iterator)
 
 def type Iterable<T>
     ~ Types implementing the Iterable<T> type flag to take part in the
     iterable protocol. This allows to get an Iterator<T> from it, which is
-    used to iterator of the elements of Iterable<T>. ~
+    used to iterator over the elements of Iterable<T>. ~
 
 
 def generic iterator(iterable @ 'C) -> Iterator<'T>
@@ -24,6 +23,3 @@ def generic iterator(iterable @ 'C) -> Iterator<'T>
 
     The order of elements delivered by the returned iterator dependants
     on the algorithm used by @var{cltn}. ~
-
-
--- end of iterable.hr

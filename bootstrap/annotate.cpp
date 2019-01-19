@@ -62,8 +62,9 @@ static void annotateVardefNode(Annotator* ann, std::shared_ptr<VardefNode> node,
                                bool isLocal)
 {
   if (isLocal) {
-    if (!ann->fScope->checkForRedefinition(node->srcpos(), Scope::kNormal, node->name()))
-      ann->fScope->registerVar(node->srcpos(), node->name(), node);
+    if (!node->scope()->checkForRedefinition(node->srcpos(), Scope::kNormal,
+                                             node->name()))
+      node->scope()->registerVar(node->srcpos(), node->name(), node);
   }
 
   if (node->initExpr()) {
@@ -76,7 +77,7 @@ static void annotateFuncdefNode(Annotator* ann, std::shared_ptr<FuncDefNode> nod
                                 bool isLocal)
 {
   if (isLocal) {
-    ann->fScope->registerFunction(node->srcpos(), node->name(), node);
+    node->scope()->registerFunction(node->srcpos(), node->name(), node);
   }
   else if (node->isMethod()) {
     auto var = node->scope()->lookupVarOrFunc(node->srcpos(), node->name(),
@@ -100,8 +101,6 @@ static void annotateFuncdefNode(Annotator* ann, std::shared_ptr<FuncDefNode> nod
     }
   }
 
-  ScopeHelper scopeHelper(ann->fScope, !K(doExport), K(isInnerScope), kScopeL_Function);
-
   ann->annotateNodeList(node->params(), !K(markTailPos), K(markSingleType));
   if (node->body()) {
     node->body()->setIsInTailPos(true);
@@ -116,14 +115,12 @@ struct NodeAnnotator<std::shared_ptr<DefNode>> {
   {
     auto vardefNode = std::dynamic_pointer_cast<VardefNode>(node->defNode());
     if (vardefNode) {
-      vardefNode->setScope(ann->fScope);
       annotateVardefNode(ann, vardefNode, !K(isLocal));
       return;
     }
 
     auto funcNode = std::dynamic_pointer_cast<FuncDefNode>(node->defNode());
     if (funcNode) {
-      funcNode->setScope(ann->fScope);
       annotateFuncdefNode(ann, funcNode, !K(isLocal));
       return;
     }
@@ -139,14 +136,12 @@ struct NodeAnnotator<std::shared_ptr<LetNode>> {
   {
     auto vardefNode = std::dynamic_pointer_cast<VardefNode>(node->defNode());
     if (vardefNode) {
-      vardefNode->setScope(ann->fScope);
       annotateVardefNode(ann, vardefNode, K(isLocal));
       return;
     }
 
     auto funcNode = std::dynamic_pointer_cast<FuncDefNode>(node->defNode());
     if (funcNode) {
-      funcNode->setScope(ann->fScope);
       annotateFuncdefNode(ann, funcNode, K(isLocal));
       return;
     }
@@ -160,9 +155,6 @@ template <>
 struct NodeAnnotator<std::shared_ptr<FunctionNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<FunctionNode> node)
   {
-    ScopeHelper scopeHelper(ann->fScope, !K(doExport), !K(isInnerScope),
-                            kScopeL_Function);
-
     ann->annotateNodeList(node->params(), !K(markTailPos), K(markSingleType));
     if (node->body()) {
       node->body()->setIsInTailPos(true);
@@ -176,7 +168,6 @@ template <>
 struct NodeAnnotator<std::shared_ptr<BlockNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<BlockNode> node)
   {
-    ScopeHelper scopeHelper(ann->fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
     ann->annotateNodeList(node->children(), node->isInTailPos(), !K(markSingleType));
   }
 };
@@ -186,8 +177,9 @@ template <>
 struct NodeAnnotator<std::shared_ptr<ParamNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<ParamNode> node)
   {
-    if (!ann->fScope->checkForRedefinition(node->srcpos(), Scope::kNormal, node->name()))
-      ann->fScope->registerVar(node->srcpos(), node->name(), node);
+    if (!node->scope()->checkForRedefinition(node->srcpos(), Scope::kNormal,
+                                             node->name()))
+      node->scope()->registerVar(node->srcpos(), node->name(), node);
 
     if (node->initExpr()) {
       node->setInitExpr(ann->annotateNode(node->initExpr()));
@@ -205,7 +197,6 @@ struct NodeAnnotator<std::shared_ptr<ApplyNode>> {
     if (node->isSimpleCall()) {
       // don't call ann->annotateNode(node->base()) here to avoid
       // re-forming it into a slotref.
-      node->base()->setScope(ann->fScope);
 
       auto funcName = node->simpleCallName();
       auto varNode = node->scope()->lookupVarOrFunc(node->srcpos(), funcName,
@@ -217,9 +208,10 @@ struct NodeAnnotator<std::shared_ptr<ApplyNode>> {
           // foo.bar()     => bar(foo)
           // foo.bar(gaz)  => bar(foo, gaz)
 
-          node->setBase(makeSymbolNode(node->srcpos(), lastName));
-          node->children().insert(node->children().begin(),
-                                  makeSymbolNode(node->srcpos(), nsName(funcName)));
+          node->setBase(makeSymbolNode(node->scope(), node->srcpos(), lastName));
+          node->children().insert(
+              node->children().begin(),
+              makeSymbolNode(node->scope(), node->srcpos(), nsName(funcName)));
 
           // re-annotate the rewritten code
           node->setBase(ann->annotateNode(node->base()));
@@ -247,13 +239,13 @@ namespace {
 
       auto var = node->scope()->lookupVarOrFunc(node->srcpos(), rootName,
                                                 K(showAmbiguouseSymDef));
-      return makeSlotRefNode(node->srcpos(),
-                             var ? makeSymbolNode(node->srcpos(), rootName)
+      return makeSlotRefNode(node->scope(), node->srcpos(),
+                             var ? makeSymbolNode(node->scope(), node->srcpos(), rootName)
                                  : unrollSlotRefs(node, rootName),
                              slotName);
     }
 
-    return makeSymbolNode(node->srcpos(), name);
+    return makeSymbolNode(node->scope(), node->srcpos(), name);
   }
 }  // namespace
 
@@ -388,7 +380,7 @@ struct NodeAnnotator<std::shared_ptr<TypeDefNode>> {
     // TODO : set tail node position
 
     // don't re-register the type if global; it is registered in pass2 already
-    // ann->fScope->registerType(node->srcpos(), node->name(), node->defType());
+    // node->scope()->registerType(node->srcpos(), node->name(), node->defType());
   }
 };
 
@@ -443,9 +435,8 @@ struct NodeAnnotator<std::shared_ptr<SlotRefNode>> {
 
 //----------------------------------------------------------------------------
 
-AnnotatePass::AnnotatePass(int level, std::shared_ptr<Scope> scope, Compiler& compiler)
+AnnotatePass::AnnotatePass(int level, Compiler& compiler)
     : AstNodeCompilePass(level)
-    , fScope(std::move(scope))
     , fCompiler(compiler)
 {
 }
@@ -453,7 +444,7 @@ AnnotatePass::AnnotatePass(int level, std::shared_ptr<Scope> scope, Compiler& co
 
 std::shared_ptr<AstNode> AnnotatePass::doApply(std::shared_ptr<AstNode> src)
 {
-  Annotator an{ fScope, fCompiler };
+  Annotator an{ fCompiler };
   src = an.annotateNode(src);
   return src;
 }
@@ -461,17 +452,14 @@ std::shared_ptr<AstNode> AnnotatePass::doApply(std::shared_ptr<AstNode> src)
 
 //----------------------------------------------------------------------------
 
-Annotator::Annotator(std::shared_ptr<Scope> scope, Compiler& compiler)
-    : fScope(std::move(scope))
-    , fCompiler(compiler)
+Annotator::Annotator(Compiler& compiler)
+    : fCompiler(compiler)
 {
 }
 
 
 std::shared_ptr<AstNode> Annotator::annotateNode(std::shared_ptr<AstNode> node)
 {
-  node->setScope(fScope);
-
   dispatchNode<void>(node,
                      [&](auto nd) { NodeAnnotator<decltype(nd)>::annotate(this, nd); });
   auto retv = fNewNode ? fNewNode : node;

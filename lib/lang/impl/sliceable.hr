@@ -7,9 +7,6 @@
 
 module lang
 
-import "lang/comparable.hr"
-import "lang/sliceable.hr"
-
 
 def compare(one @ Sliceable<Int, 'T>, two @ Sliceable<Int, 'T>) -> Int
     reify (one @ 'T[], two @ 'T[]) -> Int,
@@ -17,19 +14,17 @@ def compare(one @ Sliceable<Int, 'T>, two @ Sliceable<Int, 'T>) -> Int
 {
   let n = one.num-items
   if (n == two.num-items) {
-    for (i : Int in 0 .. n - 1) {
-      let cmpval = one[i] <=> two[i]
-      if (cmpval <> 0)
-        break(cmpval)
+    let i = 0
+    let cmpval = 0
+    while (i < n - 1 or cmpval <> 0) {
+      cmpval = one[i] <=> two[i]
+      i = i + 1
     }
-    else
-      0
+
+    cmpval
   }
   else if (n < two.num-items)
     -1
   else
     1
 }
-
-
--- end of impl/sliceable.hr

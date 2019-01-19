@@ -95,8 +95,8 @@ void FirstPass::unreadToken(const Token& token)
 Token FirstPass::scanUntilTopExprAndResume()
 {
   while (fToken != kEOF && fToken != kDefId && fToken != kModuleId &&
-         fToken != kExportId && fToken != kImportId && fToken != kWhenId &&
-         fToken != kExternId)
+         fToken != kLibraryId && fToken != kExportId && fToken != kImportId &&
+         fToken != kWhenId && fToken != kExternId)
     nextToken();
 
   return Token();
@@ -317,7 +317,7 @@ TokenVector FirstPass::parseQualifiedName(bool acceptLeadingDot)
 
 //----------------------------------------------------------------------------
 
-struct ModuleParser {
+struct ModuleAndLibraryParser {
   bool operator()(FirstPass* pass, Token& result)
   {
     TokenVector n = pass->parseTop();
@@ -327,6 +327,49 @@ struct ModuleParser {
     return true;
   }
 };
+
+
+Token FirstPass::parseLibrary()
+{
+  Token tagToken = fToken;
+  nextToken();
+
+  Token libExpr;
+
+  auto qSymbol = parseQualifiedName(false);
+  if (!qSymbol.empty()) {
+    Token libName = qualifyIdToken(qSymbol);
+
+    libExpr = Token() << tagToken << libName;
+
+    Token docString = parseOptDocString();
+    if (docString.isSet())
+      libExpr << docString;
+
+    Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
+
+    {
+      ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), kScopeL_Library);
+      // ModuleHelper moduleScope(this, libName.idValue());
+
+      if (fToken == kBraceOpen) {
+        parseSequence(ModuleAndLibraryParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
+                      E_MissingBraceClose, defines, "library-body");
+      }
+      else {
+        while (fToken != kEOF) {
+          TokenVector n = parseTop();
+          if (!n.empty())
+            defines << n;
+        }
+      }
+    }
+
+    libExpr << defines;
+  }
+
+  return libExpr;
+}
 
 
 Token FirstPass::parseModule()
@@ -346,23 +389,26 @@ Token FirstPass::parseModule()
     if (docString.isSet())
       modExpr << docString;
 
-    if (fToken == kBraceOpen) {
-      Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
+    Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
 
-      {
-        ScopeHelper scopeHelper(fScope, K(doExport), K(isInnerScope), kScopeL_Module);
+    {
+      ScopeHelper scopeHelper(fScope, K(doExport), K(isInnerScope), kScopeL_Module);
 
-        ModuleHelper moduleScope(this, modName.idValue());
-        parseSequence(ModuleParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
+      ModuleHelper moduleScope(this, modName.idValue());
+      if (fToken == kBraceOpen) {
+        parseSequence(ModuleAndLibraryParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
                       E_MissingBraceClose, defines, "module-body");
       }
+      else {
+        while (fToken != kEOF) {
+          TokenVector n = parseTop();
+          if (!n.empty())
+            defines << n;
+        }
+      }
+    }
 
-      modExpr << defines;
-    }
-    else {
-      fScope = makeScope(kScopeL_Module, fScope);
-      setCurrentModuleName(modName.idValue(), !K(set));
-    }
+    modExpr << defines;
   }
 
   return modExpr;
@@ -440,21 +486,34 @@ Token FirstPass::parseExport()
     nextToken();
   }
 
-  if (fToken != kParanOpen) {
+  bool ignore = false;
+  Token symbols = Token(fToken.srcpos(), kParanOpen, kParanClose);
+  if (fToken == kSymbol) {
+    symbols << fToken;
+    expr << symbols;
+
+    nextToken();
+  }
+  else if (fToken == kMultiply) {
+    symbols << Token(fToken.srcpos(), "*");
+    expr << symbols;
+
+    nextToken();
+  }
+  else if (fToken == kParanOpen) {
+    parseSequence(ExportParser(), kParanOpen, kParanClose, K(hasSeparator),
+                  E_BadParameterList, symbols, "export-symbols");
+    if (symbols.isEmpty()) {
+      errorf(fToken.srcpos(), E_EmptyExportList, "empty export list");
+      ignore = true;
+    }
+    else
+      expr << symbols;
+  }
+  else {
     errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
     return scanUntilTopExprAndResume();
   }
-
-  bool ignore = false;
-  Token symbols = Token(fToken.srcpos(), kParanOpen, kParanClose);
-  parseSequence(ExportParser(), kParanOpen, kParanClose, K(hasSeparator),
-                E_BadParameterList, symbols, "export-symbols");
-  if (symbols.isEmpty()) {
-    errorf(fToken.srcpos(), E_EmptyExportList, "empty export list");
-    ignore = true;
-  }
-  else
-    expr << symbols;
 
   bool isFinal = false;
   if (fToken == kAs) {
@@ -486,6 +545,82 @@ Token FirstPass::parseExport()
   }
 
   return Token();
+}
+
+
+struct IncludeParser {
+  bool operator()(FirstPass* pass, Token& result)
+  {
+    if (pass->fToken == kString) {
+      Token str = pass->fToken;
+      pass->nextToken();
+
+      result << str;
+    }
+    else {
+      errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected STRING");
+      pass->scanUntilNextParameter();
+    }
+
+    return true;
+  }
+};
+
+
+TokenVector FirstPass::parseInclude()
+{
+  nextToken();
+
+  std::vector<std::pair<SrcPos, String>> srcNames;
+
+  if (fToken == kString) {
+    srcNames.push_back(std::make_pair(fToken.srcpos(), fToken.stringValue()));
+    nextToken();
+  }
+  else if (fToken == kParanOpen) {
+    Token sources;
+    parseSequence(IncludeParser(), kParanOpen, kParanClose, K(hasSeparator),
+                  E_BadParameterList, sources, "include paths");
+    if (!sources.isEmpty()) {
+      for (const auto& token : sources.children()) {
+        if (token == kString) {
+          srcNames.push_back(std::make_pair(token.srcpos(), token.stringValue()));
+        }
+      }
+    }
+  }
+  else {
+    error(fToken.srcpos(), E_StringExpected,
+          String("expected STRING or '('") + fToken.toString());
+    return scanUntilTopExprAndResume().toTokenVector();
+  }
+
+  TokenVector result;
+
+  for (const auto& srcp : srcNames) {
+    try {
+      auto incl = fCompiler.includeFile(srcp.first, srcp.second, [&]() {
+        nextToken();
+
+        Token seq;
+        while (fToken != kEOF) {
+          TokenVector n = parseTop();
+          if (!n.empty())
+            seq << n;
+        }
+
+        return seq.children();
+      });
+      result.insert(result.end(), incl.begin(), incl.end());
+
+      nextToken();
+    }
+    catch (const Exception& e) {
+      error(srcp.first, E_UnknownInputFile, e.message());
+    }
+  }
+
+  return result;
 }
 
 
@@ -1308,7 +1443,7 @@ bool FirstPass::parseExprListUntilBrace(TokenVector* result, bool endAtToplevelI
 {
   for (;;) {
     if (fToken == kDefId || fToken == kExternId || fToken == kExportId ||
-        fToken == kImportId || fToken == kModuleId) {
+        fToken == kImportId || fToken == kModuleId || fToken == kLibraryId) {
       if (!endAtToplevelId) {
         error(fToken.srcpos(), E_UnexpectedTopExpr,
               String("unexpected top level expression: ") + fToken.toString());
@@ -3470,11 +3605,15 @@ TokenVector FirstPass::parseTop()
   if (fToken == kModuleId) {
     return parseModule().toTokenVector();
   }
+  else if (fToken == kLibraryId) {
+    return parseLibrary().toTokenVector();
+  }
   else if (fToken == kExportId) {
     return parseExport().toTokenVector();
   }
   else if (fToken == kImportId) {
-    return parseImport().toTokenVector();
+    //return parseImport().toTokenVector();
+    return parseInclude();
   }
   else if (fToken == kDefId) {
     return parseDef(!K(isLocal));
@@ -3489,7 +3628,7 @@ TokenVector FirstPass::parseTop()
     return parseExtern();
   }
   else {
-    errorf(fToken.srcpos(), E_UnexpectedToken, "Unexpected top expression: %s",
+    errorf(fToken.srcpos(), E_UnexpectedToken, "I: Unexpected top expression: %s",
            (zstring)StrHelper(fToken.toString()));
     return scanUntilTopExprAndResume().toTokenVector();
   }

@@ -98,29 +98,31 @@ std::shared_ptr<Scope> type::newRootScope(bool forUnitTests)
   root->registerType(sp, Names::kUnspecifiedTypeName, unspecifiedType);
 
 
-  auto eof = makeVardefNode(sp, String(".lang.eof"), kNormalVar, !K(isLocal), eofType,
-                            makeApplyNode(sp, makeSymbolNode(sp, Names::kEofTypeName)));
+  auto eof = makeVardefNode(
+      root, sp, String(".lang.eof"), kNormalVar, !K(isLocal), eofType,
+      makeApplyNode(root, sp, makeSymbolNode(root, sp, Names::kEofTypeName)));
   root->registerVar(sp, String(".lang.eof"), eof);
 
 
-  auto nil = makeVardefNode(sp, String(".lang.nil"), kNormalVar, !K(isLocal), nilType,
-                            makeApplyNode(sp, makeSymbolNode(sp, Names::kNilTypeName)));
+  auto nil = makeVardefNode(
+      root, sp, String(".lang.nil"), kNormalVar, !K(isLocal), nilType,
+      makeApplyNode(root, sp, makeSymbolNode(root, sp, Names::kNilTypeName)));
   root->registerVar(sp, String(".lang.nil"), nil);
 
 
   auto unspecified = makeVardefNode(
-      sp, String(".lang.unspecified"), kNormalVar, !K(isLocal), unspecifiedType,
-      makeApplyNode(sp, makeSymbolNode(sp, Names::kUnspecifiedTypeName)));
+      root, sp, String(".lang.unspecified"), kNormalVar, !K(isLocal), unspecifiedType,
+      makeApplyNode(root, sp, makeSymbolNode(root, sp, Names::kUnspecifiedTypeName)));
   root->registerVar(sp, String(".lang.unspecified"), unspecified);
 
 
   //------------------------------ builtin functions
   auto params = makeVector<std::shared_ptr<AstNode>>(
-      makeParamNode(sp, String(), String("r"), kPosArg,
+      makeParamNode(root, sp, String(), String("r"), kPosArg,
                     Type::makeTypeRef(String("T"), K(isOpen), K(isValue)), nullptr));
   root->registerFunction(
       sp, Names::kLangReturn,
-      makeFuncDefNode(sp, Names::kLangReturn,
+      makeFuncDefNode(root, sp, Names::kLangReturn,
                       kFuncIsAbstract,  // flags
                       params, Type::makeTypeRef(String("T"), K(isOpen), K(isValue)),
                       nullptr));

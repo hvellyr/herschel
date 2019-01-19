@@ -1,6 +1,6 @@
-module beer99
+module beer99 {
+export public bottles
 
---import "io/io.h"
 def type OutPort
 def *stdout*() -> OutPort ...
 def outln(port = *stdout*(), msgs ...) -> Int ...
@@ -19,8 +19,7 @@ def bottles(n : Int)
   }
   else
     -1
+}
 
 def .app.main()
-  bottles(99)
-
--- end of 99beer
+  beer99.bottles(99)

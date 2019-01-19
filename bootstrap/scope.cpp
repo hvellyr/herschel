@@ -267,9 +267,8 @@ bool Scope::hasNameLocal(ScopeDomain domain, const String& name, SrcPos* srcpos,
     return true;
   }
 
-  for (ImportedScope::const_iterator it = fImportedScopes.begin();
-       it != fImportedScopes.end(); it++) {
-    if (it->second->hasNameLocal(domain, name, srcpos, doAutoMatch))
+  for (const auto& impScope : fImportedScopes) {
+    if (impScope.second->hasNameLocal(domain, name, srcpos, doAutoMatch))
       return true;
   }
 
@@ -282,9 +281,11 @@ bool Scope::checkForRedefinition(const SrcPos& srcpos, ScopeDomain domain,
 {
   SrcPos firstSrcpos;
   if (hasNameLocal(domain, sym, &firstSrcpos, !K(doAutoMatch))) {
-    errorf(srcpos, E_Redefinition, "Redefinition of '%s'.", (zstring)StrHelper(sym));
-    errorf(firstSrcpos, E_Redefinition, "'%s' previously defined here.",
-           (zstring)StrHelper(sym));
+    if (srcpos != firstSrcpos) {
+      errorf(srcpos, E_Redefinition, "Redefinition of '%s'.", (zstring)StrHelper(sym));
+      errorf(firstSrcpos, E_Redefinition, "'%s' previously defined here.",
+             (zstring)StrHelper(sym));
+    }
     return true;
   }
 
@@ -298,9 +299,8 @@ bool Scope::hasScopeForFileLocal(const String& absPath) const
   if (it != fImportedScopes.end())
     return true;
 
-  for (ImportedScope::const_iterator it = fImportedScopes.begin();
-       it != fImportedScopes.end(); it++) {
-    if (it->second->hasScopeForFile(absPath))
+  for (const auto& impScope : fImportedScopes) {
+    if (impScope.second->hasScopeForFile(absPath))
       return true;
   }
 
@@ -526,8 +526,8 @@ bool Scope::hasFunctionNameLocal(ScopeDomain domain, const String& name, SrcPos*
     // check return type and parameter types
   }
 
-  for (const auto& scopep : fImportedScopes) {
-    if (scopep.second->hasFunctionNameLocal(domain, name, srcpos, doAutoMatch))
+  for (const auto& impScope : fImportedScopes) {
+    if (impScope.second->hasFunctionNameLocal(domain, name, srcpos, doAutoMatch))
       return true;
   }
 
@@ -560,7 +560,7 @@ void Scope::registerFunction(const SrcPos& srcpos, const String& funcName,
   auto result = lookupItemLocalImpl(srcpos, name, K(showError), !K(doAutoMatch));
   if (result.fItem) {
     if (result.fItem->kind() != kScopeItem_function) {
-      errorf(srcpos, E_SymbolRedefined, "redefinition of symbol '%s'",
+      errorf(srcpos, E_SymbolRedefined, "Redefinition of symbol '%s'",
              (zstring)StrHelper(name.fName));
       errorf(result.fItem->srcpos(), E_SymbolRedefined, "symbol was defined here");
 
@@ -853,6 +853,7 @@ zstring Scope::scopeLevelName(ScopeLevel level)
 {
   switch (level) {
   case kScopeL_CompileUnit: return "compile-unit";
+  case kScopeL_Library: return "library";
   case kScopeL_Module: return "module";
   case kScopeL_Function: return "function";
   case kScopeL_Local: return "local";
@@ -870,12 +871,12 @@ void Scope::dumpDebug(bool recursive) const
 {
   fprintf(stderr, "[------- Scope Dump [%p] - %s ----------------------\n", this,
           scopeLevelName(scopeLevel()));
-  dumpDebugImpl();
+  dumpDebugImpl(0);
   if (recursive) {
     Scope* sc0 = parent().get();
     while (sc0) {
       fprintf(stderr, "----- [%p] - %s -----\n", sc0, scopeLevelName(sc0->scopeLevel()));
-      sc0->dumpDebugImpl();
+      sc0->dumpDebugImpl(0);
       sc0 = sc0->parent().get();
     }
   }
@@ -883,7 +884,7 @@ void Scope::dumpDebug(bool recursive) const
 }
 
 
-void Scope::dumpDebugImpl() const
+void Scope::dumpDebugImpl(int level) const
 {
   for (NsScopeMap::const_iterator it = fMap.begin(); it != fMap.end(); it++) {
     for (BaseScopeMap::const_iterator vit = it->second.begin(); vit != it->second.end();
@@ -894,11 +895,10 @@ void Scope::dumpDebugImpl() const
   }
 
   if (!fImportedScopes.empty()) {
-    fprintf(stderr, "--- attached scopes: ----\n");
-    for (ImportedScope::const_iterator it = fImportedScopes.begin();
-         it != fImportedScopes.end(); it++) {
-      fprintf(stderr, "[ATTACHED: %s]\n", (zstring)StrHelper(it->first));
-      it->second->dumpDebugImpl();
+    fprintf(stderr, "--- attached scopes [%d]: ----\n", level);
+    for (const auto& impScope : fImportedScopes) {
+      fprintf(stderr, "[ATTACHED: %s]\n", (zstring)StrHelper(impScope.first));
+      impScope.second->dumpDebugImpl(level + 1);
     }
   }
 }

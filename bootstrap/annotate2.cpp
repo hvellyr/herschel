@@ -120,32 +120,8 @@ struct NodeAnnotator2<std::shared_ptr<SymbolNode>> {
     if (!node->isRemoveable() && Properties::test_passLevel() > 2) {
       errorf(node->srcpos(), E_UndefinedVar, "Unknown symbol '%s'",
              (zstring)StrHelper(node->name()));
-      // node->scope()->dumpDebug(true);
     }
 #endif
-  }
-};
-
-
-template <>
-struct NodeAnnotator2<std::shared_ptr<FuncDefNode>> {
-  static void annotate(Annotator2* ann, std::shared_ptr<FuncDefNode> node)
-  {
-    ScopeHelper scopeHelper(ann->fScope, !K(doExport), K(isInnerScope), kScopeL_Function);
-
-    ann->annotateNodeList(node->child_nodes());
-  }
-};
-
-
-template <>
-struct NodeAnnotator2<std::shared_ptr<FunctionNode>> {
-  static void annotate(Annotator2* ann, std::shared_ptr<FunctionNode> node)
-  {
-    ScopeHelper scopeHelper(ann->fScope, !K(doExport), !K(isInnerScope),
-                            kScopeL_Function);
-
-    ann->annotateNodeList(node->child_nodes());
   }
 };
 
@@ -154,21 +130,6 @@ template <>
 struct NodeAnnotator2<std::shared_ptr<SlotdefNode>> {
   static void annotate(Annotator2* ann, std::shared_ptr<SlotdefNode> node)
   {
-    // TODO
-    // if (!ann->fScope->checkForRedefinition(node->srcpos(),
-    //                                        Scope::kNormal, node->name()))
-    //   ann->fScope->registerVar(node->srcpos(), node->name(), node);
-  }
-};
-
-
-template <>
-struct NodeAnnotator2<std::shared_ptr<BlockNode>> {
-  static void annotate(Annotator2* ann, std::shared_ptr<BlockNode> node)
-  {
-    ScopeHelper scopeHelper(ann->fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
-
-    ann->annotateNodeList(node->child_nodes());
   }
 };
 
@@ -177,8 +138,6 @@ template <>
 struct NodeAnnotator2<std::shared_ptr<ApplyNode>> {
   static void annotate(Annotator2* ann, std::shared_ptr<ApplyNode> node)
   {
-    ScopeHelper scopeHelper(ann->fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
-
     ann->annotateNodeList(node->child_nodes());
 
     if (std::shared_ptr<FunctionNode> refFuncNd = node->refFunction().lock()) {
@@ -190,9 +149,8 @@ struct NodeAnnotator2<std::shared_ptr<ApplyNode>> {
 
 //----------------------------------------------------------------------------
 
-Annotate2Pass::Annotate2Pass(int level, std::shared_ptr<Scope> scope, Compiler& compiler)
+Annotate2Pass::Annotate2Pass(int level, Compiler& compiler)
     : AstNodeCompilePass(level)
-    , fScope(std::move(scope))
     , fCompiler(compiler)
 {
 }
@@ -200,7 +158,7 @@ Annotate2Pass::Annotate2Pass(int level, std::shared_ptr<Scope> scope, Compiler& 
 
 std::shared_ptr<AstNode> Annotate2Pass::doApply(std::shared_ptr<AstNode> src)
 {
-  Annotator2 an{ fScope, fCompiler };
+  Annotator2 an{ fCompiler };
   an.annotateNode(src);
   return src;
 }
@@ -208,9 +166,8 @@ std::shared_ptr<AstNode> Annotate2Pass::doApply(std::shared_ptr<AstNode> src)
 
 //----------------------------------------------------------------------------
 
-Annotator2::Annotator2(std::shared_ptr<Scope> scope, Compiler& compiler)
-    : fScope(std::move(scope))
-    , fCompiler(compiler)
+Annotator2::Annotator2(Compiler& compiler)
+    : fCompiler(compiler)
 {
 }
 

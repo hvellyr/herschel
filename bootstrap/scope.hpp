@@ -13,6 +13,7 @@
 #include "common.hpp"
 
 #include "exception.hpp"
+#include "log.hpp"
 #include "parsertypes.hpp"
 #include "srcpos.hpp"
 #include "str.hpp"
@@ -31,6 +32,7 @@ class FunctionNode;
 
 enum ScopeLevel {
   kScopeL_CompileUnit,
+  kScopeL_Library,
   kScopeL_Module,
   kScopeL_Function,
   kScopeL_Local,
@@ -269,7 +271,7 @@ private:
   LookupResult lookupItemLocalImpl(const SrcPos& srcpos, const ScopeName& name,
                                    bool showError, bool doAutoMatch) const;
 
-  void dumpDebugImpl() const;
+  void dumpDebugImpl(int level) const;
 
   void exportAllSymbols(std::shared_ptr<Scope> dstScope, bool propagateOuter) const;
   void exportAttachedSymbols(std::shared_ptr<Scope> dstScope, const ScopeName& fullKey,
@@ -312,6 +314,26 @@ inline std::shared_ptr<Scope> makeScope(ScopeLevel level, std::shared_ptr<Scope>
 
 //--------------------------------------------------------------------------
 
+class ScopeGuard {
+public:
+  ScopeGuard(std::shared_ptr<Scope>& scope, std::shared_ptr<Scope> newScope)
+      : fScopeLoc(scope)
+      , fPrevScope(scope)
+  {
+    fScopeLoc = newScope;
+  }
+
+  ~ScopeGuard() { reset(); }
+
+  void setScope(std::shared_ptr<Scope> newScope) { fScopeLoc = newScope; }
+
+  void reset() { fScopeLoc = fPrevScope; }
+
+  std::shared_ptr<Scope>& fScopeLoc;
+  std::shared_ptr<Scope> fPrevScope;
+};
+
+
 class ScopeHelper {
 public:
   ScopeHelper(std::shared_ptr<Scope>& scope, bool doExport, bool isInnerScope,
@@ -334,13 +356,11 @@ public:
     std::shared_ptr<Scope> scope = scopeLoc;
     while (scope && scope != prevScope) {
       auto parent = scope->parent();
-      // printf("Export from %p to %p\n", scope, parent);
 
       if (parent && doExport) {
         scope->exportSymbols(parent, isInnerScope);
 
         if (!isInnerScope && parent == prevScope) {
-          // fprintf(stderr, "propagate imported scopes\n");
           scope->propagateImportedScopes(parent);
         }
       }

@@ -9,8 +9,8 @@ module lang
 
 
 def realloc(array @ 'T[],
-            new-size : Ordinal,
-            init-value : 'T = class<'T>.null-value) -> 'T[]
+            new-size : Int,
+            init-value : 'T = class<'T>.null-value()) -> 'T[]
 {
   if (new-size > array.size) {
     let t = 'T[](new-size)
@@ -30,6 +30,3 @@ def realloc(array @ 'T[],
   else
     array
 }
-
-
--- end of impl/array.hr

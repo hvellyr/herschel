@@ -61,11 +61,11 @@ public:
   //! Compare operator
   bool operator==(const SrcPos& other) const
   {
-    return (fFile == other.fFile && fLineNo == other.fLineNo);
+    return fFile == other.fFile && fLineNo == other.fLineNo;
   }
 
   //! Compare operator
-  bool operator!=(const SrcPos& other) const { return !(operator==(other)); }
+  bool operator!=(const SrcPos& other) const { return !(*this == other); }
 
   //! Returns the file name portion of *this.
   const String& file() const { return fFile; }

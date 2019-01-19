@@ -6,10 +6,7 @@
 -- This source code is released under the BSD License.
 
 module clang
-
-export public (*)
-
-import "lang/numbers.hr"
+export public *
 
 
 def alias int = lang.Int32
@@ -53,7 +50,3 @@ def type ATOM*
 def type ATOM
 
 def alias Unichar = Char
-
--- end of clang/types.hr
-
-

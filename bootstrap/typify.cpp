@@ -732,7 +732,7 @@ struct NodeTypifier<std::shared_ptr<SlotRefNode>> {
         }
       }
       else {
-        errorf(node->srcpos(), E_SlotRefToNonClass, "slot reference to non-class type");
+        errorf(node->srcpos(), E_SlotRefToNonClass, "slot reference to non-record type");
         node->setType(Type::makeAny());
         node->setDstType(Type::makeAny());
         typf->annotateTypeConv(node, node->type());
@@ -1564,8 +1564,8 @@ void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node,
           newArgs.push_back(iArg->second);
         }
         else {
-          newArgs.push_back(
-              makeKeyargNode(param->srcpos(), param->key(), param->initExpr()));
+          newArgs.push_back(makeKeyargNode(param->scope(), param->srcpos(), param->key(),
+                                           param->initExpr()));
         }
       }
       else if (param->flags() == kRestArg) {

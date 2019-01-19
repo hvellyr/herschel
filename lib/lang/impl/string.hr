@@ -7,10 +7,6 @@
 
 module lang
 
-import "lang/string.hr"
-import "lang/stdlib.hr"
-import "lang/copyable.hr"
-import "lang/sliceable.hr"
 
 extern ("C") {
   struct ATOM h7_allocate_string_n(unsigned int items, Unichar c);
@@ -21,12 +17,9 @@ extern ("C") {
 }
 
 -- builtin strings are really instances of the class @type{StringImpl}.
-def record StringImpl : String
-()
-
-def record StringSlice : (Comparable, String)
+def record StringSlice : Comparable
 (
-  str : String,
+  str : ^String,
   from : Int,
   to : Int
 )
@@ -117,6 +110,9 @@ def concat(left @ String, right @ String) -> String
   t
 }
 
+def to-string(o @ String) -> String
+  o
+
 
 ------------------------------------------------------------------------------
 -- Slice special for string
@@ -132,7 +128,3 @@ def slice*(sl @ StringSlice, from @ Int, to @ Int) -> String
 --  if (from > sl.num-items() or to > sl.num-items())
 --    OutOfBoundsException(sl.num-items(), from, to).raise
   StringSlice(sl.str, sl.from + from, sl.from + to)
-
-
-
--- end of impl/string

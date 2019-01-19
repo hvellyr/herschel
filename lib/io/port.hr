@@ -7,7 +7,7 @@
 
 module io
 
-export public(*)
+export public (*)
 
 import "lang/numbers.hr"
 

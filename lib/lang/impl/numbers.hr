@@ -7,9 +7,6 @@
 
 module lang
 
-import "lang/types.hr"
-import "lang/numbers.hr"
-
 
 ------------------------------------------------------------------------------
 -- compare operators

@@ -31,7 +31,7 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module coll
-export public(HashMap)
+export public HashMap
 
 import "core/core"
 import "io/io"

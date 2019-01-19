@@ -5,16 +5,9 @@
 --
 -- This source code is released under the BSD License.
 
-
--- this import should be private inside of the following "lang" module.
--- Since macros don't save the context yet, we still have to import the
--- stdlib into the public here.
-import "lang/stdlib.hr"
-
 module lang
 export public (NDEBUG, assert)
 
-import "lang/string.hr"
 
 def config NDEBUG = "true"
 
@@ -35,5 +28,3 @@ else {
   def macro assert
     | « assert(?expr:expr) » -> « true »
 }
-
--- end of assert.hr

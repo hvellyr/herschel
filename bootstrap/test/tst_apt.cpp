@@ -21,12 +21,13 @@ namespace herschel {
 
 TEST_CASE("AST ApplyNode", "[ast][apply-node]")
 {
-  auto an = makeApplyNode(SrcPos(), makeSymbolNode(SrcPos(), String("xyz")));
+  auto an = makeApplyNode({}, SrcPos(), makeSymbolNode({}, SrcPos(), String("xyz")));
   REQUIRE(an->isSimpleCall());
   REQUIRE(an->simpleCallName() == String("xyz"));
 
   auto an2 = makeApplyNode(
-      SrcPos(), makeApplyNode(SrcPos(), makeSymbolNode(SrcPos(), String("get-func"))));
+      {}, SrcPos(),
+      makeApplyNode({}, SrcPos(), makeSymbolNode({}, SrcPos(), String("get-func"))));
   REQUIRE(!an2->isSimpleCall());
   REQUIRE(an2->simpleCallName() == String());
 }

@@ -47,6 +47,7 @@ namespace herschel {
 #define MID_lessequalq "less-equal?"
 #define MID_lessq "less?"
 #define MID_letid "let"
+#define MID_libraryid "library"
 #define MID_logand "logand"
 #define MID_logor "logor"
 #define MID_mapto "map-to"

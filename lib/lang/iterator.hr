@@ -6,12 +6,14 @@
 -- This source code is released under the BSD License.
 
 module lang
-export public(Iterator, RewindableIterator,
-              more?, next, rewind)
+export public (
+  Iterator, RewindableIterator,
+  more?, next, rewind)
+
 
 def type Iterator<T>
 
-def generic more?(iter @ Iterator<'T>) -> Bool ...
+def generic more?(iter @ ^Iterator<'T>) -> Bool ...
     ~ Indicates whether there're more element in @var{iter} which can be
     requested with @code{next}.
 
@@ -35,6 +37,3 @@ def generic rewind(iter @ ^'R) -> ^'R
     reset @var{iter} to deliver that element it returned first.
 
     @returns @var{iter} ~
-
-
--- end of iterator

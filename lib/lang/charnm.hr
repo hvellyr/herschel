@@ -6,7 +6,7 @@
 -- This source code is released under the BSD License.
 
 module lang
-export public(*)
+export public *
 
 -- Character names from the ASCII-range.
 
@@ -198,5 +198,3 @@ def char trade   = 2122h
 
 def char objreplc = 0fffch
 def char replc   = 0fffdh
-
--- end of charnm

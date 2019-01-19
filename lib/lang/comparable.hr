@@ -6,12 +6,10 @@
 -- This source code is released under the BSD License.
 
 module lang
-export public(Comparable,
-              compare,
-              equal?, unequal?, less?, less-equal?, greater?, greater-equal?)
-
-import "lang/types.hr"
-import "lang/numbers.hr"
+export public (
+  Comparable,
+  compare,
+  equal?, unequal?, less?, less-equal?, greater?, greater-equal?)
 
 
 def type Comparable
@@ -48,5 +46,3 @@ def generic greater?(one @ 'S, two @ 'T) -> Bool ...
 def generic greater-equal?(one @ 'S, two @ 'T) -> Bool ...
     ~ Indicates whether @var{one} is greater than or equal to @var{two}.
     The @op{>=} operator is translated into this function. ~
-
--- end of comparable.hr

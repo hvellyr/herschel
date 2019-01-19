@@ -56,9 +56,9 @@ public:
   Token parse();
 
 private:
-  friend struct ModuleParser;
+  friend struct ModuleAndLibraryParser;
   friend struct ExportParser;
-  friend struct ImportRenameParser;
+  friend struct IncludeParser;
   friend struct LiteralVectorParser;
   friend struct LiteralArrayParser;
   friend struct ParseFuncParamsParser;
@@ -84,9 +84,11 @@ private:
   TokenVector parseQualifiedName(bool acceptLeadingDot);
 
   TokenVector parseTop();
+  Token parseLibrary();
   Token parseModule();
   Token parseExport();
   Token parseImport();
+  TokenVector parseInclude();
   TokenVector parseDef(bool isLocal);
   Token parseCharDef(const Token& defToken);
   TokenVector parseVarDef(const Token& defToken, const Token& tagToken, bool isLocal);

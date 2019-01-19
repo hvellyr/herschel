@@ -1,0 +1,12 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2019 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+module lang
+export public *
+
+def exit(return-value : Int) -> Unspecified ...
+

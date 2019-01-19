@@ -167,6 +167,7 @@ enum TokenType {
   kIfId,
   kImportId,
   kLetId,
+  kLibraryId,
   kMatchId,
   kModuleId,
   kNamespaceId,
