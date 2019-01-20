@@ -156,7 +156,10 @@ enum ErrCodes {
   E_ExportVisibility = 0x4540,
   E_EmptyExportList = 0x4541,
   E_UnknownInputFile = 0x4542,
-  E_UnknownVisibility = 0x4543,
+  E_UnknownLibrary = 0x4543,
+  E_UnknownVisibility = 0x4544,
+  E_IncludeOutsideOfLibrary = 0x4545,
+  E_NestedLibrary = 0x4546,
 
   // external C syntax
   E_BadCSyntax = 0xe000,

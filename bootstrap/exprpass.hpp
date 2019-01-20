@@ -56,19 +56,21 @@ public:
   Token parse();
 
 private:
-  friend struct ModuleAndLibraryParser;
-  friend struct ExportParser;
-  friend struct IncludeParser;
-  friend struct LiteralVectorParser;
-  friend struct LiteralArrayParser;
-  friend struct ParseFuncParamsParser;
-  friend struct TypeParser;
-  friend struct FuncallArgsParser;
-  friend struct SelectPatternParser;
-  friend struct MatchPatternParser;
   friend struct BasePatternParser;
-  friend struct ForClauseParser;
   friend struct EnumItemParser;
+  friend struct ExportParser;
+  friend struct ForClauseParser;
+  friend struct FuncallArgsParser;
+  friend struct ImportParser;
+  friend struct IncludeParser;
+  friend struct LibraryParser;
+  friend struct LiteralArrayParser;
+  friend struct LiteralVectorParser;
+  friend struct MatchPatternParser;
+  friend struct ModuleParser;
+  friend struct ParseFuncParamsParser;
+  friend struct SelectPatternParser;
+  friend struct TypeParser;
 
   friend struct ExprParamSyntaxMatcher;
   friend struct NameParamSyntaxMatcher;
@@ -87,7 +89,7 @@ private:
   Token parseLibrary();
   Token parseModule();
   Token parseExport();
-  Token parseImport();
+  TokenVector parseImport();
   TokenVector parseInclude();
   TokenVector parseDef(bool isLocal);
   Token parseCharDef(const Token& defToken);
@@ -247,7 +249,8 @@ private:
   //-------- data members
 
   Token fToken;
-  bool fEvaluateExprs;
+  bool fEvaluateExprs = true;
+  bool fInLibrary = false;
 };
 
 

@@ -192,22 +192,15 @@ std::shared_ptr<AstNode> SecondPass::parseImport(const Token& expr)
 {
   hr_assert(expr.isSeq() && expr.count() >= 2);
   hr_assert(expr[0] == kImportId);
-  hr_assert(expr[1].isString());
+  hr_assert(expr[1] == kSymbol);
 
-  String importFile = expr[1].stringValue();
+  String libName = expr[1].idValue();
 
-  bool canImport = true;
-#if defined(UNITTESTS)
-  canImport = !Properties::test_dontImport();
-#endif
-
-  if (canImport) {
-    try {
-      fCompiler.importFile(expr.srcpos(), importFile, !K(isPublic), fScope);
-    }
-    catch (const Exception& e) {
-      error(expr.srcpos(), E_UnknownInputFile, e.message());
-    }
+  try {
+    fCompiler.requireLibrary(expr.srcpos(), libName, fScope);
+  }
+  catch (const Exception& e) {
+    error(expr.srcpos(), E_UnknownLibrary, e.message());
   }
 
   return nullptr;

@@ -200,29 +200,24 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
 TokenVector Compiler::includeFile(const SrcPos& srcpos, const String& srcName,
                                   const std::function<TokenVector()>& functor)
 {
-  String absPath = lookupFile(srcName, K(isPublic));
+  String absPath = lookupFile({ srcName });
   return includeFileImpl(srcpos, srcName, absPath, functor);
 }
 
 
-bool Compiler::importFile(const SrcPos& srcpos, const String& srcName, bool isPublic,
-                          std::shared_ptr<Scope> currentScope)
+bool Compiler::requireLibrary(const SrcPos& srcpos, const String& libName,
+                              std::shared_ptr<Scope> currentScope)
 {
-  String absPath = lookupFile(srcName, isPublic);
-  return importFileImpl(srcpos, srcName, absPath, currentScope, K(preload));
+  String absPath = lookupLibrary(libName);
+  return importFileImpl(srcpos, libName, absPath, currentScope, K(preload));
 }
 
 
-bool Compiler::importSystemHeader(const String& header)
+bool Compiler::importSystemHeader(const String& libName)
 {
-  String absPath = lookupFile(header, !K(isPublic));
+  String absPath = lookupLibrary(libName);
 
-  if (Properties::isTraceImportFile())
-    log(kDebug, String("Load: ") + absPath);
-
-  if (Properties::isTraceImportFile())
-    logf(kDebug, "Preload '%s'", (zstring)StrHelper(header));
-  importFileImpl(SrcPos(), header, absPath, fState.fScope, !K(preload));
+  importFileImpl(SrcPos(), libName, absPath, fState.fScope, !K(preload));
 
   return true;
 }
@@ -230,13 +225,26 @@ bool Compiler::importSystemHeader(const String& header)
 
 void Compiler::importSystemHeaders()
 {
-  if (!importSystemHeader(String("builtin:lang/lang.hr")))
+  if (!importSystemHeader(String("lang")))
     return;
 }
 
 
 namespace {
   std::set<String> sPathsInLoading;
+  String sCurrentFilePath;
+
+  struct CurrentLoadPathGuard {
+    String fPrevCurrentFilePath;
+
+    CurrentLoadPathGuard(const String& p)
+        : fPrevCurrentFilePath(sCurrentFilePath)
+    {
+      sCurrentFilePath = file::dirPart(p);
+    }
+
+    ~CurrentLoadPathGuard() { sCurrentFilePath = fPrevCurrentFilePath; }
+  };
 
   struct PathLoadingGuard {
     String fPath;
@@ -279,9 +287,11 @@ TokenVector Compiler::includeFileImpl(const SrcPos& srcpos, const String& srcNam
   PathLoadingGuard guard(absPath);
 
   if (Properties::isTraceImportFile())
-    logf(kDebug, "Include '%s'", (zstring)StrHelper(srcName));
+    log(kDebug, String("Include '") + srcName + "' (-> '" + absPath + "'");
 
   try {
+    CurrentLoadPathGuard currentPathGuard(absPath);
+
     fCompilerStates.push_front(fState);
     fState = CompilerState(charRegistry(), configVarRegistry(), fState.fScope);
     fState.fPort = std::make_shared<FileTokenPort>(
@@ -297,7 +307,7 @@ TokenVector Compiler::includeFileImpl(const SrcPos& srcpos, const String& srcNam
     unreadToken(fState.fToken);
   }
   catch (const Exception& e) {
-    errorf(srcpos, E_UnknownInputFile, "import '%s' failed: %s\n",
+    errorf(srcpos, E_UnknownInputFile, "including '%s' failed: %s\n",
            (zstring)StrHelper(absPath), (zstring)StrHelper(e.message()));
     return {};
   }
@@ -306,7 +316,7 @@ TokenVector Compiler::includeFileImpl(const SrcPos& srcpos, const String& srcNam
 }
 
 
-bool Compiler::importFileImpl(const SrcPos& srcpos, const String& srcName,
+bool Compiler::importFileImpl(const SrcPos& srcpos, const String& libName,
                               const String& absPath, std::shared_ptr<Scope> currentScope,
                               bool preload)
 {
@@ -314,8 +324,8 @@ bool Compiler::importFileImpl(const SrcPos& srcpos, const String& srcName,
   static ImportCache sImportCache;
 
   if (absPath.isEmpty()) {
-    errorf(srcpos, E_UnknownInputFile, "import '%s' failed: Unknown file\n",
-           (zstring)StrHelper(srcName));
+    errorf(srcpos, E_UnknownLibrary, "importing '%s' failed: Unknown file\n",
+           (zstring)StrHelper(libName));
     return false;
   }
 
@@ -343,15 +353,17 @@ bool Compiler::importFileImpl(const SrcPos& srcpos, const String& srcName,
   }
 
   if (Properties::isTraceImportFile())
-    logf(kDebug, "Import '%s'", (zstring)StrHelper(srcName));
+    log(kDebug, String("Import: ") + libName + " (from: " + absPath + ")");
 
   try {
     auto compiler = Compiler{ K(isParsingInterface) };
     if (preload)
       compiler.importSystemHeaders();
 
+    CurrentLoadPathGuard currentPathGuard(absPath);
+
     auto ast = compiler.processImpl(
-        std::make_shared<CharPort>(std::make_shared<FilePort>(absPath, "rb")), srcName,
+        std::make_shared<CharPort>(std::make_shared<FilePort>(absPath, "rb")), libName,
         !K(doTrace));
     auto scope = compiler.scope();
 
@@ -360,7 +372,7 @@ bool Compiler::importFileImpl(const SrcPos& srcpos, const String& srcName,
     sImportCache.insert(std::make_pair(absPath, scope));
   }
   catch (const Exception& e) {
-    errorf(srcpos, E_UnknownInputFile, "import '%s' failed: %s\n",
+    errorf(srcpos, E_UnknownLibrary, "importing '%s' failed: %s\n",
            (zstring)StrHelper(absPath), (zstring)StrHelper(e.message()));
     return false;
   }
@@ -369,18 +381,25 @@ bool Compiler::importFileImpl(const SrcPos& srcpos, const String& srcName,
 }
 
 
-String Compiler::lookupFile(const String& srcName, bool isPublic)
+String Compiler::lookupLibrary(const String& libName)
+{
+  return lookupFile({ libName + ".hr", libName + "/" + libName + ".hr" });
+}
+
+
+String Compiler::lookupFile(const std::vector<String>& srcNames)
 {
   auto exts = makeVector(String("hr"));
 
-  if (srcName.startsWith(String("builtin:"))) {
-    return file::lookupInPath(srcName.part(8, srcName.length()),
-                              Properties::systemDirSearchPath(), exts);
-  }
+  String path;
+  if (!sCurrentFilePath.isEmpty())
+    path = file::lookupInPath(srcNames, { sCurrentFilePath }, exts);
 
-  String path = file::lookupInPath(srcName, Properties::systemDirSearchPath(), exts);
-  if (path.isEmpty())
-    path = file::lookupInPath(srcName, Properties::inputDirSearchPath(), exts);
+  if (path.isEmpty()) {
+    path = file::lookupInPath(srcNames, Properties::systemDirSearchPath(), exts);
+    if (path.isEmpty())
+      path = file::lookupInPath(srcNames, Properties::inputDirSearchPath(), exts);
+  }
 
   return path;
 }
@@ -456,8 +475,14 @@ void compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
   try {
     if (doParse) {
       Compiler compiler(!K(isParsingInterface));
-      auto ast = compiler.process(
-          std::make_shared<CharPort>(std::make_shared<FilePort>(file, "rb")), file);
+
+      std::shared_ptr<AstNode> ast;
+
+      {
+        CurrentLoadPathGuard currentPathGuard(file);
+        ast = compiler.process(
+            std::make_shared<CharPort>(std::make_shared<FilePort>(file, "rb")), file);
+      }
 
       if (doCompile) {
         XmlRenderer out{ std::make_shared<FilePort>(stderr), true };

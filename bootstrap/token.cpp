@@ -681,6 +681,7 @@ bool Token::operator<(const Token& other) const
       case kFunctionId:
       case kIfId:
       case kImportId:
+      case kIncludeId:
       case kLetId:
       case kLibraryId:
       case kMatchId:
@@ -769,6 +770,7 @@ String Token::toString() const
     case kFunctionId: return String(MID_functionid);
     case kIfId: return String(MID_ifid);
     case kImportId: return String(MID_importid);
+    case kIncludeId: return String(MID_includeid);
     case kLetId: return String(MID_letid);
     case kLibraryId: return String(MID_libraryid);
     case kMatchId: return String(MID_matchid);
@@ -879,6 +881,7 @@ ExprType Token::type() const
   case kFunctionId:
   case kIfId:
   case kImportId:
+  case kIncludeId:
   case kKeyarg:
   case kLetId:
   case kLibraryId:
@@ -1080,6 +1083,7 @@ String Token::idValue() const
   case kFunctionId:
   case kIfId:
   case kImportId:
+  case kIncludeId:
   case kLetId:
   case kLibraryId:
   case kMatchId:
@@ -1396,6 +1400,7 @@ void Token::toPort(Port<Octet>& port) const
     case kFunctionId:
     case kIfId:
     case kImportId:
+    case kIncludeId:
     case kLetId:
     case kLibraryId:
     case kMatchId:
@@ -1439,16 +1444,17 @@ TokenVector Token::toTokenVector() const
 
 bool Token::isCharOrUnitName() const
 {
-  return (
-      fType == kSymbol || fType == kIn || fType == kLogicalAnd || fType == kLogicalOr ||
-      fType == kMod || fType == kRem || fType == kBitAnd || fType == kBitOr ||
-      fType == kBitXor || fType == kIsa || fType == kAs || fType == kBy ||
-      fType == kDefId || fType == kElseId || fType == kEofId || fType == kExportId ||
-      fType == kWithId || fType == kNamespaceId || fType == kNsId || fType == kExternId ||
-      fType == kForId || fType == kFUNCTIONId || fType == kFunctionId || fType == kIfId ||
-      fType == kImportId || fType == kLetId || fType == kLibraryId || fType == kMatchId ||
-      fType == kModuleId || fType == kNilId || fType == kNotId || fType == kSelectId ||
-      fType == kWhenId || fType == kWhereId || fType == kWhileId);
+  return (fType == kSymbol || fType == kIn || fType == kLogicalAnd ||
+          fType == kLogicalOr || fType == kMod || fType == kRem || fType == kBitAnd ||
+          fType == kBitOr || fType == kBitXor || fType == kIsa || fType == kAs ||
+          fType == kBy || fType == kDefId || fType == kElseId || fType == kEofId ||
+          fType == kExportId || fType == kWithId || fType == kNamespaceId ||
+          fType == kNsId || fType == kExternId || fType == kForId ||
+          fType == kFUNCTIONId || fType == kFunctionId || fType == kIfId ||
+          fType == kImportId || fType == kIncludeId || fType == kLetId ||
+          fType == kLibraryId || fType == kMatchId || fType == kModuleId ||
+          fType == kNilId || fType == kNotId || fType == kSelectId || fType == kWhenId ||
+          fType == kWhereId || fType == kWhileId);
 }
 
 

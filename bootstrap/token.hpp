@@ -166,6 +166,7 @@ enum TokenType {
   kFunctionId,
   kIfId,
   kImportId,
+  kIncludeId,
   kLetId,
   kLibraryId,
   kMatchId,

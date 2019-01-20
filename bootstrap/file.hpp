@@ -130,29 +130,42 @@ namespace file {
   //! \c canonicalPathName().
   String canonicalPathName(const String& path);
 
-  //! Search for a existing file matches \p pattern in all directories in \p
-  //! searchPath.  If \p pattern has no extension it is tested with all
-  //! alternative extensions in \p altExtensions.
-  //!
-  //! With searchPath=<tt>['/usr/lib/', '/home/mfi/x/', '~/']</tt>,
-  //! altExtensions=<tt>['cpp', 'cxx', 'C']</tt>, and the pattern <tt>'n/m'</tt> the following
-  //! paths will be checked:
-  //!
-  //! <pre>
-  //! /usr/lib/n/m
-  //! /usr/lib/n/m.cpp
-  //! /usr/lib/n/m.cxx
-  //! /usr/lib/n/m.C
-  //! /home/mfi/x/n/m
-  //! /home/mfi/x/n/m.cpp
-  //! /home/mfi/x/n/m.cxx
-  //! /home/mfi/x/n/m.C
-  //! ~/n/m
-  //! ~/n/m.cpp
-  //! ~/n/m.cxx
-  //! ~/n/m.C
-  //! </pre>
-  String lookupInPath(const String& pattern, const StringVector& searchPath,
+  /*! Search for an existing file matches any of \p patterns in all
+   * directories in \p searchPath.  If a pattern in \p patterns has no
+   * extension it is tested with all alternative extensions in \p
+   * altExtensions.
+   *
+   * With searchPath=<tt>['/usr/lib/', '/home/mfi/x/', '~/']</tt>,
+   * altExtensions=<tt>['cpp', 'cxx', 'C']</tt>, and the patterns
+   * <tt>['m', 'n/m']</tt> the following paths will be checked:
+   *
+   * <pre>
+   * /usr/lib/m
+   * /usr/lib/n/m
+   * /usr/lib/m.cpp
+   * /usr/lib/n/m.cpp
+   * /usr/lib/m.cxx
+   * /usr/lib/n/m.cxx
+   * /usr/lib/m.C
+   * /usr/lib/n/m.C
+   * /home/mfi/x/m
+   * /home/mfi/x/n/m
+   * /home/mfi/x/m.cpp
+   * /home/mfi/x/n/m.cpp
+   * /home/mfi/x/m.cxx
+   * /home/mfi/x/n/m.cxx
+   * /home/mfi/x/m.C
+   * /home/mfi/x/n/m.C
+   * ~/m
+   * ~/n/m
+   * ~/m.cpp
+   * ~/n/m.cpp
+   * ~/m.cxx
+   * ~/n/m.cxx
+   * ~/m.C
+   * ~/n/m.C
+   * </pre> */
+  String lookupInPath(const StringVector& patterns, const StringVector& searchPath,
                       const StringVector& altExtensions);
 
 }  // namespace file

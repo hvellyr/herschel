@@ -7,17 +7,15 @@
 
 
 library coll {
-  export (*)
+  export public (*)
 
-  use library (lang,
-               core)
+  import (lang, core)
 
-  import public ("collection.hr",
-                 "hash-map.hr",
-                 "list.hr",
-                 "pair.hr")
-
-  import private ("impl/common.hr",
-                  "impl/hash-map.hr",
-                  "impl/vector.hr")
+  include ("collection.hr",
+           "hash-map.hr",
+           "list.hr",
+           "pair.hr",
+           "impl/common.hr",
+           "impl/hash-map.hr",
+           "impl/vector.hr")
 }

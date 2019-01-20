@@ -1,6 +1,8 @@
 module beer99 {
 export public bottles
 
+import lang
+
 def type OutPort
 def *stdout*() -> OutPort ...
 def outln(port = *stdout*(), msgs ...) -> Int ...

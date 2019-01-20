@@ -8,7 +8,7 @@
 module coll
 export public (Pair, value-iterator)
 
-use (lang, core)
+import (lang, core)
 
 
 def record Pair<Car, Cdr>

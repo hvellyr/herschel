@@ -5,16 +5,15 @@
 --
 -- This source code is released under the BSD License.
 
-library lang {
-  export public (*)
+library lang
+export public (*)
 
-  import (
-         "lang/types.hr",
-         "lang/numbers.hr",
+include ("types.hr",
+         "numbers.hr",
   --   "array.hr",
   --   "assert.hr",
-         "lang/comparable.hr",
-         "lang/copyable.hr",
+         "comparable.hr",
+         "copyable.hr",
   --   "iterable.hr",
   --   "charnm.hr",
   --   "comparable.hr",
@@ -23,9 +22,9 @@ library lang {
   --   "iterator.hr",
   --   "numbers.hr",
   --   "runtime.hr",
-        "lang/sliceable.hr",
+         "sliceable.hr",
   --   "sys.hr",
-        "lang/string.hr",
+         "string.hr",
   --   "types.hr",
   --   "ctypes.hr")
 
@@ -38,5 +37,4 @@ library lang {
   -- import "lang/impl/string.hr"
   --   "impl/types.hr",
   --   "cstdlib.hr")
-  )
-}
+        )

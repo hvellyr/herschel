@@ -395,9 +395,8 @@ static String checkForFileWithExts(const String& fullPath,
     return fullPath;
 
   if (!file::hasExtension(fullPath)) {
-    for (StringVector::const_iterator eit = altExtensions.begin();
-         eit != altExtensions.end(); eit++) {
-      String extFullPath = file::appendExt(fullPath, *eit);
+    for (const auto& ext : altExtensions) {
+      String extFullPath = file::appendExt(fullPath, ext);
       if (file::isFile(extFullPath))
         return extFullPath;
     }
@@ -407,18 +406,22 @@ static String checkForFileWithExts(const String& fullPath,
 }
 
 
-String file::lookupInPath(const String& pattern, const StringVector& searchPath,
+String file::lookupInPath(const StringVector& patterns, const StringVector& searchPath,
                           const StringVector& altExtensions)
 {
-  if (file::isAbsolutePath(pattern)) {
-    String result = checkForFileWithExts(file::canonicalPathName(pattern), altExtensions);
-    if (!result.isEmpty())
-      return result;
+  for (const auto& pattern : patterns) {
+    if (file::isAbsolutePath(pattern)) {
+      String result =
+          checkForFileWithExts(file::canonicalPathName(pattern), altExtensions);
+      if (!result.isEmpty())
+        return result;
+    }
   }
-  else {
-    for (StringVector::const_iterator it = searchPath.begin(); it != searchPath.end();
-         it++) {
-      String realPath = file::canonicalPathName(*it);
+
+  for (const auto& rootPath : searchPath) {
+    String realPath = file::canonicalPathName(rootPath);
+
+    for (const auto& pattern : patterns) {
       String result =
           checkForFileWithExts(file::canonicalPathName(pattern, realPath), altExtensions);
       if (!result.isEmpty())

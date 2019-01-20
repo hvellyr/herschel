@@ -43,6 +43,7 @@ namespace herschel {
 #define MID_ifid "if"
 #define MID_importid "import"
 #define MID_in "in"
+#define MID_includeid "include"
 #define MID_isaQ "isa?"
 #define MID_lessequalq "less-equal?"
 #define MID_lessq "less?"
@@ -175,10 +176,10 @@ namespace herschel {
               "Sliceable!"
 
 #define MID_OrderedSliceableTypeName \
-  MID_core_ns "."             \
+  MID_core_ns "."                    \
               "OrderedSliceable"
 #define MID_OrderedSliceableXTypeName \
-  MID_core_ns "."              \
+  MID_core_ns "."                     \
               "OrderedSliceable!"
 
 #define MID_RangeTypeName \

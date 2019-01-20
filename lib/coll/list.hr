@@ -8,7 +8,7 @@
 module coll
 export public List
 
-use lang
+import lang
 
 
 def find-last-node(node @ Pair<'L, 'R>) -> Pair<'L, 'R> {

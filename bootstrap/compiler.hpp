@@ -67,9 +67,10 @@ public:
   TokenVector includeFile(const SrcPos& srcpos, const String& srcName,
                           const std::function<TokenVector()>& functor);
 
-  bool importFile(const SrcPos& srcpos, const String& srcName, bool isPublic,
-                  std::shared_ptr<Scope> currentScope);
-  String lookupFile(const String& srcName, bool isPublic);
+  bool requireLibrary(const SrcPos& srcpos, const String& libName,
+                      std::shared_ptr<Scope> currentScope);
+  String lookupFile(const std::vector<String>& srcNames);
+  String lookupLibrary(const String& libName);
 
   std::shared_ptr<Scope>& referredFunctionCache();
 

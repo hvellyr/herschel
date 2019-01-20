@@ -66,7 +66,6 @@ FirstPass::FirstPass(Compiler& compiler, const Token& currentToken,
                      std::shared_ptr<Scope> scope)
     : AbstractPass(compiler, std::move(scope))
     , fToken(currentToken)
-    , fEvaluateExprs(true)
 {
 }
 
@@ -96,7 +95,7 @@ Token FirstPass::scanUntilTopExprAndResume()
 {
   while (fToken != kEOF && fToken != kDefId && fToken != kModuleId &&
          fToken != kLibraryId && fToken != kExportId && fToken != kImportId &&
-         fToken != kWhenId && fToken != kExternId)
+         fToken != kIncludeId && fToken != kWhenId && fToken != kExternId)
     nextToken();
 
   return Token();
@@ -317,7 +316,7 @@ TokenVector FirstPass::parseQualifiedName(bool acceptLeadingDot)
 
 //----------------------------------------------------------------------------
 
-struct ModuleAndLibraryParser {
+struct LibraryParser {
   bool operator()(FirstPass* pass, Token& result)
   {
     TokenVector n = pass->parseTop();
@@ -350,10 +349,11 @@ Token FirstPass::parseLibrary()
 
     {
       ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), kScopeL_Library);
-      // ModuleHelper moduleScope(this, libName.idValue());
+
+      fInLibrary = true;
 
       if (fToken == kBraceOpen) {
-        parseSequence(ModuleAndLibraryParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
+        parseSequence(LibraryParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
                       E_MissingBraceClose, defines, "library-body");
       }
       else {
@@ -363,6 +363,8 @@ Token FirstPass::parseLibrary()
             defines << n;
         }
       }
+
+      fInLibrary = false;
     }
 
     libExpr << defines;
@@ -370,6 +372,18 @@ Token FirstPass::parseLibrary()
 
   return libExpr;
 }
+
+
+struct ModuleParser {
+  bool operator()(FirstPass* pass, Token& result)
+  {
+    TokenVector n = pass->parseTop();
+    if (!n.empty())
+      result << n;
+
+    return true;
+  }
+};
 
 
 Token FirstPass::parseModule()
@@ -396,7 +410,7 @@ Token FirstPass::parseModule()
 
       ModuleHelper moduleScope(this, modName.idValue());
       if (fToken == kBraceOpen) {
-        parseSequence(ModuleAndLibraryParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
+        parseSequence(ModuleParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
                       E_MissingBraceClose, defines, "module-body");
       }
       else {
@@ -558,7 +572,7 @@ struct IncludeParser {
       result << str;
     }
     else {
-      errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected STRING");
+      errorf(pass->fToken.srcpos(), E_StringExpected, "expected STRING");
       pass->scanUntilNextParameter();
     }
 
@@ -624,40 +638,75 @@ TokenVector FirstPass::parseInclude()
 }
 
 
-Token FirstPass::parseImport()
+struct ImportParser {
+  bool operator()(FirstPass* pass, Token& result)
+  {
+    if (pass->fToken == kSymbol) {
+      Token sym = pass->fToken;
+      pass->nextToken();
+
+      result << sym;
+    }
+    else {
+      errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+      pass->scanUntilNextParameter();
+    }
+
+    return true;
+  }
+};
+
+
+TokenVector FirstPass::parseImport()
 {
-  Token expr;
-  expr << fToken;
+  Token importToken = fToken;
   nextToken();
 
-  if (fToken != kString) {
-    errorf(fToken.srcpos(), E_StringExpected, "expected STRING");
-    return scanUntilTopExprAndResume();
+  std::vector<Token> libNames;
+
+  if (fToken == kSymbol) {
+    libNames.push_back(fToken);
+    nextToken();
+  }
+  else if (fToken == kParanOpen) {
+    Token libs;
+    parseSequence(ImportParser(), kParanOpen, kParanClose, K(hasSeparator),
+                  E_BadParameterList, libs, "import libraries");
+    if (!libs.isEmpty()) {
+      for (const auto& token : libs.children()) {
+        if (token == kSymbol)
+          libNames.push_back(token);
+      }
+    }
+  }
+  else {
+    errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+    return scanUntilTopExprAndResume().toTokenVector();
   }
 
-  Token importFile = fToken;
-  expr << importFile;
+  TokenVector result;
 
-  nextToken();
-
-  bool canImport = true;
-#if defined(UNITTESTS)
-  canImport = !Properties::test_dontImport();
-#endif
-
-  if (fEvaluateExprs && canImport) {
+  for (const auto& libNameSymb : libNames) {
     try {
-      String srcName = importFile.stringValue();
-      if (!fCompiler.importFile(importFile.srcpos(), srcName, !K(isPublic), fScope))
-        return Token();
+      Token expr;
+      expr << importToken << libNameSymb;
+
+      if (fEvaluateExprs) {
+        String libName = libNameSymb.idValue();
+        if (fCompiler.requireLibrary(libNameSymb.srcpos(), libName, fScope)) {
+          result.push_back(expr);
+        }
+      }
+      else {
+        result.push_back(expr);
+      }
     }
     catch (const Exception& e) {
-      error(importFile.srcpos(), E_UnknownInputFile, e.message());
-      return Token();
+      error(libNameSymb.srcpos(), E_UnknownLibrary, e.message());
     }
   }
 
-  return expr;
+  return result;
 }
 
 
@@ -1443,7 +1492,8 @@ bool FirstPass::parseExprListUntilBrace(TokenVector* result, bool endAtToplevelI
 {
   for (;;) {
     if (fToken == kDefId || fToken == kExternId || fToken == kExportId ||
-        fToken == kImportId || fToken == kModuleId || fToken == kLibraryId) {
+        fToken == kImportId || fToken == kIncludeId || fToken == kModuleId ||
+        fToken == kLibraryId) {
       if (!endAtToplevelId) {
         error(fToken.srcpos(), E_UnexpectedTopExpr,
               String("unexpected top level expression: ") + fToken.toString());
@@ -3606,14 +3656,28 @@ TokenVector FirstPass::parseTop()
     return parseModule().toTokenVector();
   }
   else if (fToken == kLibraryId) {
-    return parseLibrary().toTokenVector();
+    if (!fInLibrary) {
+      return parseLibrary().toTokenVector();
+    }
+    else {
+      errorf(fToken.srcpos(), E_NestedLibrary, "Nested library not supported. Skipped");
+      nextToken();
+      return scanUntilTopExprAndResume().toTokenVector();
+    }
   }
   else if (fToken == kExportId) {
     return parseExport().toTokenVector();
   }
-  else if (fToken == kImportId) {
-    //return parseImport().toTokenVector();
+  else if (fToken == kIncludeId) {
+    if (!fInLibrary) {
+      warningf(fToken.srcpos(), E_IncludeOutsideOfLibrary,
+               "'include' found outside of library");
+    }
+
     return parseInclude();
+  }
+  else if (fToken == kImportId) {
+    return parseImport();
   }
   else if (fToken == kDefId) {
     return parseDef(!K(isLocal));
