@@ -5,12 +5,12 @@ Herschel 2
 
   - remove record inheritance
   - reference types, ref-counted types,
-  - remodel import/export/module system
-    - modifiers "mut", "pub", "prv"
-    - add "include" /import
+  - modifiers "mut", "pub", "prv"
   - generate finalizer() calls for variables going out of scope (RAII)
   - rewrite operators +=, *=, ++=, ... to set!( ....) etc.
 
+x - remodel import/export/module system
+x - add "include" /import
 x - finish slot syntax compilation
 x - fix a.foo() -> foo(a) syntax
 x - method overloading
@@ -504,6 +504,145 @@ Accessing symbols in the namespace:
 Modules compile typically into static or dynamic libraries.
 
 
+- (open)dylan has:
+  - an application uses libraries; libraries (a set of modules) use
+    modules; modules (a set of bindings) have bindings.
+  - library interchange format (.lid) - a kind of makefile for dylan
+  - namespaces in dylan are organized by the "define module" statement.
+
+- diesel:
+  - an application uses a single source file rooted tree.  From there
+    all includes take off; multiple include requests are handled
+    correctly; modules are used for import/export and namespaces.
+
+
+
+- think big & complete, but less obscure (than with herschel1):
+
+    library xyz
+
+  declares a component as a standalone piece of reusable software.
+  When compiled will be represented as one .dll, .dylib, or .so.  Apps
+  and other libraries can depend on a library ("import (xxx)").
+  Libraries are build by "include"ing source files; it's possible to
+  specify public "interface" (for declarations and macros) and
+  implementation files.  Libraries can use other libraries
+  ("import").
+
+  Modules must be exported from a library to be "import"able by other
+  libraries.  Otherwise the modules are only visibile to other modules
+  inside the library.
+
+    module xyz
+
+  define the scope of visibility of bindings and their namespace.
+  Modules can depend on other libraries ("import").
+
+  Bindings inside a module need to be exported ("export").
+
+    export foo, bar, baz
+
+  exports three symbols to the enclosing module/library.  In nested
+  modules this is only the next outer module (and all other nested
+  sibling modules).
+
+    export public foo, bar, baz
+
+  exports the bindings to all nesting modules and libraries.  If a
+  library doesn't export a module the "public exported bindings" are
+  not exported either.
+
+  When a library is "imported" the import machinery figures out which
+  header files are to be read: These are the source files imported via
+  "include public".  (The source files imported with "include private"
+  and "include tests" are only read when building/compiling the
+  library or its test runner itself).  This scan builds a mapping from
+  all the "module"-specs in the read header files to the bindings for
+  the module.
+
+  "import" then only imports the bindings per module read by this
+  mechanism.  A compiled library might have a faster way of publishing
+  this module->binding mapping when installed.
+
+
+  Example:
+
+    in "vehicles.hrm":
+
+      library vehicles {
+        use lang
+        export vehicle                     -- export modules
+
+        include public "vehicle.hr"        -- reads real source files, all code
+                                           -- imported "public" is useable as
+                                           -- interface from outside.
+        include private "impl/vehicle.hr"  -- implementation files
+
+        include tests "tests/vehicle.hr"
+      }
+
+
+    in "vehicle.hr":
+
+      import lang
+
+      module vehicle
+      export public *
+
+      def type Vehicle
+      def record Car : Vehicle { ... }
+      def record Truck : Vehicle { ... }
+
+      def generic serial-number(v @ 'T) -> String
+          where T isa Vehicle ...
+
+      def generic owner(v @ 'T) -> String
+          where T isa Vehicle ...
+      def generic owner!(v @ 'T, o : String) -> 'T ...
+      def generic tax(v @ 'T) -> String
+          where T isa Vehicle ...
+
+      def generic capacity(v @ 'T) -> Int
+          where T isa Truck ...
+
+
+    in "impl/vehicle.hr":
+
+      import lang
+
+      module vehicle
+
+
+      def serial-number(v @ Car) -> String
+          v.props["serial-number"] as String
+
+      def serial-number(v @ Truck) -> String
+          v.props["serial-number"] as String
+
+      def capacity(v @ Truck) -> Int
+          v.capacity
+
+
+   in "tests/vehicle.hr":
+
+     import (lang, tests)
+
+     module vehicle
+
+
+     def test ("car can be sold", "vehicle, setter") {
+       let iut = Car()
+       iut.owner!("Carl Higgins")
+
+       check(iut.owner() == "Carl Higgins")
+
+       iut.owner!("Thomas Müller")
+       check(iut.owner() == "Carl Higgins")
+     }
+
+
+
+
 export, importing
 -----------------
 
@@ -516,40 +655,6 @@ or:
 
 
     import printing
-
-
-
-
-Alternate approach:
-
-  - separate module from namespace: namespaces define the namespace,
-    modules define the component boundary.  Namespaces are orthogonal to visiblity
-
-  - import "symbols", not paths
-
-  - include "paths"
-
-
-
-      namespace io
-
-      def type Port          -- |= .io.Port
-
-
-  def module "org.eyestep.herschel.io" {
-    import ("org.eyestep.herschel.lang", "org.eyestep.herschel.core")
-
-    include ("port.hr", "file-port.hr", "memory-port.hr")
-  }
-
-
-In Diesel:
-
-"The set of files comprising a Diesel program is the transitive closure of the include declarations,
-starting from the given root file. There is no need for any other extra-linguistic mechanism such as
-Makefiles to define a program."
-
-
 
 
 
