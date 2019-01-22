@@ -213,6 +213,12 @@ Scope::LookupResult Scope::lookupItemLocalImpl(const SrcPos& srcpos,
       if (vit != it->second.end()) {
         return LookupResult(vit->second.get(), !K(inOuterFunc));
       }
+
+      for (const auto& bsp : it->second) {
+        if (bsp.first.endsWith(String(".") + ns.fName)) {
+          return LookupResult(bsp.second.get(), !K(inOuterFunc));
+        }
+      }
     }
   }
 
@@ -989,7 +995,6 @@ VizType Scope::reduceVizType(VizType in) const
   switch (in) {
   case kUnset:
   case kPrivate: return kPrivate;
-  case kInner: return kPrivate;
   case kOuter: return kOuter;
   case kPublic: return kPublic;
   }
@@ -1011,7 +1016,6 @@ void Scope::exportAttachedSymbols(std::shared_ptr<Scope> dstScope,
 
 void Scope::exportAllSymbols(std::shared_ptr<Scope> dstScope, bool propagateOuter) const
 {
-  // export all
   VizType vizAllType = exportSymbolVisibility(ScopeName(kNormal, String("*")));
   if (vizAllType != kPrivate && (propagateOuter || vizAllType != kOuter)) {
     VizType reducedVizType = reduceVizType(vizAllType);
@@ -1046,17 +1050,17 @@ void Scope::exportSymbols(std::shared_ptr<Scope> dstScope, bool propagateOuter) 
   }
   else {
     // selective export
-    for (NsScopeMap::const_iterator it = fMap.begin(); it != fMap.end(); it++) {
-      for (BaseScopeMap::const_iterator vit = it->second.begin(); vit != it->second.end();
-           vit++) {
-        ScopeName fullKey(it->first.fDomain, qualifyId(vit->first, it->first.fName));
+    for (const auto& mapp : fMap) {
+      for (const auto& baseScopep : mapp.second) {
+        ScopeName fullKey(mapp.first.fDomain, qualifyId(baseScopep.first, mapp.first.fName));
 
         VizType vizType = exportSymbolVisibility(fullKey);
+        //log(kInfo, String("export sym ") + qualifyId(baseScopep.first, mapp.first.fName) + " " + vizType);
         if (vizType != kPrivate && (propagateOuter || vizType != kOuter)) {
           VizType reducedVizType = reduceVizType(vizType);
           bool isFinal = exportSymbolIsFinal(fullKey);
 
-          dstScope->registerScopeItem(fullKey, vit->second);
+          dstScope->registerScopeItem(fullKey, baseScopep.second);
           if (reducedVizType != kPrivate) {
             dstScope->registerSymbolForExport(fullKey.fDomain, fullKey.fName,
                                               reducedVizType, isFinal);

@@ -1,12 +1,13 @@
--- This file is part of the herschel package 
+-- This file is part of the herschel package
 --
 -- Copyright (c) 2010-2011 Gregor Klinke
 -- All rights reserved.
 --
 -- This source code is released under the BSD License.
 
-module lang {
-export public *
+export public (OrdinalOrEof, CharOrEof, OrdinalOrFalse,
+               Any, Object, Bool, Char, Keyword)
+
 
 ------------------------------------------------------------------------------
 -- Common Union types
@@ -50,4 +51,3 @@ def type Object
 def type Bool
 def type Char
 def type Keyword
-}

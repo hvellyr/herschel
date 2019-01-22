@@ -713,9 +713,10 @@ public:
 
     if (right0.isArray()) {
       auto matchesIsaConstraint = [&](const auto& tyName, const auto& tyConstraint) {
-        auto sliceableTy = Type::makeTypeRef(tyName, tyConstraint.typeConstraint().generics(), K(isValue));
-        return isContravariant(tyConstraint.typeConstraint(), sliceableTy,
-                               scope, srcpos, K(reportErrors));
+        auto sliceableTy = Type::makeTypeRef(
+            tyName, tyConstraint.typeConstraint().generics(), K(isValue));
+        return isContravariant(tyConstraint.typeConstraint(), sliceableTy, scope, srcpos,
+                               K(reportErrors));
       };
 
       for (const auto& tyConst : fConstraints) {
@@ -1879,33 +1880,10 @@ void TypeSlot::replaceGenerics(const TypeCtx& typeMap)
 }
 
 
-static String flagsToStr(unsigned int flags)
-{
-  StringBuffer buf;
-  if ((flags & kTransientSlot) != 0)
-    buf << "transient ";
-  if ((flags & kReadonlySlot) != 0)
-    buf << "readonly ";
-
-  if ((flags & kPublicSlot) != 0)
-    buf << "public ";
-  else if ((flags & kOuterSlot) != 0)
-    buf << "outer ";
-  else if ((flags & kInnerSlot) != 0)
-    buf << "inner ";
-
-  if ((flags & kAutoSlot) != 0)
-    buf << "auto ";
-
-  return buf.toString();
-}
-
-
 String TypeSlot::toString() const
 {
   StringBuffer buf;
-  buf << "<ty:slot k='" << flagsToStr(fFlags) << "' "
-      << "nm='" << fName << "'>" << fType.toString() << "</ty:slot>\n";
+  buf << "<ty:slot nm='" << fName << "'>" << fType.toString() << "</ty:slot>\n";
   return buf.toString();
 }
 

@@ -5,8 +5,9 @@
 --
 -- This source code is released under the BSD License.
 
-module lang
-export public *
+export public (
+    size,
+    realloc)
 
 
 def generic realloc(array @ 'T[],

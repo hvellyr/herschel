@@ -5,8 +5,8 @@
 --
 -- This source code is released under the BSD License.
 
-module lang
-export public (*)
+-- module lang
+-- export public (*)
 
 
 def record String : Copyable, Comparable, OrderedSliceable<Int, Char>

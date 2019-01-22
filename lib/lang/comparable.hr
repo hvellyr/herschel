@@ -5,11 +5,10 @@
 --
 -- This source code is released under the BSD License.
 
-module lang
 export public (
-  Comparable,
-  compare,
-  equal?, unequal?, less?, less-equal?, greater?, greater-equal?)
+    Comparable,
+    compare,
+    equal?, unequal?, less?, less-equal?, greater?, greater-equal?)
 
 
 def type Comparable

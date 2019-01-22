@@ -25,7 +25,6 @@ class String;
 enum VizType {
   kUnset,
   kPrivate,
-  kInner,
   kOuter,
   kPublic,
 };

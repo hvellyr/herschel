@@ -79,8 +79,8 @@ std::shared_ptr<AstNode> SecondPass::parseLibrary(const Token& expr)
   if (expr.count() > 2) {
     hr_assert(expr[2].isNested() && expr[2].leftToken() == kBraceOpen);
 
-    ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), kScopeL_Library);
-    // ModuleHelper moduleHelper(this, libName);
+    ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), !K(doPropOuter), kScopeL_Library);
+    ModuleHelper moduleHelper(this, libName);
 
     parseTopExprlist(expr[2]);
   }
@@ -103,7 +103,7 @@ std::shared_ptr<AstNode> SecondPass::parseModule(const Token& expr)
   if (expr.count() > 2) {
     hr_assert(expr[2].isNested() && expr[2].leftToken() == kBraceOpen);
 
-    ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), kScopeL_Module);
+    ScopeHelper scopeHelper(fScope, K(doExport), K(isInnerScope), K(doPropOuter), kScopeL_Module);
     ModuleHelper moduleHelper(this, modName);
     parseTopExprlist(expr[2]);
   }
@@ -121,16 +121,10 @@ std::shared_ptr<AstNode> SecondPass::parseExport(const Token& expr)
   hr_assert(expr[0] == kExportId);
 
   size_t symbolOfs = 1;
-  VizType vizType = kPrivate;
+  VizType vizType = kOuter;
   if (expr[1].isSymbol()) {
     if (expr[1] == Compiler::publicToken)
       vizType = kPublic;
-    else if (expr[1] == Compiler::innerToken)
-      vizType = kInner;
-    else if (expr[1] == Compiler::outerToken)
-      vizType = kOuter;
-    else if (expr[1] == Compiler::privateToken)
-      vizType = kPrivate;
     else {
       error(expr[1].srcpos(), E_UnknownVisibility,
             String("unknown visibility level: ") + expr[1]);
@@ -1188,7 +1182,7 @@ void SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
 {
   hr_assert(seq[ofs].isNested());
 
-  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), kScopeL_Function);
+  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), !K(doPropOuter), kScopeL_Function);
   TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
 
   size_t whereOfs = ofs;
@@ -2230,7 +2224,7 @@ std::shared_ptr<AstNode> SecondPass::parseFor(const Token& expr)
   hr_assert(expr[1].isNested());
   hr_assert(implies(expr.count() == 5, expr[3] == kElseId));
 
-  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
+  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), !K(doPropOuter), kScopeL_Local);
 
   auto body = singletonNodeListOrNull(parseExpr(expr[2]));
 
@@ -2274,7 +2268,7 @@ std::shared_ptr<AstNode> SecondPass::parseWhile(const Token& expr)
   hr_assert(expr[1].isNested());
   hr_assert(implies(expr.count() == 5, expr[3] == kElseId));
 
-  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
+  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), !K(doPropOuter), kScopeL_Local);
 
   auto body = singletonNodeListOrNull(parseExpr(expr[2]));
 
@@ -2486,7 +2480,7 @@ std::shared_ptr<AstNode> SecondPass::parseMatch(const Token& expr)
   const TokenVector& args = expr[1].children();
   hr_assert(args.size() > 0);
 
-  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
+  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), !K(doPropOuter), kScopeL_Local);
 
   auto block = makeBlockNode(fScope, expr.srcpos());
 
@@ -2513,7 +2507,7 @@ std::shared_ptr<AstNode> SecondPass::parseMatch(const Token& expr)
     hr_assert(typeMapping[2] == kMapTo);
 
     {
-      ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
+      ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), !K(doPropOuter), kScopeL_Local);
 
       auto localBlock = makeBlockNode(fScope, typeMapping[3].srcpos());
 
@@ -2751,7 +2745,6 @@ NodeList SecondPass::parseSeq(const Token& expr)
       return makeNodeList(parseBinary(expr));
     }
     else if (expr[1] == kDot && expr[2] == kSymbol) {
-      // TODO(ns)
       return makeNodeList(parseSlotAccess(expr));
     }
     else {
@@ -2784,7 +2777,7 @@ std::shared_ptr<AstNode> SecondPass::parseBlock(const Token& expr)
   hr_assert(expr.leftToken() == kBraceOpen);
   hr_assert(expr.rightToken() == kBraceClose);
 
-  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), kScopeL_Local);
+  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), !K(doPropOuter), kScopeL_Local);
 
   const TokenVector& seq = expr.children();
   NodeList nodes;

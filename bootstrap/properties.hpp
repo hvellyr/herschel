@@ -51,6 +51,7 @@ public:
   static bool isTraceTypify();
 
   static bool isTraceImportFile();
+  static bool isTraceFileSearch();
   static bool isTraceMacro();
   static bool isCodeDump();
   static bool isTypeConvDump();

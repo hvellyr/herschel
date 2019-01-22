@@ -71,6 +71,7 @@ public:
   //! 0 if the compared parts of \c this and \p other are identical.  If \p
   //! maxItems is negative \c this and \p other are compared completely.
   int compare(const String& other, int maxItems = -1) const;
+  int compare(zstring other, int maxItems = -1) const;
 
   bool operator<(const String& other) const;
   bool operator<=(const String& other) const;
@@ -78,6 +79,8 @@ public:
   bool operator>=(const String& other) const;
   bool operator==(const String& other) const;
   bool operator!=(const String& other) const;
+  bool operator==(zstring other) const;
+  bool operator!=(zstring other) const;
 
   //! Returns the length of the string in characters, excl. a propably
   //! terminating null.
@@ -180,6 +183,7 @@ public:
   //! Returns a \c std::string representation of the receiver.  The value is
   //! encoded as utf8.
   operator std::string() const;
+  std::string to_string() const;
 
 private:
   friend class StringBuffer;

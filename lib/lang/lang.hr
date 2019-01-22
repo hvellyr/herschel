@@ -6,7 +6,6 @@
 -- This source code is released under the BSD License.
 
 library lang
-export public (*)
 
 include ("types.hr",
          "numbers.hr",

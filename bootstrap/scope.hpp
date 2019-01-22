@@ -337,28 +337,32 @@ public:
 class ScopeHelper {
 public:
   ScopeHelper(std::shared_ptr<Scope>& scope, bool doExport, bool isInnerScope,
-              ScopeLevel level)
+              bool doPropagateOuter, ScopeLevel level)
       : fScopeLoc(scope)
       , fPrevScope(scope)
       , fDoExport(doExport)
       , fIsInnerScope(isInnerScope)
+      , fDoPropagateOuter(doPropagateOuter)
   {
     fScopeLoc = makeScope(level, fScopeLoc);
   }
 
-  ~ScopeHelper() { unrollScopes(fScopeLoc, fPrevScope, fDoExport, fIsInnerScope); }
+  ~ScopeHelper()
+  {
+    unrollScopes(fScopeLoc, fPrevScope, fDoExport, fIsInnerScope, fDoPropagateOuter);
+  }
 
 
   static void unrollScopes(std::shared_ptr<Scope>& scopeLoc,
                            std::shared_ptr<Scope> prevScope, bool doExport,
-                           bool isInnerScope)
+                           bool isInnerScope, bool doPropagateOuter)
   {
     std::shared_ptr<Scope> scope = scopeLoc;
     while (scope && scope != prevScope) {
       auto parent = scope->parent();
 
       if (parent && doExport) {
-        scope->exportSymbols(parent, isInnerScope);
+        scope->exportSymbols(parent, doPropagateOuter);
 
         if (!isInnerScope && parent == prevScope) {
           scope->propagateImportedScopes(parent);
@@ -376,5 +380,6 @@ private:
   std::shared_ptr<Scope> fPrevScope;
   bool fDoExport;
   bool fIsInnerScope;
+  bool fDoPropagateOuter;
 };
 };  // namespace herschel

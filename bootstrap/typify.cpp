@@ -336,9 +336,15 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
       else if (auto funNode = std::dynamic_pointer_cast<FunctionNode>(node->base())) {
         node->setType(funNode->type());
       }
+      else if (auto applyNode = std::dynamic_pointer_cast<ApplyNode>(node->base())) {
+        node->setType(applyNode->type());
+      }
+      else if (auto srNode = std::dynamic_pointer_cast<SlotRefNode>(node->base())) {
+        node->setType(srNode->type());
+      }
       else {
-        // XmlRenderer out{new FilePort(stderr)};
-        // out.render(node.base());
+        // XmlRenderer out{std::make_shared<FilePort>(stderr)};
+        // out.render(node->base());
         hr_invalid("Unhandled apply base node");
       }
     }

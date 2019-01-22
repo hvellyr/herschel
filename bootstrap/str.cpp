@@ -244,6 +244,12 @@ int String::compare(const String& other, int maxItems) const
 }
 
 
+int String::compare(zstring other, int maxItems) const
+{
+  return compare(String(other), maxItems);
+}
+
+
 bool String::operator<(const String& other) const
 {
   return compare(other) < 0;
@@ -275,6 +281,18 @@ bool String::operator==(const String& other) const
 
 
 bool String::operator!=(const String& other) const
+{
+  return compare(other) != 0;
+}
+
+
+bool String::operator==(zstring other) const
+{
+  return compare(other) == 0;
+}
+
+
+bool String::operator!=(zstring other) const
 {
   return compare(other) != 0;
 }
@@ -514,6 +532,12 @@ double String::toDouble() const
 
 
 String::operator std::string() const
+{
+  return to_string();
+}
+
+
+std::string String::to_string() const
 {
   return std::string(StrHelper(*this));
 }

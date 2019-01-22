@@ -348,7 +348,9 @@ Token FirstPass::parseLibrary()
     Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
 
     {
-      ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), kScopeL_Library);
+      ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), !K(doPropOuter),
+                              kScopeL_Library);
+      ModuleHelper moduleScope(this, libName.idValue());
 
       fInLibrary = true;
 
@@ -406,7 +408,8 @@ Token FirstPass::parseModule()
     Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
 
     {
-      ScopeHelper scopeHelper(fScope, K(doExport), K(isInnerScope), kScopeL_Module);
+      ScopeHelper scopeHelper(fScope, K(doExport), K(isInnerScope), K(doPropOuter),
+                              kScopeL_Module);
 
       ModuleHelper moduleScope(this, modName.idValue());
       if (fToken == kBraceOpen) {
@@ -475,22 +478,10 @@ Token FirstPass::parseExport()
 
   nextToken();
 
-  VizType vizType = kPrivate;
+  VizType vizType = kOuter;
   if (fToken == kSymbol) {
     if (fToken == Compiler::publicToken) {
       vizType = kPublic;
-      expr << fToken;
-    }
-    else if (fToken == Compiler::innerToken) {
-      vizType = kInner;
-      expr << fToken;
-    }
-    else if (fToken == Compiler::outerToken) {
-      vizType = kOuter;
-      expr << fToken;
-    }
-    else if (fToken == Compiler::privateToken) {
-      vizType = kPrivate;
       expr << fToken;
     }
     else
@@ -1523,6 +1514,9 @@ bool FirstPass::parseExprListUntilBrace(TokenVector* result, bool endAtToplevelI
       Token expr = parseWhen(!isLocal);
       if (expr.isSet())
         result->push_back(expr);
+    }
+    else if (fToken == kSemicolon) {
+      nextToken();
     }
     else {
       Token before = fToken;
@@ -3708,7 +3702,8 @@ Token FirstPass::parse()
   {
     // let the complete parse run in its own scope to force an explicit export
     // run
-    ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), kScopeL_CompileUnit);
+    ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), !K(doPropOuter),
+                            kScopeL_CompileUnit);
 
     nextToken();
     while (fToken != kEOF) {

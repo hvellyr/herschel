@@ -5,8 +5,15 @@
 --
 -- This source code is released under the BSD License.
 
-module lang
-export public *
+export public (
+    Complex, Real, Rational, Integer,
+    Exact, Approximate, BoundedBelow, BoundedAbove, Bounded, Unsigned,
+    Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64,
+    Float32, Float64, Float128,
+    BigInt, BigReal,
+    Byte, UByte, Octet, Short, UShort, Int, UInt, Ordinal, Long, ULong, Float,
+    Double, LongDouble,
+    add, subtract, multiply, divide, to-char)
 
 
 ------------------------------------------------------------------------------

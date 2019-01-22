@@ -533,26 +533,6 @@ struct NodeRenderer<std::shared_ptr<SlotdefNode>> {
 
     attrs << "sym='" << node.name() << "'";
 
-    if ((node.flags() & kTransientSlot) != 0) {
-      attrs << " transient='t'";
-    }
-    if ((node.flags() & kReadonlySlot) != 0) {
-      attrs << " readonly='t'";
-    }
-    if ((node.flags() & kAutoSlot) != 0) {
-      attrs << " auto='t'";
-    }
-
-    if ((node.flags() & kPublicSlot) != 0) {
-      attrs << " viz='public'";
-    }
-    else if ((node.flags() & kOuterSlot) != 0) {
-      attrs << " viz='outer'";
-    }
-    else if ((node.flags() & kInnerSlot) != 0) {
-      attrs << " viz='inner'";
-    }
-
     switch (node.allocType()) {
     case kAlloc_Local: break;
     case kAlloc_Shared: attrs << " alloc='shared'"; break;

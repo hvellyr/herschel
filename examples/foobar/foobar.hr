@@ -1,0 +1,17 @@
+library foobar
+
+
+module xara {
+  export public (aba)
+
+  def aba() -> Int
+    fabris.denz()
+}
+
+
+module fabris {
+  export (denz)
+
+  def denz() -> Int
+    42
+}

@@ -32,6 +32,7 @@ static String sOutdir;
 static StringVector sInputSearchPath;
 static StringVector sSystemSearchPath;
 static bool sIsImportFileTracing = false;
+static bool sIsFileSearchTracing = false;
 static bool sIsMacroTracing = false;
 static bool sIsCodeDump = false;
 static bool sIsPass1Tracing = false;
@@ -112,6 +113,8 @@ void Properties::setTrace(const String& key, bool value)
     sIsTypifyTracing = value;
   else if (key == String("import"))
     sIsImportFileTracing = value;
+  else if (key == String("filesearch"))
+    sIsFileSearchTracing = value;
   else if (key == String("macro"))
     sIsMacroTracing = value;
   else if (key == String("codedump"))
@@ -189,6 +192,12 @@ bool Properties::isTraceTypify()
 bool Properties::isTraceImportFile()
 {
   return sIsImportFileTracing;
+}
+
+
+bool Properties::isTraceFileSearch()
+{
+  return sIsFileSearchTracing;
 }
 
 
