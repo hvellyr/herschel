@@ -3,7 +3,6 @@
 Herschel 2
 
 
-  - remove record inheritance
   - reference types, ref-counted types,
   - modifiers "mut", "pub", "prv"
   - generate finalizer() calls for variables going out of scope (RAII)
@@ -44,6 +43,7 @@ x - recognize and rewrite into  ctor/dtor protocol
 x - the for loop is rewritten into while + variable definitions too
     early.  Therefor it is not properly detected in tail positions and
     thus type deduction fails in some situations
+x - remove record inheritance
 
 ? - rename function() to fn(), and the type of it to Fn()
 ? - remove keywords
