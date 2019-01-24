@@ -5,8 +5,11 @@
 --
 -- This source code is released under the BSD License.
 
--- module lang
--- export public (*)
+export public (
+    String,
+    length, starts-with?, ends-with?, contains?, concat, index-of, last-index-of,
+    matches, compare-ci, to-char-array, to-uppercase, to-lowercase, trim,
+    split, replace, slice, compare, to-string)
 
 
 def record String : Copyable, Comparable, OrderedSliceable<Int, Char>
