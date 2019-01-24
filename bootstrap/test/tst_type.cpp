@@ -488,17 +488,17 @@ TEST_CASE("Covariance for sliceable arrays", "[type]")
   REQUIRE(herschel::isCovariant(
       Type::makeArray(Type::makeTypeRef(String("Ultra"), K(isValue)), 0, K(isValue)),
       Type::makeType(Names::kSliceableTypeName,
-                     makeVector(Type::makeUInt32(), Type::makeTypeRef("Ultra")), Type()),
+                     makeVector(Type::makeInt32(), Type::makeTypeRef("Ultra")), Type()),
       *scope, SrcPos(), !K(reportError)));
   REQUIRE(!herschel::isCovariant(
       Type::makeArray(Type::makeTypeRef(String("Special"), K(isValue)), 0, K(isValue)),
       Type::makeType(Names::kSliceableTypeName,
-                     makeVector(Type::makeUInt32(), Type::makeTypeRef("Ultra")), Type()),
+                     makeVector(Type::makeInt32(), Type::makeTypeRef("Ultra")), Type()),
       *scope, SrcPos(), !K(reportError)));
   REQUIRE(!herschel::isCovariant(
       Type::makeArray(Type::makeTypeRef(String("Ultra"), K(isValue)), 0, K(isValue)),
       Type::makeType(Names::kSliceableTypeName,
-                     makeVector(Type::makeUInt32(), Type::makeTypeRef("Special")),
+                     makeVector(Type::makeInt32(), Type::makeTypeRef("Special")),
                      Type()),
       *scope, SrcPos(), !K(reportError)));
 }
