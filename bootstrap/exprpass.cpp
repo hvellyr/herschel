@@ -574,7 +574,20 @@ struct IncludeParser {
 
 TokenVector FirstPass::parseInclude()
 {
+  Token inclToken = fToken;
   nextToken();
+
+  bool isPublic = false;
+  if (fToken == kSymbol) {
+    if (fToken == Compiler::publicToken) {
+      isPublic = true;
+    }
+    else
+      errorf(fToken.srcpos(), E_UnknownIncludeScope, "unknown include scope '%s'",
+             (zstring)StrHelper(fToken.toString()));
+
+    nextToken();
+  }
 
   std::vector<std::pair<SrcPos, String>> srcNames;
 
@@ -600,28 +613,31 @@ TokenVector FirstPass::parseInclude()
     return scanUntilTopExprAndResume().toTokenVector();
   }
 
+
   TokenVector result;
 
-  for (const auto& srcp : srcNames) {
-    try {
-      auto incl = fCompiler.includeFile(srcp.first, srcp.second, [&]() {
+  if (isPublic || !fCompiler.isParsingInterface()) {
+    for (const auto& srcp : srcNames) {
+      try {
+        auto incl = fCompiler.includeFile(srcp.first, srcp.second, [&]() {
+          nextToken();
+
+          Token seq;
+          while (fToken != kEOF) {
+            TokenVector n = parseTop();
+            if (!n.empty())
+              seq << n;
+          }
+
+          return seq.children();
+        });
+        result.insert(result.end(), incl.begin(), incl.end());
+
         nextToken();
-
-        Token seq;
-        while (fToken != kEOF) {
-          TokenVector n = parseTop();
-          if (!n.empty())
-            seq << n;
-        }
-
-        return seq.children();
-      });
-      result.insert(result.end(), incl.begin(), incl.end());
-
-      nextToken();
-    }
-    catch (const Exception& e) {
-      error(srcp.first, E_UnknownInputFile, e.message());
+      }
+      catch (const Exception& e) {
+        error(srcp.first, E_UnknownInputFile, e.message());
+      }
     }
   }
 

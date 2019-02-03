@@ -160,6 +160,7 @@ enum ErrCodes {
   E_UnknownVisibility = 0x4544,
   E_IncludeOutsideOfLibrary = 0x4545,
   E_NestedLibrary = 0x4546,
+  E_UnknownIncludeScope = 0x4547,
 
   // external C syntax
   E_BadCSyntax = 0xe000,

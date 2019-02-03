@@ -7,33 +7,32 @@
 
 library lang
 
-include ("types.hr",
-         "numbers.hr",
-  --   "array.hr",
-  --   "assert.hr",
-         "comparable.hr",
-         "copyable.hr",
-  --   "iterable.hr",
-  --   "charnm.hr",
-  --   "comparable.hr",
-  --   "copyable.hr",
-  --   "iterable.hr",
-  --   "iterator.hr",
-  --   "numbers.hr",
-  --   "runtime.hr",
-         "sliceable.hr",
-  --   "sys.hr",
-         "string.hr",
-  --   "types.hr",
-  --   "ctypes.hr")
+include public (
+    "types.hr",
+    "numbers.hr",
+    --   "assert.hr",
+    "comparable.hr",
+    "copyable.hr",
+    --   "iterable.hr",
+    --   "charnm.hr",
+    --   "comparable.hr",
+    --   "copyable.hr",
+    --   "iterable.hr",
+    --   "iterator.hr",
+    --   "numbers.hr",
+    "sliceable.hr",
+    --   "sys.hr",
+    "string.hr",
+    --   "types.hr",
+    --   "ctypes.hr"
+    )
 
-  -- import -- private
-  -- (
-  --   "impl/array.hr",
-  --   "impl/comparable.hr",
-  --   "impl/numbers.hr",
-  --   "impl/sliceable.hr",
-  -- import "lang/impl/string.hr"
-  --   "impl/types.hr",
-  --   "cstdlib.hr")
-        )
+include (-- private
+    --   "impl/array.hr",
+    --   "impl/comparable.hr",
+    --   "impl/numbers.hr",
+    --   "impl/sliceable.hr",
+    --   "lang/impl/string.hr",
+    --   "impl/types.hr",
+    --   "cstdlib.hr"
+    )

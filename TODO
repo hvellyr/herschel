@@ -529,49 +529,35 @@ Modules compile typically into static or dynamic libraries.
   implementation files.  Libraries can use other libraries
   ("import").
 
-  Modules must be exported from a library to be "import"able by other
-  libraries.  Otherwise the modules are only visibile to other modules
-  inside the library.
-
     module xyz
 
-  define the scope of visibility of bindings and their namespace.
+  defines the scope of visibility of bindings and their namespace.
   Modules can depend on other libraries ("import").
 
   Bindings inside a module need to be exported ("export").
 
-    export foo, bar, baz
+    export (foo, bar, baz)
 
-  exports three symbols to the enclosing module/library.  In nested
-  modules this is only the next outer module (and all other nested
-  sibling modules).
+  exports three symbols to the enclosing module/library, independent
+  of how deep nested modules are.
 
-    export public foo, bar, baz
+    export public (foo, bar, baz)
 
-  exports the bindings to all nesting modules and libraries.  If a
-  library doesn't export a module the "public exported bindings" are
-  not exported either.
+  exports the bindings to all nesting modules and libraries.
 
   When a library is "imported" the import machinery figures out which
   header files are to be read: These are the source files imported via
-  "include public".  (The source files imported with "include private"
-  and "include tests" are only read when building/compiling the
-  library or its test runner itself).  This scan builds a mapping from
-  all the "module"-specs in the read header files to the bindings for
-  the module.
-
-  "import" then only imports the bindings per module read by this
-  mechanism.  A compiled library might have a faster way of publishing
-  this module->binding mapping when installed.
+  "include public".  (The source files imported with "include" and
+  "include tests" are only read when building/compiling the library or
+  its test runner itself).
 
 
   Example:
 
     in "vehicles.hrm":
 
-      library vehicles {
-        use lang
-        export vehicle                     -- export modules
+      library vehicle {
+        import lang                        -- depend on lang library
 
         include public "vehicle.hr"        -- reads real source files, all code
                                            -- imported "public" is useable as
@@ -584,9 +570,6 @@ Modules compile typically into static or dynamic libraries.
 
     in "vehicle.hr":
 
-      import lang
-
-      module vehicle
       export public *
 
       def type Vehicle
@@ -608,11 +591,6 @@ Modules compile typically into static or dynamic libraries.
 
     in "impl/vehicle.hr":
 
-      import lang
-
-      module vehicle
-
-
       def serial-number(v @ Car) -> String
           v.props["serial-number"] as String
 
@@ -626,9 +604,6 @@ Modules compile typically into static or dynamic libraries.
    in "tests/vehicle.hr":
 
      import (lang, tests)
-
-     module vehicle
-
 
      def test ("car can be sold", "vehicle, setter") {
        let iut = Car()
@@ -652,10 +627,6 @@ export, importing
 or:
 
     export (foo, length)
-
-
-    import printing
-
 
 
 
