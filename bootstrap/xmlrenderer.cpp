@@ -37,7 +37,7 @@ struct NodeRenderer<std::shared_ptr<ApplyNode>> {
     StringBuffer attrs;
 
     if (renderer->fShowNodeType && node.type().isDef())
-      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+      attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
 
     if (Properties::isTypeConvDump())
       attrs << xml::displayTypeConv(node);
@@ -63,7 +63,7 @@ struct NodeRenderer<std::shared_ptr<ArrayNode>> {
     StringBuffer attrs;
 
     if (renderer->fShowNodeType && node.type().isDef()) {
-      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+      attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
       renderer->fReferencedTypes.insert(
           std::make_pair(node.type().typeId(), node.type()));
     }
@@ -84,19 +84,21 @@ struct NodeRenderer<std::shared_ptr<ArrayTypeNode>> {
     if (auto sym = dynamic_cast<SymbolNode*>(rootType.get())) {
       StringBuffer attrs;
 
+      auto gap = "";
       if (renderer->fShowNodeType && node.type().isDef()) {
-        attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+        attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
         renderer->fReferencedTypes.insert(
             std::make_pair(node.type().typeId(), node.type()));
+        gap = " ";
       }
 
-      attrs << " array='t'";
+      attrs << gap << "array='t'";
       renderer->displayTagAttr("symbol", StrHelper(attrs.toString()), sym->name());
     }
     else if (auto ty = dynamic_cast<TypeNode*>(rootType.get())) {
       StringBuffer attrs;
 
-      attrs << " array='t'";
+      attrs << "array='t'";
       attrs << " ty='" << xmlEncode(ty->type().typeId()) << "'";
       renderer->displayTagAttr("type", StrHelper(attrs.toString()), String());
       renderer->fReferencedTypes.insert(
@@ -117,7 +119,7 @@ struct NodeRenderer<std::shared_ptr<AssignNode>> {
   {
     StringBuffer attrs;
     if (renderer->fShowNodeType && node.type().isDef()) {
-      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+      attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
       renderer->fReferencedTypes.insert(
           std::make_pair(node.type().typeId(), node.type()));
     }
@@ -162,7 +164,7 @@ struct NodeRenderer<std::shared_ptr<BlockNode>> {
     // StringBuffer attrs;
 
     // if (fShowNodeType && node.type().isDef())
-    //   attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+    //   attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
 
     // displayOpenTagAttrs("block", StrHelper(attrs.toString()));
     // displayNodeList(nullptr, node.children());
@@ -178,7 +180,7 @@ struct NodeRenderer<std::shared_ptr<BoolNode>> {
   {
     if (renderer->fShowNodeType) {
       StringBuffer attrs;
-      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+      attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
       renderer->displayEmptyTagAttrs(node.value() ? "true" : "false",
                                      StrHelper(attrs.toString()));
     }
@@ -256,7 +258,7 @@ struct NodeRenderer<std::shared_ptr<DictNode>> {
     StringBuffer attrs;
 
     if (renderer->fShowNodeType && node.type().isDef()) {
-      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+      attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
       renderer->fReferencedTypes.insert(
           std::make_pair(node.type().typeId(), node.type()));
     }
@@ -317,7 +319,7 @@ struct NodeRenderer<std::shared_ptr<IfNode>> {
   {
     StringBuffer attrs;
     if (renderer->fShowNodeType && node.type().isDef()) {
-      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+      attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
       renderer->fReferencedTypes.insert(
           std::make_pair(node.type().typeId(), node.type()));
     }
@@ -357,7 +359,8 @@ struct NodeRenderer<std::shared_ptr<KeyargNode>> {
   static void render(XmlRenderer* renderer, const KeyargNode& node)
   {
     StringBuffer attrs;
-    attrs << "key='" << node.key() << "'";
+    attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
+    attrs << " key='" << node.key() << "'";
 
     renderer->displayOpenTagAttrs("arg", StrHelper(attrs.toString()));
     renderer->displayNode(nullptr, node.value());
@@ -444,7 +447,7 @@ struct NodeRenderer<std::shared_ptr<RangeNode>> {
   {
     StringBuffer attrs;
     if (renderer->fShowNodeType && node.type().isDef()) {
-      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+      attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
       renderer->fReferencedTypes.insert(
           std::make_pair(node.type().typeId(), node.type()));
     }
@@ -551,7 +554,7 @@ struct NodeRenderer<std::shared_ptr<SlotRefNode>> {
   static void render(XmlRenderer* renderer, const SlotRefNode& node)
   {
     StringBuffer attrs;
-    attrs << " nm='" << xmlEncode(node.slotName()) << "'";
+    attrs << "nm='" << xmlEncode(node.slotName()) << "'";
 
     if (renderer->fShowNodeType && node.type().isDef()) {
       attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
@@ -580,8 +583,12 @@ struct NodeRenderer<std::shared_ptr<SymbolNode>> {
   static void render(XmlRenderer* renderer, const SymbolNode& node)
   {
     StringBuffer attrs;
-    if (renderer->fShowNodeType && node.type().isDef())
-      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+
+    auto gap = "";
+    if (renderer->fShowNodeType && node.type().isDef()) {
+      attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
+      gap = " ";
+    }
 
     zstring referTag = nullptr;
     switch (node.refersTo()) {
@@ -595,16 +602,18 @@ struct NodeRenderer<std::shared_ptr<SymbolNode>> {
     case kType: referTag = "type"; break;
     }
 
-    if (referTag)
-      attrs << " refer='" << referTag << "'";
+    if (referTag) {
+      attrs << gap << "refer='" << referTag << "'";
+      gap = " ";
+    }
 
     if (node.generics().empty()) {
       if (node.isShared())
-        attrs << " acc='shared'";
+        attrs << gap << "acc='shared'";
       renderer->displayTagAttr("symbol", StrHelper(attrs.toString()), node.name());
     }
     else {
-      attrs << " nm='" << node.name() << "'";
+      attrs << gap << "nm='" << node.name() << "'";
       if (node.isShared())
         attrs << " acc='shared'";
 
@@ -643,7 +652,7 @@ struct NodeRenderer<std::shared_ptr<TypeNode>> {
   {
     StringBuffer attrs;
     if (node.type().isDef()) {
-      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+      attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
       renderer->fReferencedTypes.insert(
           std::make_pair(node.type().typeId(), node.type()));
     }
@@ -672,7 +681,7 @@ struct NodeRenderer<std::shared_ptr<UnaryNode>> {
     zstring op_nm = unary_operator_name(node.op());
     StringBuffer attrs;
     if (renderer->fShowNodeType && node.type().isDef()) {
-      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+      attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
       renderer->fReferencedTypes.insert(
           std::make_pair(node.type().typeId(), node.type()));
     }
@@ -733,7 +742,7 @@ struct NodeRenderer<std::shared_ptr<VectorNode>> {
     StringBuffer attrs;
 
     if (renderer->fShowNodeType && node.type().isDef()) {
-      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+      attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
       renderer->fReferencedTypes.insert(
           std::make_pair(node.type().typeId(), node.type()));
     }
@@ -762,7 +771,7 @@ struct NodeRenderer<std::shared_ptr<WhileNode>> {
     StringBuffer attrs;
 
     if (renderer->fShowNodeType && node.type().isDef()) {
-      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+      attrs << "ty='" << xmlEncode(node.type().typeId()) << "'";
       renderer->fReferencedTypes.insert(
           std::make_pair(node.type().typeId(), node.type()));
     }
@@ -818,7 +827,7 @@ String xml::displayTypeConv(const AstNode& node)
 
 void xml::dump(std::shared_ptr<AstNode> node)
 {
-  XmlRenderer out{ std::make_shared<FilePort>(stderr) };
+  XmlRenderer out{ std::make_shared<FilePort>(stderr), true };
   out.render(node);
 }
 
