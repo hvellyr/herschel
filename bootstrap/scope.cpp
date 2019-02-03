@@ -156,12 +156,13 @@ void Scope::registerScopeItem(const ScopeName& name, std::shared_ptr<ScopeItem> 
 {
   hr_assert(item);
 
-  auto result = lookupItemLocalImpl(SrcPos(), name, K(showError), !K(doAutoMatch));
+  auto result = lookupItemLocalImpl(item->srcpos(), name, K(showError), !K(doAutoMatch));
   if (result.fItem) {
-    errorf(item->srcpos(), E_SymbolRedefined, "redefinition of symbol '%s'",
-           (zstring)StrHelper(name.fName));
-    errorf(result.fItem->srcpos(), E_SymbolRedefined, "symbol was defined here");
-
+    if (item->srcpos() != result.fItem->srcpos()) {
+      errorf(item->srcpos(), E_SymbolRedefined, "redefinition of symbol '%s'",
+             (zstring)StrHelper(name.fName));
+      errorf(result.fItem->srcpos(), E_SymbolRedefined, "symbol was defined here");
+    }
     return;
   }
 
@@ -546,9 +547,11 @@ bool Scope::checkForFunctionRedefinition(const SrcPos& srcpos, ScopeDomain domai
 {
   SrcPos firstSrcpos;
   if (hasFunctionNameLocal(domain, sym, &firstSrcpos, !K(doAutoMatch))) {
-    errorf(srcpos, E_Redefinition, "Redefinition of '%s'.", (zstring)StrHelper(sym));
-    errorf(firstSrcpos, E_Redefinition, "'%s' previously defined here.",
-           (zstring)StrHelper(sym));
+    if (srcpos != firstSrcpos) {
+      errorf(srcpos, E_Redefinition, "Redefinition of '%s'.", (zstring)StrHelper(sym));
+      errorf(firstSrcpos, E_Redefinition, "'%s' previously defined here.",
+             (zstring)StrHelper(sym));
+    }
     return true;
   }
 
@@ -566,10 +569,11 @@ void Scope::registerFunction(const SrcPos& srcpos, const String& funcName,
   auto result = lookupItemLocalImpl(srcpos, name, K(showError), !K(doAutoMatch));
   if (result.fItem) {
     if (result.fItem->kind() != kScopeItem_function) {
-      errorf(srcpos, E_SymbolRedefined, "Redefinition of symbol '%s'",
-             (zstring)StrHelper(name.fName));
-      errorf(result.fItem->srcpos(), E_SymbolRedefined, "symbol was defined here");
-
+      if (srcpos != result.fItem->srcpos()) {
+        errorf(srcpos, E_SymbolRedefined, "Redefinition of symbol '%s'",
+               (zstring)StrHelper(name.fName));
+        errorf(result.fItem->srcpos(), E_SymbolRedefined, "symbol was defined here");
+      }
       return;
     }
 
@@ -1052,7 +1056,8 @@ void Scope::exportSymbols(std::shared_ptr<Scope> dstScope, bool propagateOuter) 
     // selective export
     for (const auto& mapp : fMap) {
       for (const auto& baseScopep : mapp.second) {
-        ScopeName fullKey(mapp.first.fDomain, qualifyId(baseScopep.first, mapp.first.fName));
+        ScopeName fullKey(mapp.first.fDomain,
+                          qualifyId(baseScopep.first, mapp.first.fName));
 
         VizType vizType = exportSymbolVisibility(fullKey);
         //log(kInfo, String("export sym ") + qualifyId(baseScopep.first, mapp.first.fName) + " " + vizType);
