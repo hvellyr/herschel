@@ -1327,9 +1327,11 @@ bool Type::isBool() const
 
 bool Type::isAnyFloat() const
 {
-  const auto& prop = typeProperty(!K(mustExist));
-  if (prop.isValid())
-    return prop.isAnyFloat();
+  if (isDef()) {
+    const auto& prop = typeProperty(!K(mustExist));
+    if (prop.isValid())
+      return prop.isAnyFloat();
+  }
   return false;
 }
 
@@ -1342,34 +1344,38 @@ bool Type::isAnyInt() const
 
 bool Type::isAnySignedInt() const
 {
-  const auto& prop = typeProperty(!K(mustExist));
-  if (prop.isValid())
-    return prop.isSigned() && prop.isAnyInt();
+  if (isDef()) {
+    const auto& prop = typeProperty(!K(mustExist));
+    if (prop.isValid())
+      return prop.isSigned() && prop.isAnyInt();
+  }
   return false;
 }
 
 
 bool Type::isAnyUInt() const
 {
-  // if ( isBuiltinType(Names::kIntegerTypeName))
-  //   return true;
+  if (isDef()) {
+    // if ( isBuiltinType(Names::kIntegerTypeName))
+    //   return true;
 
-  const auto& prop = typeProperty(!K(mustExist));
-  if (prop.isValid())
-    return !prop.isSigned() && prop.isAnyInt();
+    const auto& prop = typeProperty(!K(mustExist));
+    if (prop.isValid())
+      return !prop.isSigned() && prop.isAnyInt();
+  }
   return false;
 }
 
 
 bool Type::isClassTypeOf() const
 {
-  return isBuiltinType(Names::kClassTypeName);
+  return isDef() && isBuiltinType(Names::kClassTypeName);
 }
 
 
 bool Type::isImaginary() const
 {
-  if (isAnyNumber()) {
+  if (isDef() && isAnyNumber()) {
     return fIsImaginary;
   }
   return false;
@@ -1690,7 +1696,7 @@ Type Type::setConstraints(const TypeConstVector& newConstraints) const
 
 bool Type::isOpen() const
 {
-  return (fImpl && fImpl->isOpen());
+  return fImpl && fImpl->isOpen();
 }
 
 
