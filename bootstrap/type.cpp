@@ -683,21 +683,21 @@ public:
   {
     StringBuffer buf;
     buf << "<ty:ref" << (fIsOpen ? " gen='t'" : "") << (!isValue ? " ref='t'" : "")
-        << " nm='" << fName << "'>\n";
+        << " nm='" << fName << "'>";
     if (!fGenerics.empty()) {
-      buf << "<ty:gen>\n";
+      buf << "\n<ty:gen>\n";
       for (const auto& g : fGenerics)
         buf << g.toString();
-      buf << "</ty:gen>\n";
+      buf << "</ty:gen>";
     }
     if (!fConstraints.empty()) {
       if (fConstraints.size() == 1)
         buf << fConstraints[0].toString();
       else {
-        buf << "<ty:consts>\n";
+        buf << "\n<ty:consts>\n";
         for (const auto& c : fConstraints)
           buf << c.toString();
-        buf << "</ty:consts>\n";
+        buf << "</ty:consts>";
       }
     }
     buf << "</ty:ref>\n";
