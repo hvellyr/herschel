@@ -298,7 +298,7 @@ $(COMMON_LIB): $(LIBHRCOMMON_OBJS)
 #--------
 LIBHRC_LIBX: $(LIBHRC_LIB)
 
-$(LIBHRC_LIB): $(LIBHRC_OBJS)
+$(LIBHRC_LIB): $(LIBHRC_OBJS) $(COMMON_LIB)
 	@echo "[LIB] $@"
 	@$(AR) cru $@ $^
 
