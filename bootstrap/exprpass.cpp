@@ -1474,6 +1474,23 @@ Token FirstPass::parseAccess(const Token& expr)
     Token symToken = fToken;
     nextToken();
 
+    if (fToken == kParanOpen) {
+      auto call = parseAccess(symToken);
+      if (call.isSeq() && call.count() == 2) {
+        hr_assert(call[1].leftToken() == kParanOpen);
+
+        auto& c = call[1].children();
+        c.insert(c.begin(), expr);
+
+        return call;
+      }
+      else {
+        hr_invalid("unexpected call-syntax");
+      }
+
+      return Token() << expr << dotToken << call;
+    }
+
     return parseAccess(Token() << expr << dotToken << symToken);
   }
 
