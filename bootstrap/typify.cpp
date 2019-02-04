@@ -1572,6 +1572,7 @@ void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node,
           newArgs.push_back(iArg->second);
         }
         else {
+          hr_assert(param->initExpr());
           newArgs.push_back(makeKeyargNode(param->scope(), param->srcpos(), param->key(),
                                            param->initExpr()));
         }

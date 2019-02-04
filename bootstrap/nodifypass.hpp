@@ -127,6 +127,7 @@ private:
   void paramsNodeListToSlotList(TypeSlotList* slotTypes, FunctionParamVector* funcParams,
                                 const NodeList& nl) const;
 
+  std::shared_ptr<AstNode> createDefaultInitExpr(const SrcPos& srcpos, Type type);
   std::shared_ptr<AstNode> parseSlotParam(const Token& expr);
   void parseSlotParams(NodeList* parameters, const TokenVector& seq);
 

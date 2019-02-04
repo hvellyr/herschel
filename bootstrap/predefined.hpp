@@ -346,6 +346,7 @@ public:
   const static String kInitFuncName;
   const static String kValueKeyargName;
   const static String kOnAllocFuncName;
+  const static String kNullValueFuncName;
 };
 
 }  // namespace herschel
