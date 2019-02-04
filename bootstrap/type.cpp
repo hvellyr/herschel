@@ -363,7 +363,6 @@ namespace {
           return true;
 
         Type right = scope.lookupType(right0.typeName(), K(showAmbiguousSymDef));
-
         Type inheritance;
         if (right.isType() || right.isRecord()) {
           inheritance = right.typeInheritance();
@@ -708,6 +707,17 @@ public:
   bool matchGenerics(TypeCtx& localCtx, const Type& right0, const Scope& scope,
                      const SrcPos& srcpos) const override
   {
+    if (fIsOpen) {
+      if (localCtx.hasType(fName)) {
+        return isContravariant(localCtx.lookupType(fName), right0, scope, srcpos, K(reportErrors));
+      }
+      else {
+        localCtx.registerType(fName, right0);
+      }
+
+      return true;
+    }
+
     if (matchGenericsImpl(localCtx, fName, fGenerics, right0, scope, srcpos))
       return true;
 
