@@ -418,9 +418,11 @@ struct NodeTypifier<std::shared_ptr<AssignNode>> {
       errorf(node->rvalue()->srcpos(), E_TypeMismatch,
              "Undefined type in assignment right hand value");
     }
-    else if (!isContravariant(ltype, rtype, *node->scope(), node->srcpos()) &&
+    else if (!isCovariant(ltype, rtype, *node->scope(), node->srcpos()) &&
              !containsAny(rtype, node->srcpos())) {
-      errorf(node->rvalue()->srcpos(), E_TypeMismatch, "type mismatch in assignment");
+      error(node->rvalue()->srcpos(), E_TypeMismatch,
+            String("type mismatch in assignment: ") + ltype.typeId() + " <- " +
+                rtype.typeId());
     }
     else if (!ltype.isDef()) {
       // infer the vardef type from rvalue expression
