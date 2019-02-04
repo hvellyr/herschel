@@ -1619,6 +1619,9 @@ Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeLis
       else if (param->flags() == kNamedArg) {
         auto keyval = findKeyedArg(args, argidx, param->key());
         if (!keyval.fKeyarg) {
+          // I think this can't happen anymore.  Default parameter
+          // values are rendered in place in the nodify (?) phase.
+          hr_invalid("");
           if (param->initExpr()) {
             if (param->initExpr()->type().isOpen()) {
               Type iety = param->initExpr()->type().replaceGenerics(localCtx);
@@ -1637,6 +1640,13 @@ Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeLis
         else {
           if (keyval.fKeyarg->value()->type().isOpen()) {
             Type keyvalty = keyval.fKeyarg->value()->type().replaceGenerics(localCtx);
+            if (auto applyNd = std::dynamic_pointer_cast<ApplyNode>(keyval.fKeyarg->value())) {
+              for (auto cNd : applyNd->children()) {
+                Type cNdTy = cNd->type().replaceGenerics(localCtx);
+                if (cNdTy.isDef())
+                  cNd->setType(cNdTy);
+              }
+            }
 
             if (keyvalty.isDef())
               keyval.fKeyarg->value()->setType(keyvalty);
