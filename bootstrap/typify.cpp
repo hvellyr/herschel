@@ -1619,13 +1619,33 @@ Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeLis
       else if (param->flags() == kNamedArg) {
         auto keyval = findKeyedArg(args, argidx, param->key());
         if (!keyval.fKeyarg) {
-          // if the function prototype has been parsed as interface, the init
-          // expressions are not passed and therefore we don't need to check
-          // them here.
-          if (param->initExpr())
+          if (param->initExpr()) {
+            if (param->initExpr()->type().isOpen()) {
+              Type iety = param->initExpr()->type().replaceGenerics(localCtx);
+
+              if (iety.isDef())
+                param->initExpr()->setType(iety);
+              else
+                error(srcpos, E_TypeMismatch,
+                      String("init value to argument ") + (int)i + " of function " +
+                          funcName + " has unmatched generic type");
+            }
+
             checkArgParamType(localCtx, param, param->initExpr(), i, funcName);
+          }
         }
         else {
+          if (keyval.fKeyarg->value()->type().isOpen()) {
+            Type keyvalty = keyval.fKeyarg->value()->type().replaceGenerics(localCtx);
+
+            if (keyvalty.isDef())
+              keyval.fKeyarg->value()->setType(keyvalty);
+            else
+              error(srcpos, E_TypeMismatch,
+                    String("init value to argument ") + (int)i + " of function " +
+                        funcName + " has unmatched generic type");
+          }
+
           checkArgParamType(localCtx, param, keyval.fKeyarg->value(), keyval.fIdx,
                             funcName);
           argIndicesUsed.insert(keyval.fIdx);
