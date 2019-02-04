@@ -3002,6 +3002,30 @@ bool isCovariantToEveryTypeInInters(const Type& type, const TypeVector& vect0,
 }
 
 
+bool isCovariantToEveryTypeInInters(const TypeVector& vect0, const Type& type,
+                                    const Scope& scope, const SrcPos& srcpos,
+                                    bool reportErrors)
+{
+  for (const auto& ty : vect0) {
+    if (!isCovariant(ty, type, scope, srcpos, reportErrors))
+      return false;
+  }
+  return true;
+}
+
+
+bool isCovariantToAtLeastOnTypeInUnion(const TypeVector& vect0, const Type& type,
+                                       const Scope& scope, const SrcPos& srcpos,
+                                       bool reportErrors)
+{
+  for (const auto& ty : vect0) {
+    if (isCovariant(ty, type, scope, srcpos, reportErrors))
+      return true;
+  }
+  return false;
+}
+
+
 bool isCoOrInvariantToEveryTypeInUnion(const Type& type, const TypeVector& vect0,
                                        const Scope& scope, const SrcPos& srcpos,
                                        bool reportErrors)
@@ -3127,9 +3151,29 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
     return false;
   }
 
-  if (left0.isOpen() && right0.isOpen())
+  if (left0.isOpen() && right0.isOpen()) {
     // TODO: handle complex generic types like 'T[]
-    return isSameType(left0, right0, scope, srcpos, reportErrors);
+    if (isSameType(left0, right0, scope, srcpos, reportErrors))
+      return true;
+
+    if (left0.isUnion()) {
+      auto rty = resolveType(right0, scope);
+      if (rty.isType() || rty.isRecord()) {
+        return isCovariantToAtLeastOnTypeInUnion(left0.unionTypes(), rty, scope, srcpos,
+                                                 reportErrors);
+      }
+      // TODO
+    }
+    else if (left0.isIntersection()) {
+      auto rty = resolveType(right0, scope);
+      if (rty.isType() || rty.isRecord()) {
+        return isCovariantToEveryTypeInInters(left0.unionTypes(), rty, scope, srcpos,
+                                              reportErrors);
+      }
+      // TODO
+    }
+    return false;
+  }
 
   Type right;
   Type left;
@@ -3220,6 +3264,10 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
 
       return isCovariantForAllTypesInUnion(left.unionTypes(), right.unionTypes(), scope,
                                            srcpos, reportErrors);
+    }
+    else if (right.isType() || right.isRecord()) {
+      return isCovariantToAtLeastOnTypeInUnion(left.unionTypes(), right, scope, srcpos,
+                                               reportErrors);
     }
     return false;
   }

@@ -498,8 +498,7 @@ TEST_CASE("Covariance for sliceable arrays", "[type]")
   REQUIRE(!herschel::isCovariant(
       Type::makeArray(Type::makeTypeRef(String("Ultra"), K(isValue)), 0, K(isValue)),
       Type::makeType(Names::kSliceableTypeName,
-                     makeVector(Type::makeInt32(), Type::makeTypeRef("Special")),
-                     Type()),
+                     makeVector(Type::makeInt32(), Type::makeTypeRef("Special")), Type()),
       *scope, SrcPos(), !K(reportError)));
 }
 
@@ -753,6 +752,52 @@ TEST_CASE("Match generics for simple generics", "[type]")
   REQUIRE(!localCtx.hasType(String("T")));
   REQUIRE(Type::makeTypeRef("Abc") == localCtx.lookupType(String("K")));
   REQUIRE(Type::makeTypeRef("Def") == localCtx.lookupType(String("E")));
+}
+
+
+TEST_CASE("Match generics for complex generics", "[type]")
+{
+  auto scope = testScopeSetupGenerics();
+
+  SECTION("Is same")
+  {
+    TypeCtx localCtx;
+
+    Type mapGen = (Type::makeTypeRef(
+        String("Mappable"),
+        makeVector(Type::makeTypeRef(String("K"), K(isopen), !K(isvalue)),
+                   Type::makeTypeRef(String("E"), K(isopen), !K(isvalue))),
+        !K(isvalue)));
+    Type mapCon = (Type::makeTypeRef(
+        String("Mappable"),
+        makeVector(Type::makeTypeRef(String("K"), K(isopen), !K(isvalue)),
+                   Type::makeTypeRef(String("E"), K(isopen), !K(isvalue))),
+        !K(isvalue)));
+    REQUIRE(mapGen.matchGenerics(localCtx, mapCon, *scope, SrcPos()));
+
+    REQUIRE(localCtx.hasType(String("K")));
+    REQUIRE(localCtx.hasType(String("E")));
+    REQUIRE(!localCtx.hasType(String("T")));
+  }
+
+  SECTION("Union is covariant")
+  {
+    Type mapGen = (Type::makeTypeRef(
+        String("Mappable"),
+        makeVector(Type::makeTypeRef(String("K"), K(isopen), !K(isvalue)),
+                   Type::makeTypeRef(String("E"), K(isopen), !K(isvalue))),
+        !K(isvalue)));
+    Type undef = Type::makeTypeRef(String("Undef"), !K(isvalue));
+
+    Type unionGen = Type::makeUnion(makeVector(mapGen, undef), K(isValue));
+
+    Type mapCon = Type::makeTypeRef(
+        String("Mappable"),
+        makeVector(Type::makeTypeRef("Abc"), Type::makeTypeRef("Def")), !K(isvalue));
+
+    REQUIRE(isCovariant(unionGen, mapGen, *scope, SrcPos(), !K(reportErrors)));
+    REQUIRE(isCovariant(unionGen, mapCon, *scope, SrcPos(), !K(reportErrors)));
+  }
 }
 
 
