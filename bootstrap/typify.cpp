@@ -73,7 +73,7 @@ struct NodeTypifier<std::shared_ptr<ArrayTypeNode>> {
     auto symnd = std::dynamic_pointer_cast<SymbolNode>(node->typeNode());
     auto type = (symnd ? symnd->type() : node->typeNode()->type());
     auto type1 = node->scope()->normalizeType(type);
-    node->setType(Type::makeClassTypeOf(Type::makeArray(type1, 0, K(isValue))));
+    node->setType(Type::makeArray(type1, 0, K(isValue)));
   }
 };
 
@@ -84,7 +84,7 @@ struct NodeTypifier<std::shared_ptr<TypeNode>> {
   {
     hr_assert(node->type().isDef());
     Type type1 = node->scope()->normalizeType(node->type());
-    node->setType(Type::makeClassTypeOf(type1));
+    node->setType(type1);
   }
 };
 

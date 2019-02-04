@@ -2592,15 +2592,11 @@ std::shared_ptr<AstNode> SecondPass::parseTypeExpr(const Token& expr, bool inArr
     hr_assert(expr[0].count() == 2);
     hr_assert(expr[1].isNested());
 
-    if (expr[0].count() == 2 && expr[0][0] == kQuote && expr[0][1] == kSymbol) {
-      errorf(expr.srcpos(), E_BadGenericType, "Generic type is not allowed here");
-      return nullptr;
-    }
-    else if (expr[1].leftToken() == kBracketOpen) {
+    if (expr[1].leftToken() == kBracketOpen) {
       std::shared_ptr<AstNode> typeNode;
       if (expr[0][0] == kQuote && expr[0][1] == kSymbol) {
         Type ty = genericTypeRef(expr[0][1].idValue(), K(isValue));
-        typeNode = makeTypeNode(fScope, expr.srcpos(), ty);
+        typeNode = makeTypeNode(fScope, expr.srcpos(), Type::makeClassTypeOf(ty));
       }
       else {
         hr_assert(expr[0][0] == kSymbol || expr[0][0].isSeq());
