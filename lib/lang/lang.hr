@@ -8,8 +8,10 @@
 library lang
 
 include public (
+    "runtime.hr",
     "types.hr",
     "numbers.hr",
+    "array.hr",
     --   "assert.hr",
     "comparable.hr",
     "copyable.hr",
@@ -28,7 +30,7 @@ include public (
     )
 
 include (-- private
-    --   "impl/array.hr",
+    "impl/array.hr",
     --   "impl/comparable.hr",
     --   "impl/numbers.hr",
     --   "impl/sliceable.hr",

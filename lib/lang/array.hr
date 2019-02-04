@@ -10,9 +10,11 @@ export public (
     realloc)
 
 
+def generic size(array @ 'T[]) -> Int ...
+
 def generic realloc(array @ 'T[],
                     new-size : Int,
-                    init-value : 'T = class<'T>.null-value) -> 'T[] ...
+                    init-value : 'T = Type<'T>.null-value()) -> 'T[] ...
   ~ Reallocates @var{array} by copying it into a new array of
   @var{new-size} items.
 

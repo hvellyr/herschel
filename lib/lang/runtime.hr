@@ -5,11 +5,18 @@
 --
 -- This source code is released under the BSD License.
 
-module lang
-export public *
+export public (
+    Type,
+    init-functor,
+    type-of,
+    isa?,
+    null-value,
+    allocate,
+    allocate*,
+    Range)
 
 
-def type Type<T>
+def type Type<Z>
     ~ The type of types themselves. ~
 
 
@@ -31,7 +38,7 @@ def generic isa?(obj @ 'T, ty @ Type<'V>) -> Bool ...
 -- Default value
 ------------------------------------------------------------------------------
 
-def generic null-value(ty @ Type<'T>) -> 'T ...
+def generic null-value(ty @ Type<'Y>) -> 'Y ...
   ~ Returns the default null value for type @type{T}.~
 
 
@@ -49,9 +56,9 @@ def generic allocate(ty @ Type<'T>) -> 'T ...
     object is not initialized! ~
 
 
-def generic allocate*(ty @ Type<'T>,
-                      value : 'T = ty.null-value(),
-                      sizes ...) -> 'T[] ...
+def generic allocate*(ty @ Type<'X>,
+                      value : 'X = Type<'X>.null-value(),
+                      sizes ...) -> 'X[] ...
     ~ Allocate an array of @var{ty} with @var{sizes} slots.  Each slot is
     initialized to @var{value}.  The size is computed from all the product of
     all values in @var{sizes}, i.e. three value @code{3, 7, 11} would result
@@ -60,11 +67,11 @@ def generic allocate*(ty @ Type<'T>,
 
 ------------------------------------------------------------------------------
 
-def type Range<T>
+-- def type Range<T>
 
-module Range
-{
-  export public (init)
+-- module Range
+-- {
+--   export public (init)
 
-  def init(range : Range<'T>, from : 'T, to : 'T, step : 'T) -> Range<'T> ...
-}
+--   def init(range : Range<'T>, from : 'T, to : 'T, step : 'T) -> Range<'T> ...
+-- }

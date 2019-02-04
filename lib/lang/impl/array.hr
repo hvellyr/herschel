@@ -5,24 +5,21 @@
 --
 -- This source code is released under the BSD License.
 
-module lang
-
 
 def realloc(array @ 'T[],
             new-size : Int,
-            init-value : 'T = class<'T>.null-value()) -> 'T[]
+            init-value : 'T = Type<'T>.null-value()) -> 'T[]
 {
-  if (new-size > array.size) {
+  if (new-size > array.size()) {
     let t = 'T[](new-size)
-    for (i : 0 .. array.size - 1)
+    for (i in 0 .. array.size() - 1)
       t[i] = array[i]
-    for (i in array.size .. newsize - 1)
+    for (i in array.size() .. new-size - 1)
       t[i] = init-value
     t
   }
-  else if (new-size < array.size) {
+  else if (new-size < array.size()) {
     let t = 'T[](new-size)
-    for (i in 0 .. new-size - 1)
     for (i in 0 .. new-size - 1)
       t[i] = array[i]
     t
