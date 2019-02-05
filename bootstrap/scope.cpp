@@ -156,7 +156,8 @@ void Scope::registerScopeItem(const ScopeName& name, std::shared_ptr<ScopeItem> 
 {
   hr_assert(item);
 
-  auto result = lookupItemLocalImpl(item->srcpos(), name, K(showError), !K(doAutoMatch));
+  auto result = lookupItemLocalImpl(item->srcpos(), name, K(showError), kScopeItem_any,
+                                    !K(doAutoMatch));
   if (result.fItem) {
     if (item->srcpos() != result.fItem->srcpos()) {
       errorf(item->srcpos(), E_SymbolRedefined, "redefinition of symbol '%s'",
@@ -180,44 +181,53 @@ void Scope::registerScopeItem(const ScopeName& name, std::shared_ptr<ScopeItem> 
 
 Scope::LookupResult Scope::lookupItemLocalImpl(const SrcPos& srcpos,
                                                const ScopeName& name, bool showError,
+                                               ScopeItemKind filterKind,
                                                bool doAutoMatch) const
 {
+  auto isKind = [](ScopeItem* item, ScopeItemKind filterKind) {
+    return (item->kind() & filterKind) != 0;
+  };
+
   auto src_name = deroot(name.fName);
   ScopeName base(name.fDomain, herschel::baseName(src_name));
   ScopeName ns(name.fDomain, herschel::nsName(src_name));
 
   NsScopeMap::const_iterator it = fMap.find(base);
   if (it != fMap.end()) {
-    if (doAutoMatch && !hasNamespace(src_name)) {
-      if (it->second.size() == 1) {
-        return LookupResult(it->second.begin()->second.get(), !K(inOuterFunc));
-      }
-      else if (showError) {
-        errorf(srcpos, E_AmbiguousSym, "ambiguous symbol '%s' usage",
-               (zstring)StrHelper(base.fName));
-        for (const auto& space : it->second) {
-          String fullKey = qualifyId(space.first, it->first.fName);
-          errorf(space.second->srcpos(), E_AmbiguousSym, "symbol '%s' was defined here",
-                 (zstring)StrHelper(fullKey));
+    if (isKind(it->second.begin()->second.get(), filterKind)) {
+      if (doAutoMatch && !hasNamespace(src_name)) {
+        if (it->second.size() == 1) {
+          return LookupResult(it->second.begin()->second.get(), !K(inOuterFunc));
+        }
+        else if (showError) {
+          errorf(srcpos, E_AmbiguousSym, "ambiguous symbol '%s' usage",
+                 (zstring)StrHelper(base.fName));
+          log(kInfo, String("       ") + name.fName);
+          for (const auto& space : it->second) {
+            String fullKey = qualifyId(space.first, it->first.fName);
+            errorf(space.second->srcpos(), E_AmbiguousSym, "symbol '%s' was defined here",
+                   (zstring)StrHelper(fullKey));
+          }
         }
       }
-    }
-    else {
-      BaseScopeMap::const_iterator vit = it->second.find(ns.fName);
-      if (vit != it->second.end()) {
-        return LookupResult(vit->second.get(), !K(inOuterFunc));
-      }
+      else {
+        BaseScopeMap::const_iterator vit = it->second.find(ns.fName);
+        if (vit != it->second.end()) {
+          return LookupResult(vit->second.get(), !K(inOuterFunc));
+        }
 
-      for (const auto& bsp : it->second) {
-        if (bsp.first.endsWith(String(".") + ns.fName)) {
-          return LookupResult(bsp.second.get(), !K(inOuterFunc));
+        for (const auto& bsp : it->second) {
+          if (bsp.first.endsWith(String(".") + ns.fName)) {
+            return LookupResult(bsp.second.get(), !K(inOuterFunc));
+          }
         }
       }
     }
   }
 
   for (const auto& impScope : fImportedScopes) {
-    auto lv = impScope.second->lookupItemLocalImpl(srcpos, name, showError, doAutoMatch);
+    auto lv = impScope.second->lookupItemLocalImpl(srcpos, name, showError, filterKind,
+                                                   doAutoMatch);
     if (lv.fItem)
       return lv;
   }
@@ -227,13 +237,14 @@ Scope::LookupResult Scope::lookupItemLocalImpl(const SrcPos& srcpos,
 
 
 Scope::LookupResult Scope::lookupItem(const SrcPos& srcpos, const ScopeName& name,
-                                      bool showError) const
+                                      bool showError, ScopeItemKind filterKind) const
 {
   const Scope* scope = this;
   bool crossedFuncLevel = false;
 
   while (scope) {
-    auto lv = scope->lookupItemLocalImpl(srcpos, name, showError, K(doAutoMatch));
+    auto lv =
+        scope->lookupItemLocalImpl(srcpos, name, showError, filterKind, K(doAutoMatch));
     if (lv.fItem)
       return LookupResult(lv.fItem, crossedFuncLevel);
 
@@ -248,7 +259,7 @@ Scope::LookupResult Scope::lookupItem(const SrcPos& srcpos, const ScopeName& nam
 
 bool Scope::hasName(ScopeDomain domain, const String& name, SrcPos* srcpos) const
 {
-  auto lv = lookupItem(SrcPos(), ScopeName(domain, name), !K(showError));
+  auto lv = lookupItem(SrcPos(), ScopeName(domain, name), !K(showError), kScopeItem_any);
   if (lv.fItem) {
     *srcpos = lv.fItem->srcpos();
     return true;
@@ -260,8 +271,8 @@ bool Scope::hasName(ScopeDomain domain, const String& name, SrcPos* srcpos) cons
 bool Scope::hasNameLocal(ScopeDomain domain, const String& name, SrcPos* srcpos,
                          bool doAutoMatch) const
 {
-  auto lv =
-      lookupItemLocalImpl(SrcPos(), ScopeName(domain, name), !K(showError), doAutoMatch);
+  auto lv = lookupItemLocalImpl(SrcPos(), ScopeName(domain, name), !K(showError),
+                                kScopeItem_any, doAutoMatch);
   if (lv.fItem) {
     *srcpos = lv.fItem->srcpos();
     return true;
@@ -344,8 +355,9 @@ void Scope::registerType(const SrcPos& srcpos, const String& name, const Type& t
 
 const Type& Scope::lookupType(const String& name, bool showAmbiguousSymDef) const
 {
-  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef);
-  if (lv.fItem && lv.fItem->kind() == kScopeItem_type)
+  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef,
+                       kScopeItem_type);
+  if (lv.fItem)
     return dynamic_cast<const TypeScopeItem*>(lv.fItem)->type();
 
   return sInvalidType;
@@ -504,8 +516,9 @@ void Scope::registerMacro(const SrcPos& srcpos, const String& name,
 const Macro* Scope::lookupMacro(const SrcPos& srcpos, const String& name,
                                 bool showAmbiguousSymDef) const
 {
-  auto lv = lookupItem(srcpos, ScopeName(kNormal, name), showAmbiguousSymDef);
-  if (lv.fItem && lv.fItem->kind() == kScopeItem_macro)
+  auto lv =
+      lookupItem(srcpos, ScopeName(kNormal, name), showAmbiguousSymDef, kScopeItem_macro);
+  if (lv.fItem)
     return dynamic_cast<const MacroScopeItem*>(lv.fItem)->macro();
   return nullptr;
 }
@@ -516,14 +529,11 @@ const Macro* Scope::lookupMacro(const SrcPos& srcpos, const String& name,
 bool Scope::hasFunctionNameLocal(ScopeDomain domain, const String& name, SrcPos* srcpos,
                                  bool doAutoMatch) const
 {
-  auto lv =
-      lookupItemLocalImpl(SrcPos(), ScopeName(domain, name), !K(showError), doAutoMatch);
+  auto lv = lookupItemLocalImpl(SrcPos(), ScopeName(domain, name), !K(showError),
+                                kScopeItem_function, doAutoMatch);
   if (lv.fItem) {
-    if (lv.fItem->kind() != kScopeItem_function) {
-      *srcpos = lv.fItem->srcpos();
-      return true;
-    }
-    // check return type and parameter types
+    *srcpos = lv.fItem->srcpos();
+    return true;
   }
 
   for (const auto& impScope : fImportedScopes) {
@@ -559,7 +569,8 @@ void Scope::registerFunction(const SrcPos& srcpos, const String& funcName,
 
   const ScopeName& name = ScopeName(kNormal, funcName);
 
-  auto result = lookupItemLocalImpl(srcpos, name, K(showError), !K(doAutoMatch));
+  auto result =
+      lookupItemLocalImpl(srcpos, name, K(showError), kScopeItem_any, !K(doAutoMatch));
   if (result.fItem) {
     if (result.fItem->kind() != kScopeItem_function) {
       if (srcpos != result.fItem->srcpos()) {
@@ -598,8 +609,9 @@ void Scope::registerFunction(const SrcPos& srcpos, const String& funcName,
 std::shared_ptr<FunctionNode> Scope::lookupFunction(const String& name,
                                                     bool showAmbiguousSymDef) const
 {
-  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef);
-  if (lv.fItem && lv.fItem->kind() == kScopeItem_function) {
+  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef,
+                       kScopeItem_function);
+  if (lv.fItem) {
     const auto& defs = dynamic_cast<const FunctionScopeItem*>(lv.fItem)->nodes();
 
     // TODO: handle type overloading
@@ -622,8 +634,9 @@ void Scope::registerVar(const SrcPos& srcpos, const String& name,
 const AstNode* Scope::lookupVar(const SrcPos& srcpos, const String& name,
                                 bool showAmbiguousSymDef) const
 {
-  auto lv = lookupItem(srcpos, ScopeName(kNormal, name), showAmbiguousSymDef);
-  if (lv.fItem && lv.fItem->kind() == kScopeItem_variable)
+  auto lv = lookupItem(srcpos, ScopeName(kNormal, name), showAmbiguousSymDef,
+                       kScopeItem_variable);
+  if (lv.fItem)
     return dynamic_cast<const NodeScopeItem*>(lv.fItem)->node();
   return nullptr;
 }
@@ -632,7 +645,8 @@ const AstNode* Scope::lookupVar(const SrcPos& srcpos, const String& name,
 const AstNode* Scope::lookupVarOrFunc(const SrcPos& srcpos, const String& name,
                                       bool showAmbiguousSymDef) const
 {
-  auto lv = lookupItem(srcpos, ScopeName(kNormal, name), showAmbiguousSymDef);
+  auto lv = lookupItem(srcpos, ScopeName(kNormal, name), showAmbiguousSymDef,
+                       ScopeItemKind(kScopeItem_variable | kScopeItem_function));
   if (lv.fItem) {
     if (lv.fItem->kind() == kScopeItem_variable)
       return dynamic_cast<const NodeScopeItem*>(lv.fItem)->node();
@@ -728,116 +742,115 @@ Scope::lookupBestFunctionOverload(const String& name,
                                   const std::vector<FunctionParameter>& argTypes,
                                   const SrcPos& srcpos, bool showAmbiguousSymDef) const
 {
-  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef);
+  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef,
+                       kScopeItem_function);
   if (lv.fItem) {
-    if (lv.fItem->kind() == kScopeItem_function) {
-      const auto& defs = dynamic_cast<const FunctionScopeItem*>(lv.fItem)->nodes();
+    const auto& defs = dynamic_cast<const FunctionScopeItem*>(lv.fItem)->nodes();
 
-      std::vector<Candidate> candidates;
+    std::vector<Candidate> candidates;
 
-      for (const auto& def : defs) {
-        if (auto funcDef = std::dynamic_pointer_cast<FunctionNode>(def)) {
-          const auto params = separateParams(funcDef->params());
-          const auto args = separateArgTypes(argTypes);
+    for (const auto& def : defs) {
+      if (auto funcDef = std::dynamic_pointer_cast<FunctionNode>(def)) {
+        const auto params = separateParams(funcDef->params());
+        const auto args = separateArgTypes(argTypes);
 
-          std::unique_ptr<Candidate> candidate;
-          auto argRestIdx = params.fPositional.size();
-          if ((params.fRest && (params.fPositional.size() <= args.fPositional.size())) ||
-              (params.fPositional.size() == args.fPositional.size())) {
-            if (params.fPositional.size() == 0) {
-              candidate = std::make_unique<Candidate>(VarDistKey(), def);
+        std::unique_ptr<Candidate> candidate;
+        auto argRestIdx = params.fPositional.size();
+        if ((params.fRest && (params.fPositional.size() <= args.fPositional.size())) ||
+            (params.fPositional.size() == args.fPositional.size())) {
+          if (params.fPositional.size() == 0) {
+            candidate = std::make_unique<Candidate>(VarDistKey(), def);
+          }
+          else {
+            auto distKey = VarDistKey{};
+
+            for (auto i = 0; i < params.fPositional.size(); ++i) {
+              auto dist = varianceDistance(params.fPositional[i]->type(),
+                                           args.fPositional[i].type(), *this, srcpos,
+                                           showAmbiguousSymDef);
+              if (!dist || *dist < 0) {
+                distKey.reset();
+                break;
+              }
+              else {
+                distKey.add(*dist);
+              }
             }
-            else {
-              auto distKey = VarDistKey{};
 
-              for (auto i = 0; i < params.fPositional.size(); ++i) {
-                auto dist = varianceDistance(params.fPositional[i]->type(),
-                                             args.fPositional[i].type(), *this, srcpos,
-                                             showAmbiguousSymDef);
-                if (!dist || *dist < 0) {
-                  distKey.reset();
-                  break;
-                }
-                else {
-                  distKey.add(*dist);
-                }
-              }
-
-              if (distKey) {
-                candidate = std::make_unique<Candidate>(distKey, def);
-              }
+            if (distKey) {
+              candidate = std::make_unique<Candidate>(distKey, def);
             }
           }
+        }
 
-          if (candidate) {
-            if (args.fNamed.empty()) {
-              for (auto i = 0; i < params.fNamed.size(); ++i) {
-                candidate->fDist.add(0);
-              }
+        if (candidate) {
+          if (args.fNamed.empty()) {
+            for (auto i = 0; i < params.fNamed.size(); ++i) {
+              candidate->fDist.add(0);
             }
-            else {
-              std::set<String> testedNamedArgs;
+          }
+          else {
+            std::set<String> testedNamedArgs;
 
-              for (const auto& nmParam : params.fNamed) {
-                testedNamedArgs.insert(nmParam->key());
+            for (const auto& nmParam : params.fNamed) {
+              testedNamedArgs.insert(nmParam->key());
 
-                auto iArg = args.fNamed.find(nmParam->key());
-                if (iArg != args.fNamed.end()) {
-                  auto dist = varianceDistance(nmParam->type(), iArg->second.type(),
-                                               *this, srcpos, showAmbiguousSymDef);
-                  if (!dist || *dist < 0) {
-                    candidate.reset();
-                    break;
-                  }
-                  else {
-                    candidate->fDist.add(*dist);
-                  }
-                }
-                else {
-                  candidate->fDist.add(0);
-                }
-              }
-
-              for (const auto& nmArgP : args.fNamed) {
-                if (testedNamedArgs.count(nmArgP.first) == 0) {
-                  // an named argument which haven't been matched a
-                  // named parameter definition above makes this
-                  // function def not matching.
+              auto iArg = args.fNamed.find(nmParam->key());
+              if (iArg != args.fNamed.end()) {
+                auto dist = varianceDistance(nmParam->type(), iArg->second.type(), *this,
+                                             srcpos, showAmbiguousSymDef);
+                if (!dist || *dist < 0) {
                   candidate.reset();
                   break;
                 }
-              }
-            }
-          }
-
-          if (candidate) {
-            if (args.fPositional.size() > argRestIdx) {
-              if (params.fRest) {
-                // TODO: build an array type of all rest arguments in
-                // args.fRest and see whether it is contravariant to
-                // params.fRest.  If all arg-types are identical it
-                // could be an array of T, if the not homogenous the
-                // array type is a lang.any.  For now every rest
-                // matches as equal (=0).
-                candidate->fDist.add(0);
+                else {
+                  candidate->fDist.add(*dist);
+                }
               }
               else {
+                candidate->fDist.add(0);
+              }
+            }
+
+            for (const auto& nmArgP : args.fNamed) {
+              if (testedNamedArgs.count(nmArgP.first) == 0) {
+                // an named argument which haven't been matched a
+                // named parameter definition above makes this
+                // function def not matching.
                 candidate.reset();
+                break;
               }
             }
           }
+        }
 
-          if (candidate) {
-            candidates.push_back(*candidate);
+        if (candidate) {
+          if (args.fPositional.size() > argRestIdx) {
+            if (params.fRest) {
+              // TODO: build an array type of all rest arguments in
+              // args.fRest and see whether it is contravariant to
+              // params.fRest.  If all arg-types are identical it
+              // could be an array of T, if the not homogenous the
+              // array type is a lang.any.  For now every rest
+              // matches as equal (=0).
+              candidate->fDist.add(0);
+            }
+            else {
+              candidate.reset();
+            }
           }
         }
-      }
 
-      if (!candidates.empty()) {
-        std::sort(begin(candidates), end(candidates),
-                  [](const auto& lhs, const auto& rhs) { return lhs.fDist < rhs.fDist; });
-        return std::dynamic_pointer_cast<FunctionNode>(candidates.front().fNode);
+        if (candidate) {
+          candidates.push_back(*candidate);
+        }
       }
+    }
+
+    if (!candidates.empty()) {
+      std::sort(begin(candidates), end(candidates),
+                [](const auto& lhs, const auto& rhs) { return lhs.fDist < rhs.fDist; });
+      return std::dynamic_pointer_cast<FunctionNode>(candidates.front().fNode);
     }
   }
 
@@ -847,7 +860,7 @@ Scope::lookupBestFunctionOverload(const String& name,
 
 bool Scope::isVarInOuterFunction(const String& name) const
 {
-  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), !K(showError));
+  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), !K(showError), kScopeItem_any);
   return lv.fItem && lv.fInOuterFunc;
 }
 

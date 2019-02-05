@@ -204,12 +204,14 @@ public:
   //-------- global defs
 
   enum ScopeItemKind {
-    kScopeItem_type,
-    kScopeItem_function,
-    kScopeItem_variable,
-    kScopeItem_macro,
-    kScopeItem_unit
+    kScopeItem_type = 1 << 0,
+    kScopeItem_function = 1 << 1,
+    kScopeItem_variable = 1 << 2,
+    kScopeItem_macro = 1 << 3,
   };
+
+  static const ScopeItemKind kScopeItem_any = ScopeItemKind(
+      kScopeItem_type | kScopeItem_function | kScopeItem_variable | kScopeItem_macro);
 
   class ScopeItem {
   public:
@@ -261,13 +263,14 @@ private:
     bool fInOuterFunc;
   };
 
-  LookupResult lookupItem(const SrcPos& srcpos, const ScopeName& name,
-                          bool showError) const;
+  LookupResult lookupItem(const SrcPos& srcpos, const ScopeName& name, bool showError,
+                          ScopeItemKind filterKind) const;
 
   VizType reduceVizType(VizType in) const;
 
   LookupResult lookupItemLocalImpl(const SrcPos& srcpos, const ScopeName& name,
-                                   bool showError, bool doAutoMatch) const;
+                                   bool showError, ScopeItemKind filterKind,
+                                   bool doAutoMatch) const;
 
   void dumpDebugImpl(int level) const;
 
