@@ -12,6 +12,7 @@
 
 #include "common.hpp"
 
+#include "compiler.hpp"
 #include "compilepass.hpp"
 #include "token.hpp"
 
@@ -44,7 +45,7 @@ using NodeList = std::vector<std::shared_ptr<AstNode>>;
  */
 class Typifier {
 public:
-  Typifier();
+  Typifier(Compiler& compiler);
 
   void annotateTypeConv(std::shared_ptr<AstNode> toNode, const Type& type);
   void enforceAtomTypeConv(std::shared_ptr<AstNode> node, const Type& dstType);
@@ -115,14 +116,19 @@ public:
    * argidx.  If no matching argument can be found the returned structure
    * has the value <tt>{ nullptr, 0 }</tt>; */
   KeyargReturn findKeyedArg(const NodeList& args, size_t argidx, const String& key);
+
+  Compiler& fCompiler;  // backlink to owning compiler
 };
 
 
 /*! Compiler pass for determining and checking the types of APT nodes. */
 class TypifyPass : public AstNodeCompilePass {
 public:
-  TypifyPass(int level);
+  TypifyPass(int level, Compiler& compiler);
   std::shared_ptr<AstNode> doApply(std::shared_ptr<AstNode> src) override;
+
+private:
+  Compiler& fCompiler;
 };
 
 }  // namespace herschel

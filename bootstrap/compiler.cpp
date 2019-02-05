@@ -174,7 +174,7 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
       AnnotatePass nodePass2{ 3, *this };
       ast = nodePass2.apply(ast, doTrace);
 
-      TypifyPass nodePass3{ 4 };
+      TypifyPass nodePass3{ 4, *this };
       ast = nodePass3.apply(ast, doTrace);
 
       Annotate2Pass nodePass4{ 5, *this };

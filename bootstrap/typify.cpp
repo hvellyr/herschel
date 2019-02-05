@@ -1171,7 +1171,10 @@ struct NodeTypifier<std::shared_ptr<KeywordNode>> {
 
 //------------------------------------------------------------------------------
 
-Typifier::Typifier() {}
+Typifier::Typifier(Compiler& compiler)
+    : fCompiler(compiler)
+{
+}
 
 
 void Typifier::typifyNode(std::shared_ptr<AstNode> node)
@@ -1814,15 +1817,16 @@ bool Typifier::checkBinaryFunctionCall(std::shared_ptr<BinaryNode> node,
 
 //------------------------------------------------------------------------------
 
-TypifyPass::TypifyPass(int level)
+TypifyPass::TypifyPass(int level, Compiler& compiler)
     : AstNodeCompilePass(level, K(showNodeType))
+    , fCompiler(compiler)
 {
 }
 
 
 std::shared_ptr<AstNode> TypifyPass::doApply(std::shared_ptr<AstNode> src)
 {
-  auto ty = Typifier{};
+  auto ty = Typifier{ fCompiler };
   ty.typifyNode(src);
   return src;
 }
