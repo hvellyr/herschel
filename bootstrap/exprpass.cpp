@@ -762,13 +762,13 @@ Token FirstPass::parseSymbolOrSimpleType(const Token& baseToken)
     Token t = baseToken;
     nextToken();
 
-    auto qSymbol = parseQualifiedName(true);
-    if (qSymbol.empty()) {
+    if (fToken != kSymbol) {
       errorf(t.srcpos(), E_UnexpectedQuote, "Unexpected quote");
       return Token();
     }
 
-    typeName = Token() << t << qualifyIdToken(qSymbol);
+    typeName = Token() << t << fToken;
+    nextToken();
   }
   else
     nextToken();

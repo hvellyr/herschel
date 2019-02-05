@@ -57,7 +57,7 @@ def generic allocate(ty @ Type<'T>) -> 'T ...
 
 
 def generic allocate*(ty @ Type<'X>,
-                      value : 'X = Type<'X>.null-value(),
+                      value : 'X = 'X.null-value(),
                       sizes ...) -> 'X[] ...
     ~ Allocate an array of @var{ty} with @var{sizes} slots.  Each slot is
     initialized to @var{value}.  The size is computed from all the product of

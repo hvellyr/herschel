@@ -287,6 +287,7 @@ public:
 
   //! Indicates whether the receiver is a lang.Type<'T> type instance.
   bool isClassTypeOf() const;
+  Type classTypeOfType() const;
 
   bool isImaginary() const;
   void setIsImaginary(bool value);

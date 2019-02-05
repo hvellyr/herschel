@@ -608,7 +608,7 @@ std::shared_ptr<AstNode> SecondPass::createDefaultInitExpr(const SrcPos& srcpos,
   auto applyNode = makeApplyNode(fScope, srcpos, nullValueNode);
 
   auto effTy = type.isDef() ? type : Type::makeAny();
-  applyNode->appendNode(makeTypeNode(fScope, srcpos, Type::makeClassTypeOf(effTy)));
+  applyNode->appendNode(makeTypeNode(fScope, srcpos, effTy));
 
   return applyNode;
 }
@@ -1838,7 +1838,7 @@ std::shared_ptr<AstNode> SecondPass::parseFunCall(const Token& expr)
     return generateArrayAlloc(expr, first);
   }
   else if (dynamic_cast<TypeNode*>(first.get())) {
-    return generateAlloc(expr, dynamic_cast<TypeNode*>(first.get())->type());
+    return generateAlloc(expr, dynamic_cast<TypeNode*>(first.get())->type().classTypeOfType());
   }
   else {
     auto symNode = dynamic_cast<SymbolNode*>(first.get());
@@ -2622,7 +2622,7 @@ std::shared_ptr<AstNode> SecondPass::parseTypeExpr(const Token& expr, bool inArr
       std::shared_ptr<AstNode> typeNode;
       if (expr[0][0] == kQuote && expr[0][1] == kSymbol) {
         Type ty = genericTypeRef(expr[0][1].idValue(), K(isValue));
-        typeNode = makeTypeNode(fScope, expr.srcpos(), Type::makeClassTypeOf(ty));
+        typeNode = makeTypeNode(fScope, expr.srcpos(), ty);
       }
       else {
         hr_assert(expr[0][0] == kSymbol || expr[0][0].isSeq());
@@ -2652,10 +2652,10 @@ std::shared_ptr<AstNode> SecondPass::parseTypeExpr(const Token& expr, bool inArr
     // }
   }
   else if (expr[0] == kQuote && expr[1] == kSymbol) {
-    errorf(expr.srcpos(), E_BadGenericType, "Generic type is not allowed here");
-    // Type ty = genericTypeRef(expr[1].idValue(), K(isValue));
-    // return makeTypeNode(fScope, expr.srcpos(), ty);
-    return nullptr;
+    //error(expr.srcpos(), E_BadGenericType, String("Generic type is not allowed here ") + expr[1].toString());
+    //return nullptr;
+    Type ty = genericTypeRef(expr[1].idValue(), K(isValue));
+    return makeTypeNode(fScope, expr.srcpos(), ty);
   }
 
   fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n", (zstring)StrHelper(expr.toString()),

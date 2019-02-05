@@ -8,7 +8,7 @@
 
 def realloc(array @ 'T[],
             new-size : Int,
-            init-value : 'T = Type<'T>.null-value()) -> 'T[]
+            init-value : 'T = 'T.null-value()) -> 'T[]
 {
   if (new-size > array.size()) {
     let t = 'T[](new-size)

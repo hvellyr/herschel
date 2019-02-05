@@ -456,7 +456,8 @@ inline std::shared_ptr<SymbolNode> makeSymbolNode(std::shared_ptr<Scope> scope,
 class ArrayTypeNode : public AstNode {
 public:
   ArrayTypeNode(const SrcPos& srcpos, std::shared_ptr<AstNode> typeNode)
-      : AstNode(srcpos)
+      : AstNode(srcpos, Type::makeClassTypeOf(Type::makeArray(
+                            typeNode->type().classTypeOfType(), 0, K(isValue))))
       , fTypeNode(std::move(typeNode))
   {
   }
@@ -492,7 +493,7 @@ inline std::shared_ptr<ArrayTypeNode> makeArrayTypeNode(std::shared_ptr<Scope> s
 class TypeNode : public AstNode {
 public:
   TypeNode(const SrcPos& srcpos, const Type& type)
-      : AstNode(srcpos, type)
+      : AstNode(srcpos, Type::makeClassTypeOf(type))
   {
   }
 

@@ -709,7 +709,8 @@ public:
   {
     if (fIsOpen) {
       if (localCtx.hasType(fName)) {
-        return isContravariant(localCtx.lookupType(fName), right0, scope, srcpos, K(reportErrors));
+        return isContravariant(localCtx.lookupType(fName), right0, scope, srcpos,
+                               K(reportErrors));
       }
       else {
         localCtx.registerType(fName, right0);
@@ -928,7 +929,9 @@ Type Type::makeTypeRef(const String& name, const Type& old)
 
 Type Type::makeClassTypeOf(const Type& type, bool isValue)
 {
-  return makeTypeRef(Names::kClassTypeName, makeVector(type), isValue);
+  return type.isClassTypeOf()
+             ? type
+             : makeTypeRef(Names::kClassTypeName, makeVector(type), isValue);
 }
 
 
@@ -1380,6 +1383,14 @@ bool Type::isAnyUInt() const
 bool Type::isClassTypeOf() const
 {
   return isDef() && isBuiltinType(Names::kClassTypeName);
+}
+
+
+Type Type::classTypeOfType() const
+{
+  return isClassTypeOf()
+    ? std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl)->generics()[0]
+    : Type();
 }
 
 
