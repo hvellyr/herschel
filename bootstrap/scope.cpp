@@ -178,13 +178,6 @@ void Scope::registerScopeItem(const ScopeName& name, std::shared_ptr<ScopeItem> 
 }
 
 
-Scope::LookupResult Scope::lookupItemLocal(const SrcPos& srcpos, const ScopeName& name,
-                                           bool showError) const
-{
-  return lookupItemLocalImpl(srcpos, name, showError, K(doAutoMatch));
-}
-
-
 Scope::LookupResult Scope::lookupItemLocalImpl(const SrcPos& srcpos,
                                                const ScopeName& name, bool showError,
                                                bool doAutoMatch) const

@@ -261,8 +261,6 @@ private:
     bool fInOuterFunc;
   };
 
-  LookupResult lookupItemLocal(const SrcPos& srcpos, const ScopeName& name,
-                               bool showError) const;
   LookupResult lookupItem(const SrcPos& srcpos, const ScopeName& name,
                           bool showError) const;
 
