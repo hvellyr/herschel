@@ -1,0 +1,15 @@
+def record Foo<A> (a : A)
+
+def make(n : Type<'T>) -> 'T {
+  n()
+}
+
+def make2(n : Type<'T>) -> 'T {
+  'T()
+}
+
+def app.main() {
+  let t = Foo<Int>()
+  let x = make(Foo<String>)
+  0
+}

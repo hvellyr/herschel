@@ -12,6 +12,7 @@
 
 #include "typify.hpp"
 
+#include "annotate.hpp"
 #include "ast.hpp"
 #include "errcodes.hpp"
 #include "log.hpp"
@@ -310,6 +311,44 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             node->setType(varNode->type().functionSignature().returnType());
             // TODO: check function signature of the function type
           }
+          else if (varNode->type().isClassTypeOf()) {
+            auto newObjAllocExpr = makeApplyNode(
+                node->scope(), node->srcpos(),
+                makeSymbolNode(node->scope(), node->srcpos(), Names::kLangAllocate));
+            newObjAllocExpr->appendNode(
+                makeTypeNode(node->scope(), node->srcpos(), varNode->type()));
+
+            //---
+            std::shared_ptr<AstNode> funcNode;
+            if (varNode->type().isOpen()) {
+              auto apply = makeApplyNode(
+                  node->scope(), node->srcpos(),
+                  makeSymbolNode(node->scope(), node->srcpos(), Names::kLangInitFunctor));
+              apply->appendNode(
+                  makeTypeNode(node->scope(), node->srcpos(), varNode->type()));
+              funcNode = apply;
+            }
+            else {
+              String initName =
+                  qualifyId(varNode->type().typeName(), Names::kInitFuncName);
+              funcNode = makeSymbolNode(node->scope(), node->srcpos(), initName);
+            }
+
+            auto initExpr = makeApplyNode(node->scope(), node->srcpos(), funcNode);
+            initExpr->appendNode(newObjAllocExpr);
+
+            std::shared_ptr<AstNode> createNode;
+            {
+              Annotator an{ typf->fCompiler };
+              createNode = an.annotateNode(initExpr);
+            }
+
+            typf->typifyNode(createNode);
+
+            // TODO: check function signature of the type constructor
+            node->setBase(createNode);
+            node->setType(createNode->type());
+          }
           else {
             errorf(node->srcpos(), E_NoCallable, "Non callable in function call context");
           }
@@ -337,7 +376,12 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
         node->setType(funNode->type());
       }
       else if (auto applyNode = std::dynamic_pointer_cast<ApplyNode>(node->base())) {
-        node->setType(applyNode->type());
+        if (applyNode->type().isFunction()) {
+          node->setType(applyNode->type().functionSignature().returnType());
+        }
+        else {
+          node->setType(applyNode->type());
+        }
       }
       else if (auto srNode = std::dynamic_pointer_cast<SlotRefNode>(node->base())) {
         node->setType(srNode->type());
@@ -1644,7 +1688,8 @@ Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeLis
         else {
           if (keyval.fKeyarg->value()->type().isOpen()) {
             Type keyvalty = keyval.fKeyarg->value()->type().replaceGenerics(localCtx);
-            if (auto applyNd = std::dynamic_pointer_cast<ApplyNode>(keyval.fKeyarg->value())) {
+            if (auto applyNd =
+                    std::dynamic_pointer_cast<ApplyNode>(keyval.fKeyarg->value())) {
               for (auto cNd : applyNd->children()) {
                 Type cNdTy = cNd->type().replaceGenerics(localCtx);
                 if (cNdTy.isDef())
