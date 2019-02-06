@@ -273,6 +273,8 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
           if (node->simpleCallName() == Names::kLangAllocateArray) {
             typf->checkAllocateArraySignature(node);
           }
+
+          typf->flattenArguments(node);
         }
         else {
           if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
@@ -292,6 +294,8 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             if (node->simpleCallName() == Names::kLangAllocateArray) {
               typf->checkAllocateArraySignature(node);
             }
+
+            typf->flattenArguments(node);
           }
           else if (node->isRemoveable()) {
             node->setIsObsolete(true);
@@ -1641,6 +1645,24 @@ void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node,
 }
 
 
+void Typifier::flattenArguments(std::shared_ptr<ApplyNode> node)
+{
+  NodeList newArgs;
+  newArgs.reserve(node->children().size());
+
+  for (auto arg : node->children()) {
+    if (auto keyArg = std::dynamic_pointer_cast<KeyargNode>(arg)) {
+      newArgs.push_back(keyArg->value());
+    }
+    else {
+      newArgs.push_back(arg);
+    }
+  }
+
+  node->replaceChildren(newArgs);
+}
+
+
 Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeList& args,
                                              const FunctionNode* funcNode,
                                              const String& funcName)
@@ -1842,6 +1864,8 @@ bool Typifier::checkBinaryFunctionCall(std::shared_ptr<BinaryNode> node,
 
       node->setRefFunction(bestFuncNode);
       //typf->reorderArguments(node, bestFuncNode.get());
+      // typf->reorderArguments(node, bestFuncNode.get());
+      // typf->flattenArguments(node);
 
       Type type =
           typifyMatchAndCheckParameters(node->srcpos(), args, funcNode.get(), funcName);
