@@ -2885,8 +2885,7 @@ bool inheritsFrom(const Type& left0, const Type& right0, const Scope& scope,
     inheritance = scope.lookupType(inheritance);
 
   if (!inheritance.isDef()) {
-    if (reportErrors)
-      errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+    // this might happen when looking up inheritance for .lang.Number
     return false;
   }
 

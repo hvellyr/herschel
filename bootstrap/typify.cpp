@@ -280,13 +280,13 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
           if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
                   node->simpleCallName(), typesForArgs(node->children()), node->srcpos(),
                   K(showAmbiguousSymDef))) {
-            node->setRefFunction(bestFuncNode);
+            node->setRefFunction(bestFuncNode.fNode);
 
-            typf->reorderArguments(node, bestFuncNode.get());
+            typf->reorderArguments(node, bestFuncNode.fNode.get());
             typf->typifyNodeList(node->children());
 
             Type type = typf->typifyMatchAndCheckParameters(
-                node->srcpos(), node->children(), bestFuncNode.get(),
+                node->srcpos(), node->children(), bestFuncNode.fNode.get(),
                 node->simpleCallName());
             if (type.isDef())
               node->setType(type);
@@ -1856,14 +1856,15 @@ bool Typifier::checkBinaryFunctionCall(std::shared_ptr<BinaryNode> node,
 
     if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
             funcName, typesForArgs(args), node->srcpos(), K(showAmbiguousSymDef))) {
-      if (bestFuncNode->params().size() > 2) {
+      if (bestFuncNode.fNode->params().size() > 2) {
         error(node->srcpos(), E_WrongOperatorFuncSign,
               String("operator implementation with wrong parameter count"));
         return false;
       }
 
-      node->setRefFunction(bestFuncNode);
-      //typf->reorderArguments(node, bestFuncNode.get());
+      // auto newBase = makeSymbolNode(node->scope(), node->srcpos(), bestFuncNode.fName);
+      // node->setBase(newBase);
+      node->setRefFunction(bestFuncNode.fNode);
       // typf->reorderArguments(node, bestFuncNode.get());
       // typf->flattenArguments(node);
 

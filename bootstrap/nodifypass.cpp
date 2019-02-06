@@ -1298,8 +1298,8 @@ std::shared_ptr<AstNode> SecondPass::makeNormalFunction(const SrcPos& srcpos,
   String fullFuncName =
       (isLocal || linkage == String("C") ? sym : qualifyId(currentModuleName(), sym));
 
-  if (fScope->checkForFunctionRedefinition(srcpos, Scope::kNormal, fullFuncName))
-    return nullptr;
+  // if (fScope->checkForFunctionRedefinition(srcpos, Scope::kNormal, fullFuncName))
+  //   return nullptr;
 
   auto func = makeFuncDefNode(fScope, srcpos, fullFuncName, data.fFlags, data.fParams,
                               data.fType, data.fBody);

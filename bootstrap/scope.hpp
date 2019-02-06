@@ -178,7 +178,20 @@ public:
   const AstNode* lookupVarOrFunc(const SrcPos& srcpos, const String& name,
                                  bool showAmbiguousSymDef) const;
 
-  std::shared_ptr<FunctionNode>
+  struct FunctionLookup {
+    FunctionLookup() = default;
+    FunctionLookup(String name, std::shared_ptr<FunctionNode> node)
+      : fName(std::move(name))
+      , fNode(std::move(node))
+    {}
+
+    explicit operator bool() const { return fNode != nullptr; }
+
+    String fName;
+    std::shared_ptr<FunctionNode> fNode;
+  };
+
+  FunctionLookup
   lookupBestFunctionOverload(const String& name,
                              const std::vector<FunctionParameter>& argTypes,
                              const SrcPos& srcpos, bool showAmbiguousSymDef) const;
@@ -278,6 +291,10 @@ private:
   void exportAttachedSymbols(std::shared_ptr<Scope> dstScope, const ScopeName& fullKey,
                              VizType vizType, bool isFinal) const;
 
+  FunctionLookup
+  lookupBestFunctionOverloadLocalImpl(const SrcPos& srcpos, const ScopeName& name,
+                                      const std::vector<FunctionParameter>& argTypes,
+                                      bool showError) const;
 
   //-------- data members
 

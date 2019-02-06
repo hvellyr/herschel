@@ -100,26 +100,41 @@ public:
 
 class FunctionScopeItem : public Scope::ScopeItem {
 public:
-  FunctionScopeItem(const SrcPos& srcpos, Scope::ScopeItemKind kind,
+  struct NodeBinding {
+    NodeBinding(String name, std::shared_ptr<AstNode> node)
+        : fName(std::move(name))
+        , fNode(std::move(node))
+    {
+    }
+
+    String fName;
+    std::shared_ptr<AstNode> fNode;
+  };
+
+  FunctionScopeItem(const SrcPos& srcpos, Scope::ScopeItemKind kind, const String& name,
                     std::shared_ptr<AstNode> node)
       : ScopeItem(srcpos)
       , fKind(kind)
   {
-    add(node);
+    add(name, node);
   }
 
 
-  void add(std::shared_ptr<AstNode> node) { fNodes.push_back(node); }
+  void add(const String& name, std::shared_ptr<AstNode> node)
+  {
+    fNodes.push_back(NodeBinding(name, node));
+  }
 
 
   Scope::ScopeItemKind kind() const override { return fKind; }
 
-  const std::vector<std::shared_ptr<AstNode>>& nodes() const { return fNodes; }
+  const std::vector<NodeBinding>& nodes() const { return fNodes; }
 
   //-------- data members
 
   Scope::ScopeItemKind fKind;
-  std::vector<std::shared_ptr<AstNode>> fNodes;
+  String fName;
+  std::vector<NodeBinding> fNodes;
 };
 
 
@@ -551,7 +566,8 @@ bool Scope::checkForFunctionRedefinition(const SrcPos& srcpos, ScopeDomain domai
   SrcPos firstSrcpos;
   if (hasFunctionNameLocal(domain, sym, &firstSrcpos, !K(doAutoMatch))) {
     if (srcpos != firstSrcpos) {
-      errorf(srcpos, E_Redefinition, "Redefinition of '%s'.", (zstring)StrHelper(sym));
+      errorf(srcpos, E_Redefinition, "Redefinition of function '%s'.",
+             (zstring)StrHelper(sym));
       errorf(firstSrcpos, E_Redefinition, "'%s' previously defined here.",
              (zstring)StrHelper(sym));
     }
@@ -574,7 +590,7 @@ void Scope::registerFunction(const SrcPos& srcpos, const String& funcName,
   if (result.fItem) {
     if (result.fItem->kind() != kScopeItem_function) {
       if (srcpos != result.fItem->srcpos()) {
-        errorf(srcpos, E_SymbolRedefined, "Redefinition of symbol '%s'",
+        errorf(srcpos, E_SymbolRedefined, "Redefinition of function '%s'",
                (zstring)StrHelper(name.fName));
         errorf(result.fItem->srcpos(), E_SymbolRedefined, "symbol was defined here");
       }
@@ -583,7 +599,7 @@ void Scope::registerFunction(const SrcPos& srcpos, const String& funcName,
 
     if (auto funcItem = dynamic_cast<FunctionScopeItem*>(result.fItem)) {
       // check for function re-definition
-      funcItem->add(node);
+      funcItem->add(funcName, node);
     }
     else {
       hr_invalid("");
@@ -594,7 +610,8 @@ void Scope::registerFunction(const SrcPos& srcpos, const String& funcName,
     ScopeName base(name.fDomain, herschel::baseName(src_name));
     String ns(herschel::nsName(src_name));
 
-    auto item = std::make_shared<FunctionScopeItem>(srcpos, kScopeItem_function, node);
+    auto item =
+        std::make_shared<FunctionScopeItem>(srcpos, kScopeItem_function, funcName, node);
     NsScopeMap::iterator it = fMap.find(base);
     if (it != fMap.end()) {
       it->second.insert(std::make_pair(ns, item));
@@ -615,7 +632,7 @@ std::shared_ptr<FunctionNode> Scope::lookupFunction(const String& name,
     const auto& defs = dynamic_cast<const FunctionScopeItem*>(lv.fItem)->nodes();
 
     // TODO: handle type overloading
-    return std::dynamic_pointer_cast<FunctionNode>(defs.front());
+    return std::dynamic_pointer_cast<FunctionNode>(defs.front().fNode);
   }
   return {};
 }
@@ -654,7 +671,7 @@ const AstNode* Scope::lookupVarOrFunc(const SrcPos& srcpos, const String& name,
       const auto& defs = dynamic_cast<const FunctionScopeItem*>(lv.fItem)->nodes();
 
       // TODO: handle type overloading
-      return defs.front().get();
+      return defs.front().fNode.get();
     }
   }
   return nullptr;
@@ -722,8 +739,9 @@ namespace {
 
   struct Candidate {
     Candidate() = default;
-    Candidate(VarDistKey dist, std::shared_ptr<AstNode> node)
+    Candidate(VarDistKey dist, String name, std::shared_ptr<AstNode> node)
         : fDist(std::move(dist))
+        , fName(std::move(name))
         , fNode(std::move(node))
     {
     }
@@ -731,26 +749,28 @@ namespace {
     Candidate& operator=(const Candidate& other) = default;
 
     VarDistKey fDist;
+    String fName;
     std::shared_ptr<AstNode> fNode;
   };
 
 }  // namespace
 
 
-std::shared_ptr<FunctionNode>
-Scope::lookupBestFunctionOverload(const String& name,
-                                  const std::vector<FunctionParameter>& argTypes,
-                                  const SrcPos& srcpos, bool showAmbiguousSymDef) const
+Scope::FunctionLookup
+Scope::lookupBestFunctionOverloadLocalImpl(const SrcPos& srcpos, const ScopeName& name,
+                                           const std::vector<FunctionParameter>& argTypes,
+                                           bool showAmbiguousSymDef) const
 {
-  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef,
-                       kScopeItem_function);
+  auto lv = lookupItemLocalImpl(srcpos, name, showAmbiguousSymDef, kScopeItem_function,
+                                K(doAutoMatch));
+
   if (lv.fItem) {
     const auto& defs = dynamic_cast<const FunctionScopeItem*>(lv.fItem)->nodes();
 
     std::vector<Candidate> candidates;
 
     for (const auto& def : defs) {
-      if (auto funcDef = std::dynamic_pointer_cast<FunctionNode>(def)) {
+      if (auto funcDef = std::dynamic_pointer_cast<FunctionNode>(def.fNode)) {
         const auto params = separateParams(funcDef->params());
         const auto args = separateArgTypes(argTypes);
 
@@ -759,7 +779,7 @@ Scope::lookupBestFunctionOverload(const String& name,
         if ((params.fRest && (params.fPositional.size() <= args.fPositional.size())) ||
             (params.fPositional.size() == args.fPositional.size())) {
           if (params.fPositional.size() == 0) {
-            candidate = std::make_unique<Candidate>(VarDistKey(), def);
+            candidate = std::make_unique<Candidate>(VarDistKey(), def.fName, def.fNode);
           }
           else {
             auto distKey = VarDistKey{};
@@ -778,7 +798,7 @@ Scope::lookupBestFunctionOverload(const String& name,
             }
 
             if (distKey) {
-              candidate = std::make_unique<Candidate>(distKey, def);
+              candidate = std::make_unique<Candidate>(distKey, def.fName, def.fNode);
             }
           }
         }
@@ -850,8 +870,29 @@ Scope::lookupBestFunctionOverload(const String& name,
     if (!candidates.empty()) {
       std::sort(begin(candidates), end(candidates),
                 [](const auto& lhs, const auto& rhs) { return lhs.fDist < rhs.fDist; });
-      return std::dynamic_pointer_cast<FunctionNode>(candidates.front().fNode);
+      return FunctionLookup{ candidates.front().fName,
+                             std::dynamic_pointer_cast<FunctionNode>(
+                                 candidates.front().fNode) };
     }
+  }
+
+  return {};
+}
+
+
+Scope::FunctionLookup
+Scope::lookupBestFunctionOverload(const String& name,
+                                  const std::vector<FunctionParameter>& argTypes,
+                                  const SrcPos& srcpos, bool showAmbiguousSymDef) const
+{
+  const Scope* scope = this;
+
+  while (scope) {
+    if (auto lv = scope->lookupBestFunctionOverloadLocalImpl(
+            srcpos, ScopeName(kNormal, name), argTypes, showAmbiguousSymDef))
+      return lv;
+
+    scope = scope->parent().get();
   }
 
   return {};
