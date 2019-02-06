@@ -280,6 +280,10 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
           if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
                   node->simpleCallName(), typesForArgs(node->children()), node->srcpos(),
                   K(showAmbiguousSymDef))) {
+            auto newBase = makeSymbolNode(node->scope(), node->srcpos(), bestFuncNode.fName);
+            newBase->setRefersTo(kFunction, !K(isShared));
+            typf->typifyNode(newBase);
+            node->setBase(newBase);
             node->setRefFunction(bestFuncNode.fNode);
 
             typf->reorderArguments(node, bestFuncNode.fNode.get());

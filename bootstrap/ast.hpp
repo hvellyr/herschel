@@ -403,6 +403,7 @@ public:
   {
     auto newnd = std::make_shared<SymbolNode>(fSrcPos, fValue);
     newnd->setLinkage(linkage());
+    newnd->setRefersTo(fRefersTo, fIsShared);
     return details::cloneScope(this, newnd);
   }
 
