@@ -10,7 +10,7 @@
 
 #include "annotate2.hpp"
 
-#include "ast.hpp"
+#include "annotate.hpp"
 #include "compiler.hpp"
 #include "errcodes.hpp"
 #include "log.hpp"
@@ -20,6 +20,8 @@
 #include "scope.hpp"
 #include "symbol.hpp"
 #include "traverse.hpp"
+#include "typify.hpp"
+#include "xmlrenderer.hpp"
 
 #include <algorithm>
 #include <iterator>
@@ -27,6 +29,42 @@
 
 
 namespace herschel {
+
+
+namespace {
+  std::shared_ptr<AstNode> wrapAsCopy(Compiler& compiler,
+                                      std::shared_ptr<AstNode> valExpr)
+  {
+    if (!valExpr->isTempValue()) {
+      auto symNd = makeSymbolNode(valExpr->scope(), valExpr->srcpos(), Names::kOnCopyFuncName);
+      symNd->setRefersTo(kFunction, !K(isShared));
+
+      auto copyExpr = makeApplyNode(valExpr->scope(), valExpr->srcpos(), symNd);
+      copyExpr->appendNode(valExpr);
+      copyExpr->setType(valExpr->type());
+
+      std::shared_ptr<AstNode> nd = copyExpr;
+      {
+        auto an = Annotator{ compiler };
+        nd = an.annotateNode(nd);
+      }
+      {
+        auto ty = Typifier{ compiler };
+        ty.typifyNode(nd);
+      }
+
+      if (auto applyNd = std::dynamic_pointer_cast<ApplyNode>(nd)) {
+        if (std::shared_ptr<FunctionNode> refFuncNd = applyNd->refFunction().lock()) {
+          applyNd->base()->setType(refFuncNd->type());
+        }
+      }
+
+      return nd;
+    }
+
+    return valExpr;
+  }
+}  // namespace
 
 
 template <typename T>
@@ -69,8 +107,8 @@ template <>
 struct NodeAnnotator2<std::shared_ptr<SymbolNode>> {
   static void annotate(Annotator2* ann, std::shared_ptr<SymbolNode> node)
   {
-    const AstNode* var =
-        node->scope()->lookupVarOrFunc(node->srcpos(), node->name(), K(showAmbiguousSymDef));
+    const AstNode* var = node->scope()->lookupVarOrFunc(node->srcpos(), node->name(),
+                                                        K(showAmbiguousSymDef));
     if (var) {
       takeFullNameFromNode(node.get(), var);
 
@@ -128,9 +166,7 @@ struct NodeAnnotator2<std::shared_ptr<SymbolNode>> {
 
 template <>
 struct NodeAnnotator2<std::shared_ptr<SlotdefNode>> {
-  static void annotate(Annotator2* ann, std::shared_ptr<SlotdefNode> node)
-  {
-  }
+  static void annotate(Annotator2* ann, std::shared_ptr<SlotdefNode> node) {}
 };
 
 
@@ -138,10 +174,41 @@ template <>
 struct NodeAnnotator2<std::shared_ptr<ApplyNode>> {
   static void annotate(Annotator2* ann, std::shared_ptr<ApplyNode> node)
   {
+    // first annotate base and arguments, only then wrap for copy/move
+    // operators.  Otherwise we would annotate the just created
+    // on-copy(x) calls into on-copy(on-copy(x)), etc.
     ann->annotateNodeList(node->child_nodes());
+
+    // rewrite arguments to copy/move where necessary
+    auto& args = node->children();
+    for (auto i = 0; i < args.size(); ++i) {
+      args[i] = wrapAsCopy(ann->fCompiler, args[i]);
+    }
 
     if (std::shared_ptr<FunctionNode> refFuncNd = node->refFunction().lock()) {
       node->base()->setType(refFuncNd->type());
+    }
+  }
+};
+
+
+template <>
+struct NodeAnnotator2<std::shared_ptr<AssignNode>> {
+  static void annotate(Annotator2* ann, std::shared_ptr<AssignNode> node)
+  {
+    ann->annotateNodeList(node->child_nodes());
+    node->setRvalue(wrapAsCopy(ann->fCompiler, node->rvalue()));
+  }
+};
+
+
+template <>
+struct NodeAnnotator2<std::shared_ptr<VardefNode>> {
+  static void annotate(Annotator2* ann, std::shared_ptr<VardefNode> node)
+  {
+    ann->annotateNodeList(node->child_nodes());
+    if (node->initExpr()) {
+      node->setInitExpr(wrapAsCopy(ann->fCompiler, node->initExpr()));
     }
   }
 };

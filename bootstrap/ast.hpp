@@ -125,6 +125,8 @@ public:
   //! Set the captured scope.
   void setScope(std::shared_ptr<Scope> scope) { fScope = scope; }
 
+  virtual bool isTempValue() const { return true; }
+
   //! Returns the type of this node.  Only available after \c Typifier pass
   //! has been applied.
   const Type& type() const { return fType; }
@@ -407,6 +409,7 @@ public:
     return details::cloneScope(this, newnd);
   }
 
+  bool isTempValue() const override { return false; }
 
   //! Set the symbol's name.
   void setName(const String& nm) { fValue = nm; }
@@ -783,6 +786,8 @@ public:
 
   std::shared_ptr<AstNode> initExpr() const { return fInitExpr; }
   void setInitExpr(std::shared_ptr<AstNode> nd) { fInitExpr = nd; }
+
+  bool isTempValue() const override { return false; }
 
   const String& name() const override { return fSymbolName; }
 
@@ -1166,6 +1171,8 @@ public:
     if (fRValue)
       fRValue->setIsSingleTypeRequired(true);
   }
+
+  bool isTempValue() const override { return false; }
 
   std::shared_ptr<AstNode> lvalue() const { return fLValue; }
 
@@ -1586,6 +1593,8 @@ public:
     return details::cloneScope(this, std::move(n));
   }
 
+  bool isTempValue() const override { return false; }
+
   const String& name() const override { return fSym; }
 
   bool isGeneric() const { return (fFlags & kFuncIsGeneric) != 0; }
@@ -1688,6 +1697,8 @@ public:
                                std::make_shared<WeakNode>(details::nodeClone(fRefNode)));
   }
 
+  bool isTempValue() const override { return fRefNode ? fRefNode->isTempValue() : true; }
+
   std::shared_ptr<AstNode> refNode() const { return fRefNode; }
   void setRefNode(std::shared_ptr<AstNode> refNode) { fRefNode = refNode; }
   void reset() { fRefNode = nullptr; }
@@ -1724,6 +1735,8 @@ public:
     return details::cloneScope(
         this, std::make_shared<KeyargNode>(fSrcPos, fKey, details::nodeClone(fValue)));
   }
+
+  bool isTempValue() const override { return false; }
 
   const String& key() const { return fKey; }
 
@@ -1810,6 +1823,8 @@ public:
                                             details::copyNodes(fSlots)));
   }
 
+  bool isTempValue() const override { return false; }
+
   const String& name() const { return fTypeName; }
 
   const Type& defType() const { return fIsa; }
@@ -1891,6 +1906,8 @@ public:
     return details::cloneScope(this, std::make_shared<SlotRefNode>(
                                          fSrcPos, details::nodeClone(fBase), fSlotName));
   }
+
+  bool isTempValue() const override { return false; }
 
   std::shared_ptr<AstNode> base() const { return fBase; }
 

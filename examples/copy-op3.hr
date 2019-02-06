@@ -1,0 +1,16 @@
+module foo
+
+def on-copy(v : .lang.String) -> .lang.String { v }
+
+def record Hero (name : String = "drago")
+
+def on-copy(v : Hero) -> Hero { v }
+
+
+def bar() {
+  let h = Hero()
+  let h2 = Hero(name: "Conan")
+  let h3 = Hero(name: h.name)
+
+  let h4 = h3
+}

@@ -109,5 +109,6 @@ const String Names::kInitFuncName = String("init");
 const String Names::kValueKeyargName = String("value");
 const String Names::kNullValueFuncName = String("null-value");
 const String Names::kOnAllocFuncName = String("on-alloc");
+const String Names::kOnCopyFuncName = String("on-copy");
 
 }  // namespace herschel

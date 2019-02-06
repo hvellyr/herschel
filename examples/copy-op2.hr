@@ -1,0 +1,16 @@
+module foo
+
+def on-copy(v : .lang.String) -> .lang.String { v }
+
+def make-x(n : String) -> Int ...
+def make-str() -> String ...
+
+
+def bar() {
+  make-x("what's about?")
+
+  let d = "hello world"
+  make-x(d)
+
+  make-x(make-str())
+}

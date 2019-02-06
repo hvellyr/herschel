@@ -345,8 +345,9 @@ public:
   // predefined function, variable, and keyarg names
   const static String kInitFuncName;
   const static String kValueKeyargName;
-  const static String kOnAllocFuncName;
   const static String kNullValueFuncName;
+  const static String kOnAllocFuncName;
+  const static String kOnCopyFuncName;
 };
 
 }  // namespace herschel

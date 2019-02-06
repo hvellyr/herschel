@@ -1,0 +1,18 @@
+--def on-copy(v : .lang.Int) -> .lang.Int { v }
+def on-copy(v : .lang.String) -> .lang.String { v }
+
+module foo
+
+--def on-copy(v : .lang.String) -> .lang.String { v }
+--def on-copy(v : .lang.Int) -> .lang.Int { v }
+
+def bar() {
+  let a = 42
+  let b = a
+  let c = b
+
+  let d = "hello world"
+  let e = d
+
+  c
+}

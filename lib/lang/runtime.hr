@@ -13,6 +13,7 @@ export public (
     null-value,
     allocate,
     allocate*,
+    on-copy,
     Range)
 
 
@@ -64,6 +65,10 @@ def generic allocate*(ty @ Type<'X>,
     all values in @var{sizes}, i.e. three value @code{3, 7, 11} would result
     in (three dimensional) array of 231 slots. ~
 
+
+------------------------------------------------------------------------------
+
+def on-copy(v : 'T) -> 'T ...
 
 ------------------------------------------------------------------------------
 
