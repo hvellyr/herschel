@@ -1560,8 +1560,6 @@ zstring operatorName(OperatorType type)
 
 //----------------------------------------------------------------------------
 
-#if defined(UNITTESTS)
-
 std::ostream& operator<<(std::ostream& os, const Token& token)
 {
   String s = token.toString();
@@ -1581,7 +1579,5 @@ std::ostream& operator<<(std::ostream& os, ExprType type)
   }
   return os;
 }
-
-#endif
 
 }  // namespace herschel

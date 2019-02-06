@@ -189,7 +189,7 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
     return ast;
   }
   catch (const Exception& e) {
-    logf(kError, "Parse error: %s", (zstring)StrHelper(e.message()));
+    HR_LOG(kError) << "Parse error: " << e.message();
   }
 
   return nullptr;
@@ -271,22 +271,21 @@ TokenVector Compiler::includeFileImpl(const SrcPos& srcpos, const String& srcNam
   TokenVector result;
 
   if (absPath.isEmpty()) {
-    errorf(srcpos, E_UnknownInputFile, "include '%s' failed: Unknown file\n",
-           (zstring)StrHelper(srcName));
+    HR_LOG(kError, srcpos, E_UnknownInputFile)
+        << "include '" << srcName << "' failed: Unknown file";
     return result;
   }
 
   if (sPathsInLoading.count(absPath) > 0) {
     if (Properties::isTraceImportFile())
-      logf(kDebug, "File '%s' is currently included.  Avoid loop",
-           (zstring)StrHelper(absPath));
+      HR_LOG(kDebug) << "File '" << absPath << "' is currently included.  Avoid loop";
     return result;
   }
 
   PathLoadingGuard guard(absPath);
 
   if (Properties::isTraceImportFile())
-    log(kDebug, String("Include '") + srcName + "' (-> '" + absPath + "'");
+    HR_LOG(kDebug) << "Include '" << srcName << "' (-> '" << absPath << "')";
 
   try {
     CurrentLoadPathGuard currentPathGuard(absPath);
@@ -306,8 +305,8 @@ TokenVector Compiler::includeFileImpl(const SrcPos& srcpos, const String& srcNam
     unreadToken(fState.fToken);
   }
   catch (const Exception& e) {
-    errorf(srcpos, E_UnknownInputFile, "including '%s' failed: %s\n",
-           (zstring)StrHelper(absPath), (zstring)StrHelper(e.message()));
+    HR_LOG(kError, srcpos, E_UnknownInputFile)
+        << "including '" << absPath << "' failed: " << e.message();
     return {};
   }
 
@@ -323,15 +322,14 @@ bool Compiler::importFileImpl(const SrcPos& srcpos, const String& libName,
   static ImportCache sImportCache;
 
   if (absPath.isEmpty()) {
-    errorf(srcpos, E_UnknownLibrary, "importing '%s' failed: Unknown file\n",
-           (zstring)StrHelper(libName));
+    HR_LOG(kError, srcpos, E_UnknownLibrary)
+        << "importing '" << libName << "' failed: Unknown file";
     return false;
   }
 
   if (sPathsInLoading.count(absPath) > 0) {
     if (Properties::isTraceImportFile())
-      logf(kDebug, "File '%s' is currently imported.  Avoid loop",
-           (zstring)StrHelper(absPath));
+      HR_LOG(kDebug) << "File '" << absPath << "' is currently imported.  Avoid loop";
     return true;
   }
 
@@ -339,20 +337,20 @@ bool Compiler::importFileImpl(const SrcPos& srcpos, const String& libName,
 
   if (currentScope->hasScopeForFile(absPath)) {
     if (Properties::isTraceImportFile())
-      logf(kDebug, "File '%s' already imported", (zstring)StrHelper(absPath));
+      HR_LOG(kDebug) << "File '" << absPath << "' already imported";
     return true;
   }
 
   ImportCache::iterator it = sImportCache.find(absPath);
   if (it != sImportCache.end()) {
     if (Properties::isTraceImportFile())
-      logf(kDebug, "Reuse imported '%s'", (zstring)StrHelper(absPath));
+      HR_LOG(kDebug) << "Reuse imported '" << absPath << "'";
     currentScope->addImportedScope(absPath, it->second);
     return true;
   }
 
   if (Properties::isTraceImportFile())
-    log(kDebug, String("Import: ") + libName + " (from: " + absPath + ")");
+    HR_LOG(kDebug) << "Import: " << libName << " (from: " << absPath << ")";
 
   try {
     auto compiler = Compiler{ K(isParsingInterface) };
@@ -371,8 +369,8 @@ bool Compiler::importFileImpl(const SrcPos& srcpos, const String& libName,
     sImportCache.insert(std::make_pair(absPath, scope));
   }
   catch (const Exception& e) {
-    errorf(srcpos, E_UnknownLibrary, "importing '%s' failed: %s\n",
-           (zstring)StrHelper(absPath), (zstring)StrHelper(e.message()));
+    HR_LOG(kError, srcpos, E_UnknownLibrary)
+        << "importing '" << absPath << "' failed: " << e.message();
     return false;
   }
 
@@ -509,8 +507,7 @@ void compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
     }
   }
   catch (const Exception& e) {
-    logf(kError, "compilation of '%s' failed: %s", (zstring)StrHelper(file),
-         (zstring)StrHelper(e.message()));
+    HR_LOG(kError) << "compilation of '" << file << "' failed: " << e.message();
   }
 }
 
@@ -529,7 +526,7 @@ void parseFiles(const std::vector<String>& files, const String& outputFile)
 void compileFiles(const std::vector<String>& files, const String& outputFile)
 {
   if (!outputFile.isEmpty() && files.size() > 1)
-    logf(kError, "Outputfile and multiple compile files are given.");
+    HR_LOG(kError) << "Outputfile and multiple compile files are given.";
 
   for (const auto& f : files)
     compileFile(f, K(doParse), K(doCompile), !K(doLink), outputFile);

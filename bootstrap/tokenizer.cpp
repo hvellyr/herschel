@@ -309,17 +309,17 @@ Token Tokenizer::toInt(const SrcPos& startPos, const String& token, int radix,
     switch (bitwidth) {
     case 8:
       if (tmp64 > UINT8_MAX)
-        errorf(srcpos(), E_BadNumberNotation, "Number is out of range");
+        HR_LOG(kError, srcpos(), E_BadNumberNotation) << "Number is out of range";
       return Token::newUInt(startPos, bitwidth, int64_t(uint8_t(tmp64)));
 
     case 16:
       if (tmp64 > UINT16_MAX)
-        errorf(srcpos(), E_BadNumberNotation, "Number is out of range");
+        HR_LOG(kError, srcpos(), E_BadNumberNotation) << "Number is out of range";
       return Token::newUInt(startPos, bitwidth, int64_t(uint16_t(tmp64)));
 
     case 32:
       if (tmp64 > UINT32_MAX)
-        errorf(srcpos(), E_BadNumberNotation, "Number is out of range");
+        HR_LOG(kError, srcpos(), E_BadNumberNotation) << "Number is out of range";
       return Token::newUInt(startPos, bitwidth, int64_t(uint32_t(tmp64)));
 
     case 64: return Token::newUInt(startPos, bitwidth, int64_t(tmp64));
@@ -331,17 +331,17 @@ Token Tokenizer::toInt(const SrcPos& startPos, const String& token, int radix,
     switch (bitwidth) {
     case 8:
       if (tmp64 < INT8_MIN || tmp64 > INT8_MAX)
-        errorf(srcpos(), E_BadNumberNotation, "Number is out of range");
+        HR_LOG(kError, srcpos(), E_BadNumberNotation) << "Number is out of range";
       return Token::newInt(startPos, bitwidth, int64_t(int8_t(tmp64)));
 
     case 16:
       if (tmp64 < INT16_MIN || tmp64 > INT16_MAX)
-        errorf(srcpos(), E_BadNumberNotation, "Number is out of range");
+        HR_LOG(kError, srcpos(), E_BadNumberNotation) << "Number is out of range";
       return Token::newInt(startPos, bitwidth, int64_t(int16_t(tmp64)));
 
     case 32:
       if (tmp64 < INT32_MIN || tmp64 > INT32_MAX)
-        errorf(srcpos(), E_BadNumberNotation, "Number is out of range");
+        HR_LOG(kError, srcpos(), E_BadNumberNotation) << "Number is out of range";
       return Token::newInt(startPos, bitwidth, int64_t(int32_t(tmp64)));
 
     case 64: return Token::newInt(startPos, bitwidth, tmp64);
@@ -381,7 +381,8 @@ Token Tokenizer::readNumber(const SrcPos& startPos, int sign)
         exponent = readIntNumberPart(!K(acceptHex));
       }
       else {
-        errorf(srcpos(), E_BadNumberNotation, "bad scientific notation: \\u0%x;", fCC);
+        HR_LOG(kError, srcpos(), E_BadNumberNotation)
+            << "bad scientific notation: \\u0x" << hex(fCC);
         scanUntilDelimiter();
       }
     }
@@ -394,7 +395,7 @@ Token Tokenizer::readNumber(const SrcPos& startPos, int sign)
 
   Token suffix = readIdentifier(srcpos(), String(), kSymbol, !K(acceptGenerics));
   if (suffix.type() != kId) {
-    errorf(startPos, E_BadNumberNotation, "unexpected number type annotation");
+    HR_LOG(kError, startPos, E_BadNumberNotation) << "unexpected number type annotation";
   }
   else {
     String id = suffix.idValue();
@@ -404,16 +405,16 @@ Token Tokenizer::readNumber(const SrcPos& startPos, int sign)
     if (idx < len) {
       if (id[idx] == 'h' || id[idx] == 'H') {
         if (type != kInt)
-          errorf(srcpos(), E_BadNumberNotation,
-                 "hexadecimal notation for unappropriate number type");
+          HR_LOG(kError, srcpos(), E_BadNumberNotation)
+              << "hexadecimal notation for unappropriate number type";
         else
           radix = 16;
         idx++;
       }
       else if (id[idx] == 'q' || id[idx] == 'Q') {
         if (type != kInt)
-          errorf(srcpos(), E_BadNumberNotation,
-                 "hexadecimal notation for unappropriate number type");
+          HR_LOG(kError, srcpos(), E_BadNumberNotation)
+              << "hexadecimal notation for unappropriate number type";
         else
           radix = 8;
         idx++;
@@ -422,8 +423,8 @@ Token Tokenizer::readNumber(const SrcPos& startPos, int sign)
     if (idx < len) {
       if (id[idx] == 'y' || id[idx] == 'Y') {
         if (type != kInt)
-          errorf(srcpos(), E_BadNumberNotation,
-                 "binary notation for unappropriate number type");
+          HR_LOG(kError, srcpos(), E_BadNumberNotation)
+              << "binary notation for unappropriate number type";
         else
           radix = 2;
         idx++;
@@ -433,14 +434,14 @@ Token Tokenizer::readNumber(const SrcPos& startPos, int sign)
     if (idx < len) {
       if (id[idx] == 'u' || id[idx] == 'U') {
         if (type != kInt) {
-          errorf(srcpos(), E_BadNumberNotation,
-                 "unsigned notation for unappropriate number type");
+          HR_LOG(kError, srcpos(), E_BadNumberNotation)
+              << "unsigned notation for unappropriate number type";
         }
         else {
           isUnsigned = true;
           if (sign < 0)
-            errorf(srcpos(), E_BadNumberNotation,
-                   "negative unsigned number.  Sign ignored");
+            HR_LOG(kError, srcpos(), E_BadNumberNotation)
+                << "negative unsigned number.  Sign ignored";
         }
         idx++;
       }
@@ -452,24 +453,24 @@ Token Tokenizer::readNumber(const SrcPos& startPos, int sign)
         if (type == kInt || type == kFloat)
           bitwidth = 64;
         else
-          errorf(srcpos(), E_BadNumberNotation,
-                 "long number notation for unappropriate number type");
+          HR_LOG(kError, srcpos(), E_BadNumberNotation)
+              << "long number notation for unappropriate number type";
       }
       else if (id[idx] == 's' || id[idx] == 'S') {
         idx++;
         if (type == kInt)
           bitwidth = 16;
         else
-          errorf(srcpos(), E_BadNumberNotation,
-                 "long number notation for unappropriate number type");
+          HR_LOG(kError, srcpos(), E_BadNumberNotation)
+              << "long number notation for unappropriate number type";
       }
       else if (id[idx] == 't' || id[idx] == 'T') {
         idx++;
         if (type == kInt)
           bitwidth = 8;
         else
-          errorf(srcpos(), E_BadNumberNotation,
-                 "long number notation for unappropriate number type");
+          HR_LOG(kError, srcpos(), E_BadNumberNotation)
+              << "long number notation for unappropriate number type";
       }
     }
 
@@ -482,8 +483,8 @@ Token Tokenizer::readNumber(const SrcPos& startPos, int sign)
 
     if (idx < len) {
       // there're more chars in the annotation than expected.
-      errorf(srcpos(), E_BadNumberNotation, "unexpected number type annotation: %c",
-             id[idx]);
+      HR_LOG(kError, srcpos(), E_BadNumberNotation)
+          << "unexpected number type annotation: " << id[idx];
     }
   }
 
@@ -530,18 +531,19 @@ Token Tokenizer::readNumericCharacter(const SrcPos& startPos, bool needsTerminat
         return ct;
       }
       else if (fCC == EOF) {
-        errorf(startPos, E_UnterminatedChar, "file ended before char end");
+        HR_LOG(kError, startPos, E_UnterminatedChar) << "file ended before char end";
         return ct;
       }
       else {
-        errorf(startPos, E_UnterminatedChar, "unterminated char");
+        HR_LOG(kError, startPos, E_UnterminatedChar) << "unterminated char";
       }
     }
     else
       return Token(startPos, kChar, readc);
   }
   else {
-    errorf(startPos, E_BadCharNotation, "expected integer notation for codepoint");
+    HR_LOG(kError, startPos, E_BadCharNotation)
+        << "expected integer notation for codepoint";
     return Token(startPos, kChar, 0xffff);
   }
 
@@ -569,7 +571,7 @@ Char Tokenizer::mapCharNameToChar(const SrcPos& startPos, const String& charnm)
     }
   }
 
-  error(startPos, E_UnknownCharName, String("Unknown char name: ") + charnm);
+  HR_LOG(kError, startPos, E_UnknownCharName) << "Unknown char name: " << charnm;
   return 0xffff;
 }
 
@@ -585,7 +587,7 @@ Token Tokenizer::readSymbolCharacter(const SrcPos& startPos, bool needsTerminato
 {
   Token sym = readIdentifier(startPos, String(), kSymbol, !K(acceptGenerics));
   if (sym.type() != kId) {
-    errorf(startPos, E_ExpectedCharName, "expected character symbol");
+    HR_LOG(kError, startPos, E_ExpectedCharName) << "expected character symbol";
     return sym;
   }
 
@@ -597,11 +599,11 @@ Token Tokenizer::readSymbolCharacter(const SrcPos& startPos, bool needsTerminato
       return ct;
     }
     else if (fCC == EOF) {
-      errorf(startPos, E_UnterminatedChar, "file ended before char end");
+      HR_LOG(kError, startPos, E_UnterminatedChar) << "file ended before char end";
       return ct;
     }
     else {
-      errorf(startPos, E_UnterminatedChar, "unterminated char");
+      HR_LOG(kError, startPos, E_UnterminatedChar) << "unterminated char";
     }
   }
 
@@ -626,7 +628,7 @@ Token Tokenizer::readCharacter(const SrcPos& startPos, bool needsTerminator)
     if (isDigit(fCC))
       return readNumericCharacter(startPos, needsTerminator);
     else if (!isDelimiter(fCC)) {
-      errorf(startPos, E_UnterminatedChar, "expected numerical char notation");
+      HR_LOG(kError, startPos, E_UnterminatedChar) << "expected numerical char notation";
       scanUntilDelimiter();
       // assume any character, simply to allow continue parsing
       return Token(startPos, kChar, 0xffff);
@@ -637,7 +639,7 @@ Token Tokenizer::readCharacter(const SrcPos& startPos, bool needsTerminator)
   else if (!isWhitespace(fCC))
     return readNamedCharacter(startPos, needsTerminator);
   else {
-    errorf(startPos, E_UnterminatedChar, "incomplete char notation");
+    HR_LOG(kError, startPos, E_UnterminatedChar) << "incomplete char notation";
     return Token(startPos, kChar, 0xffff);
   }
 }
@@ -667,9 +669,9 @@ Token Tokenizer::readString(const SrcPos& startPos, int endChar, TokenType type)
     }
   }
   catch (const AnnotatedEofException& ae) {
-    errorf(ae.srcpos(), E_UnterminatedString,
-           "File ended before end of string.  Began on line %d", startPos.lineNumber());
-    errorf(startPos, 0, "String started here");
+    HR_LOG(kError, ae.srcpos(), E_UnterminatedString)
+        << "File ended before end of string.  Began on line " << startPos.lineNumber();
+    HR_LOG(kError, startPos), "String started here";
     throw;
   }
 
@@ -782,12 +784,12 @@ Token Tokenizer::nextTokenImpl()
         Token param =
             readIdentifier(beginSrcpos, String(), kMacroParamAsStr, !K(acceptGenerics));
         if (fCC != '"') {
-          errorf(srcpos(), E_MissingApos, "Missing \" in ?\"-notation");
+          HR_LOG(kError, srcpos(), E_MissingApos) << "Missing \" in ?\"-notation";
         }
         else
           nextChar();
         if (param.idValue().isEmpty()) {
-          errorf(beginSrcpos, E_BadMacroPattern, "empty macro parameter");
+          HR_LOG(kError, beginSrcpos, E_BadMacroPattern) << "empty macro parameter";
           return Token();
         }
 
@@ -821,7 +823,8 @@ Token Tokenizer::nextTokenImpl()
         if (isSymbolChar(fCC))
           return readIdentifier(beginSrcpos, String(), kKeyword, !K(acceptGenerics));
         else {
-          errorf(beginSrcpos, E_BadHashNotation, "Unknown #-notation: %C", Char(fCC));
+          HR_LOG(kError, beginSrcpos, E_BadHashNotation)
+              << "Unknown #-notation: \\u0x" << hex(fCC);
           continue;
         }
       }
@@ -845,7 +848,8 @@ Token Tokenizer::nextTokenImpl()
       else if (isDigit(fCC))
         return readNumber(beginSrcpos, 1);
       else {
-        errorf(beginSrcpos, E_UnexpectedChar, "unexpected char: \\u0%x", fCC);
+        HR_LOG(kError, beginSrcpos, E_UnexpectedChar)
+            << "unexpected char: \\0x" << hex(fCC);
         nextChar();
       }
     }

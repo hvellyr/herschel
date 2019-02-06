@@ -70,13 +70,8 @@ struct NodeTypeChecker<std::shared_ptr<FuncDefNode>> {
           genericDef->isGeneric()) {
         if (!isContravariant(genericDef->type(), node->type(), *node->scope(),
                              node->srcpos())) {
-          // tyerror(genericDef->type(), "genericdef type");
-          // tyerror(node->type(), "node type");
-
-          errorf(node->srcpos(), E_TypeMismatch,
-                 "method does not match generic function definition");
-          // tyerror(genericDef->type(), "Generic");
-          // tyerror(node->type(), "This");
+          HR_LOG(kError, node->srcpos(), E_TypeMismatch)
+              << "method does not match generic function definition";
         }
       }
     }
@@ -141,8 +136,8 @@ struct NodeTypeChecker<std::shared_ptr<IfNode>> {
 
     // TODO
     // if (!isSameType(Type::makeBool(true), node->test()->type())) {
-    //   errorf(node->test(), E_BoolTypeExpected,
-    //          "Bool type in if test expected");
+    //   HR_LOG(kError, node->test(), E_BoolTypeExpected) <<
+    //          "Bool type in if test expected";
     // }
   }
 };
@@ -195,8 +190,8 @@ void TypeChecker::checkFunctionReturnType(std::shared_ptr<FunctionNode> node)
     if (!isContravariant(node->retType(), node->body()->type(), *node->scope(),
                          node->srcpos()) &&
         !containsAny(node->body()->type(), node->srcpos())) {
-      errorf(node->srcpos(), E_TypeMismatch,
-             "function's body type does not match its return type");
+      HR_LOG(kError, node->srcpos(), E_TypeMismatch)
+          << "function's body type does not match its return type";
     }
 
 
@@ -205,8 +200,8 @@ void TypeChecker::checkFunctionReturnType(std::shared_ptr<FunctionNode> node)
 
     for (auto ret : delegate.fReturns) {
       if (!isContravariant(node->retType(), ret->type(), *ret->scope(), ret->srcpos())) {
-        errorf(ret->srcpos(), E_TypeMismatch,
-               "return's type does not match outer block type");
+        HR_LOG(kError, ret->srcpos(), E_TypeMismatch)
+            << "return's type does not match outer block type";
       }
     }
   }

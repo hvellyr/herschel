@@ -20,37 +20,39 @@
 namespace herschel {
 
 
-#define NUMBER_TYPE_ENUM_MAKER(_TypeName, _kind, _method, _init, _step)            \
-  Token _TypeName##TypeEnumMaker::nextEnumItem(const SrcPos& srcpos,               \
-                                               const Token& enumItemSymbol,        \
-                                               const Token& lastInitToken) const   \
-  {                                                                                \
-    if (!lastInitToken.isSet()) {                                                  \
-      return Token(srcpos, k##_kind, _init);                                       \
-    }                                                                              \
-    else if (lastInitToken == k##_kind) {                                          \
-      return Token(srcpos, k##_kind, lastInitToken._method##Value() + _step);      \
-    }                                                                              \
-                                                                                   \
-    errorf(srcpos, E_EnumInitTypeMismatch, "Init value does not match enum type"); \
-    return Token();                                                                \
+#define NUMBER_TYPE_ENUM_MAKER(_TypeName, _kind, _method, _init, _step)          \
+  Token _TypeName##TypeEnumMaker::nextEnumItem(const SrcPos& srcpos,             \
+                                               const Token& enumItemSymbol,      \
+                                               const Token& lastInitToken) const \
+  {                                                                              \
+    if (!lastInitToken.isSet()) {                                                \
+      return Token(srcpos, k##_kind, _init);                                     \
+    }                                                                            \
+    else if (lastInitToken == k##_kind) {                                        \
+      return Token(srcpos, k##_kind, lastInitToken._method##Value() + _step);    \
+    }                                                                            \
+                                                                                 \
+    HR_LOG(kError, srcpos, E_EnumInitTypeMismatch)                               \
+        << "Init value does not match enum type";                                \
+    return Token();                                                              \
   }
 
 
-#define NUMBER_TYPE_ENUM_MAKER_INT(_TypeName, _ctor, _bitwidth)                    \
-  Token _TypeName##TypeEnumMaker::nextEnumItem(const SrcPos& srcpos,               \
-                                               const Token& enumItemSymbol,        \
-                                               const Token& lastInitToken) const   \
-  {                                                                                \
-    if (!lastInitToken.isSet()) {                                                  \
-      return Token::new##_ctor(srcpos, _bitwidth, 0);                              \
-    }                                                                              \
-    else if (lastInitToken == kInt) {                                              \
-      return Token::new##_ctor(srcpos, _bitwidth, lastInitToken.intValue() + 1);   \
-    }                                                                              \
-                                                                                   \
-    errorf(srcpos, E_EnumInitTypeMismatch, "Init value does not match enum type"); \
-    return Token();                                                                \
+#define NUMBER_TYPE_ENUM_MAKER_INT(_TypeName, _ctor, _bitwidth)                  \
+  Token _TypeName##TypeEnumMaker::nextEnumItem(const SrcPos& srcpos,             \
+                                               const Token& enumItemSymbol,      \
+                                               const Token& lastInitToken) const \
+  {                                                                              \
+    if (!lastInitToken.isSet()) {                                                \
+      return Token::new##_ctor(srcpos, _bitwidth, 0);                            \
+    }                                                                            \
+    else if (lastInitToken == kInt) {                                            \
+      return Token::new##_ctor(srcpos, _bitwidth, lastInitToken.intValue() + 1); \
+    }                                                                            \
+                                                                                 \
+    HR_LOG(kError, srcpos, E_EnumInitTypeMismatch)                               \
+        << "Init value does not match enum type";                                \
+    return Token();                                                              \
   }
 
 
@@ -83,7 +85,7 @@ Token BoolTypeEnumMaker::nextEnumItem(const SrcPos& srcpos, const Token& enumIte
     return Token(srcpos, kBool, true);
   }
 
-  errorf(srcpos, E_EnumInitTypeMismatch, "Init value does not match enum type");
+  HR_LOG(kError, srcpos, E_EnumInitTypeMismatch) << "Init value does not match enum type";
   return Token();
 }
 
@@ -101,17 +103,18 @@ SIMPLE_TYPE_ENUM_MAKE(Nil, ".lang.nil")
 SIMPLE_TYPE_ENUM_MAKE(Unspecified, ".lang.unspecified")
 
 
-#define STRING_TYPE_ENUM_MAKE(_TypeName, _kind)                                    \
-  Token _TypeName##TypeEnumMaker::nextEnumItem(const SrcPos& srcpos,               \
-                                               const Token& enumItemSymbol,        \
-                                               const Token& lastInitToken) const   \
-  {                                                                                \
-    if (!lastInitToken.isSet() || lastInitToken == k##_kind) {                     \
-      return Token(srcpos, k##_kind, enumItemSymbol.idValue());                    \
-    }                                                                              \
-                                                                                   \
-    errorf(srcpos, E_EnumInitTypeMismatch, "Init value does not match enum type"); \
-    return Token();                                                                \
+#define STRING_TYPE_ENUM_MAKE(_TypeName, _kind)                                  \
+  Token _TypeName##TypeEnumMaker::nextEnumItem(const SrcPos& srcpos,             \
+                                               const Token& enumItemSymbol,      \
+                                               const Token& lastInitToken) const \
+  {                                                                              \
+    if (!lastInitToken.isSet() || lastInitToken == k##_kind) {                   \
+      return Token(srcpos, k##_kind, enumItemSymbol.idValue());                  \
+    }                                                                            \
+                                                                                 \
+    HR_LOG(kError, srcpos, E_EnumInitTypeMismatch)                               \
+        << "Init value does not match enum type";                                \
+    return Token();                                                              \
   }
 
 

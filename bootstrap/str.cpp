@@ -468,7 +468,7 @@ int String::toInt(int radix) const
     throw NotANumberException(String("Is not a number: ") + tmp);
 
   if (errno == ERANGE) {
-    logf(kWarn, "Number to large: %s", tmp);
+    HR_LOG(kWarn) << "Number to large: " << tmp;
   }
 
   return val;
@@ -489,7 +489,7 @@ int64_t String::toInt64(int radix) const
     throw NotANumberException(String("Is not a number: ") + tmp);
 
   if (errno == ERANGE) {
-    logf(kWarn, "Number to large: %s", tmp);
+    HR_LOG(kWarn) << "Number to large: " << tmp;
   }
 
   return val;
@@ -510,7 +510,7 @@ uint64_t String::toUInt64(int radix) const
     throw NotANumberException(String("Is not a number: ") + tmp);
 
   if (errno == ERANGE) {
-    logf(kWarn, "Number to large: %s", tmp);
+    HR_LOG(kWarn) << "Number to large: " << tmp;
   }
 
   return val;

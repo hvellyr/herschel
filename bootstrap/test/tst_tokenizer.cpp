@@ -126,7 +126,7 @@ TEST_CASE("Tokenizer numbers", "[tokenize][numbers]")
     REQUIRE(tnz.nextToken() == Token(sp, kFloat, 3.1415).setIsImaginary(true));
   }
   catch (const Exception& ne) {
-    logf(kError, StrHelper(ne.message()));
+    HR_LOG(kError) << ne.message();
   }
 }
 
@@ -159,7 +159,7 @@ TEST_CASE("Tokenizer chars", "[tokenize][chars]")
     REQUIRE(tnz.nextToken() == Token(sp, kChar, 0xacf5));
   }
   catch (const Exception& ne) {
-    logf(kError, StrHelper(ne.message()));
+    HR_LOG(kError) << ne.message();
   }
 }
 
@@ -243,7 +243,7 @@ TEST_CASE("Tokenizer function defs", "[tokenize][functions]")
     REQUIRE(tnz.nextToken() == Token(sp, kInt, 4));
   }
   catch (const Exception& ne) {
-    logf(kError, StrHelper(ne.message()));
+    HR_LOG(kError) << ne.message();
   }
 }
 
@@ -289,7 +289,7 @@ TEST_CASE("Tokenizer keyword static container", "[tokenize]")
     REQUIRE(tnz.nextToken() == Token(sp, kParanClose));
   }
   catch (const Exception& ne) {
-    logf(kError, StrHelper(ne.message()));
+    HR_LOG(kError) << ne.message();
   }
 }
 
@@ -454,7 +454,7 @@ TEST_CASE("Tokenizer generics", "[tokenize][generics]")
     REQUIRE(tnz.nextToken() == Token(sp, String("->abc")));
   }
   catch (const Exception& ne) {
-    logf(kError, StrHelper(ne.message()));
+    HR_LOG(kError) << ne.message();
   }
 }
 
@@ -493,7 +493,7 @@ TEST_CASE("Tokenizer namespaces", "[tokenize][namespaces]")
     REQUIRE(tnz.nextToken() == Token(sp, String("mm")));
   }
   catch (const Exception& ne) {
-    logf(kError, StrHelper(ne.message()));
+    HR_LOG(kError) << ne.message();
   }
 }
 
@@ -519,7 +519,7 @@ TEST_CASE("Tokenizer macro vars", "[tokenize][macros]")
     }
   }
   catch (const Exception& ne) {
-    logf(kError, StrHelper(ne.message()));
+    HR_LOG(kError) << ne.message();
   }
 }
 
@@ -539,7 +539,7 @@ TEST_CASE("Tokenizer macro brackets", "[tokenize][macros]")
     REQUIRE(tnz.nextToken() == Token(sp, kMacroClose));
   }
   catch (const Exception& ne) {
-    logf(kError, StrHelper(ne.message()));
+    HR_LOG(kError) << ne.message();
   }
 }
 
@@ -559,7 +559,7 @@ TEST_CASE("Tokenizer alternative macro brackets", "[tokenize][macros]")
     REQUIRE(tnz.nextToken() == Token(sp, kMacroClose2));
   }
   catch (const Exception& ne) {
-    logf(kError, StrHelper(ne.message()));
+    HR_LOG(kError) << ne.message();
   }
 }
 

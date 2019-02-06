@@ -74,7 +74,7 @@ int main(int argc, char** argv)
     options.parse(argc, argv);
   }
   catch (const std::exception& opt) {
-    logf(kError, "%s", opt.what());
+    HR_LOG(kError) << opt.what();
     return 1;
   }
 

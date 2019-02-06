@@ -175,9 +175,10 @@ void Scope::registerScopeItem(const ScopeName& name, std::shared_ptr<ScopeItem> 
                                     !K(doAutoMatch));
   if (result.fItem) {
     if (item->srcpos() != result.fItem->srcpos()) {
-      errorf(item->srcpos(), E_SymbolRedefined, "redefinition of symbol '%s'",
-             (zstring)StrHelper(name.fName));
-      errorf(result.fItem->srcpos(), E_SymbolRedefined, "symbol was defined here");
+      HR_LOG(kError, item->srcpos(), E_SymbolRedefined)
+          << "redefinition of symbol '" << name.fName << "'";
+      HR_LOG(kError, result.fItem->srcpos(), E_SymbolRedefined)
+          << "symbol was defined here";
     }
     return;
   }
@@ -215,13 +216,12 @@ Scope::LookupResult Scope::lookupItemLocalImpl(const SrcPos& srcpos,
           return LookupResult(it->second.begin()->second.get(), !K(inOuterFunc));
         }
         else if (showError) {
-          errorf(srcpos, E_AmbiguousSym, "ambiguous symbol '%s' usage",
-                 (zstring)StrHelper(base.fName));
-          log(kInfo, String("       ") + name.fName);
+          HR_LOG(kError, srcpos, E_AmbiguousSym)
+              << "ambiguous symbol '" << base.fName << "' usage";
           for (const auto& space : it->second) {
             String fullKey = qualifyId(space.first, it->first.fName);
-            errorf(space.second->srcpos(), E_AmbiguousSym, "symbol '%s' was defined here",
-                   (zstring)StrHelper(fullKey));
+            HR_LOG(kError, space.second->srcpos(), E_AmbiguousSym)
+                << "symbol '" << fullKey << "' was defined here";
           }
         }
       }
@@ -308,9 +308,9 @@ bool Scope::checkForRedefinition(const SrcPos& srcpos, ScopeDomain domain,
   SrcPos firstSrcpos;
   if (hasNameLocal(domain, sym, &firstSrcpos, !K(doAutoMatch))) {
     if (srcpos != firstSrcpos) {
-      errorf(srcpos, E_Redefinition, "Redefinition of '%s'.", (zstring)StrHelper(sym));
-      errorf(firstSrcpos, E_Redefinition, "'%s' previously defined here.",
-             (zstring)StrHelper(sym));
+      HR_LOG(kError, srcpos, E_Redefinition) << "Redefinition of '" << sym << "'.";
+      HR_LOG(kError, firstSrcpos, E_Redefinition)
+          << "'" << sym << "' previously defined here.";
     }
     return true;
   }
@@ -566,10 +566,10 @@ bool Scope::checkForFunctionRedefinition(const SrcPos& srcpos, ScopeDomain domai
   SrcPos firstSrcpos;
   if (hasFunctionNameLocal(domain, sym, &firstSrcpos, !K(doAutoMatch))) {
     if (srcpos != firstSrcpos) {
-      errorf(srcpos, E_Redefinition, "Redefinition of function '%s'.",
-             (zstring)StrHelper(sym));
-      errorf(firstSrcpos, E_Redefinition, "'%s' previously defined here.",
-             (zstring)StrHelper(sym));
+      HR_LOG(kError, srcpos, E_Redefinition)
+          << "Redefinition of function '" << sym << "'.";
+      HR_LOG(kError, firstSrcpos, E_Redefinition)
+          << "'" << sym << "' previously defined here.";
     }
     return true;
   }
@@ -590,9 +590,10 @@ void Scope::registerFunction(const SrcPos& srcpos, const String& funcName,
   if (result.fItem) {
     if (result.fItem->kind() != kScopeItem_function) {
       if (srcpos != result.fItem->srcpos()) {
-        errorf(srcpos, E_SymbolRedefined, "Redefinition of function '%s'",
-               (zstring)StrHelper(name.fName));
-        errorf(result.fItem->srcpos(), E_SymbolRedefined, "symbol was defined here");
+        HR_LOG(kError, srcpos, E_SymbolRedefined)
+            << "Redefinition of function '" << name.fName << "'";
+        HR_LOG(kError, result.fItem->srcpos(), E_SymbolRedefined)
+            << "symbol was defined here";
       }
       return;
     }
@@ -1107,7 +1108,7 @@ void Scope::exportSymbols(std::shared_ptr<Scope> dstScope, bool propagateOuter) 
                           qualifyId(baseScopep.first, mapp.first.fName));
 
         VizType vizType = exportSymbolVisibility(fullKey);
-        //log(kInfo, String("export sym ") + qualifyId(baseScopep.first, mapp.first.fName) + " " + vizType);
+        //HR_LOG(kInfo) << "export sym " << qualifyId(baseScopep.first, mapp.first.fName) << " " << vizType;
         if (vizType != kPrivate && (propagateOuter || vizType != kOuter)) {
           VizType reducedVizType = reduceVizType(vizType);
           bool isFinal = exportSymbolIsFinal(fullKey);

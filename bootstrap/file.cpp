@@ -394,7 +394,7 @@ static String checkForFileWithExts(const String& fullPath,
 {
   if (file::isFile(fullPath)) {
     if (Properties::isTraceFileSearch())
-      log(kDebug, String("check file '") + fullPath + "'");
+      HR_LOG(kDebug) << "check file '" << fullPath << "'";
     return fullPath;
   }
 
@@ -403,7 +403,7 @@ static String checkForFileWithExts(const String& fullPath,
       String extFullPath = file::appendExt(fullPath, ext);
 
       if (Properties::isTraceFileSearch())
-        log(kDebug, String("check file '") + extFullPath + "'");
+        HR_LOG(kDebug) << "check file '" << extFullPath << "'";
 
       if (file::isFile(extFullPath))
         return extFullPath;
@@ -420,7 +420,7 @@ String file::lookupInPath(const StringVector& patterns, const StringVector& sear
   for (const auto& pattern : patterns) {
     if (file::isAbsolutePath(pattern)) {
       String result =
-        checkForFileWithExts(file::canonicalPathName(pattern), altExtensions);
+          checkForFileWithExts(file::canonicalPathName(pattern), altExtensions);
       if (!result.isEmpty())
         return result;
     }

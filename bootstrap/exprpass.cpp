@@ -171,11 +171,9 @@ void FirstPass::parseSequence(ParseFunctor functor, TokenType startToken,
         nextToken();
       }
       else if (fToken != endToken)
-        error(fToken.srcpos(), errorCode,
-              (StringBuffer() << ctx << ": expected '"
-                              << Token(SrcPos(), endToken).toString() << "' or ','"
-                              << "; found: " << fToken.toString())
-                  .toString());
+        HR_LOG(kError, fToken.srcpos(), errorCode)
+            << ctx << ": expected '" << Token(SrcPos(), endToken) << "' or ','"
+            << "; found: " << fToken;
     }
   }
 
@@ -184,16 +182,12 @@ void FirstPass::parseSequence(ParseFunctor functor, TokenType startToken,
       nextToken();
   }
   else {
-    error(fToken.srcpos(), errorCode,
-          (StringBuffer() << ctx << ": expected '" << Token(SrcPos(), endToken).toString()
-                          << "'")
-              .toString());
+    HR_LOG(kError, fToken.srcpos(), errorCode)
+        << ctx << ": expected '" << Token(SrcPos(), endToken) << "'";
 
     if (startToken != kInvalid && startPos != fToken.srcpos())
-      error(startPos, errorCode,
-            (StringBuffer() << ctx << ": beginning '"
-                            << Token(SrcPos(), startToken).toString() << "' was here")
-                .toString());
+      HR_LOG(kError, startPos, errorCode)
+          << ctx << ": beginning '" << Token(SrcPos(), startToken) << "' was here";
     scanUntilTopExprAndResume();
   }
 }
@@ -243,10 +237,8 @@ void FirstPass::parseSumType(ParseFunctor functor, ErrCodes errorCode, Token& re
         continue;
       }
       else {
-        error(fToken.srcpos(), E_InconsistentGroupType,
-              (StringBuffer() << ctx << ": expected wrong group type operator: "
-                              << fToken.toString())
-                  .toString());
+        HR_LOG(kError, fToken.srcpos(), E_InconsistentGroupType)
+            << ctx << ": expected wrong group type operator: " << fToken;
         nextToken();
         continue;
       }
@@ -257,10 +249,8 @@ void FirstPass::parseSumType(ParseFunctor functor, ErrCodes errorCode, Token& re
     nextToken();
   }
   else {
-    error(fToken.srcpos(), errorCode,
-          (StringBuffer() << ctx << ": expected '"
-                          << Token(SrcPos(), kParanClose).toString() << "'")
-              .toString());
+    HR_LOG(kError, fToken.srcpos(), errorCode)
+        << ctx << ": expected '" << Token(SrcPos(), kParanClose) << "'";
 
     scanUntilTopExprAndResume();
   }
@@ -283,14 +273,14 @@ TokenVector FirstPass::parseQualifiedName(bool acceptLeadingDot)
         nextToken();
 
         if (fToken == kSymbol) {
-          errorf(fToken.srcpos(), E_UnexpectedRootedSymbol,
-                 "Rooted qualified name not allowed in this postion");
+          HR_LOG(kError, fToken.srcpos(), E_UnexpectedRootedSymbol)
+              << "Rooted qualified name not allowed in this postion";
 
           result.push_back(fToken);
           nextToken();
         }
         else {
-          errorf(fToken.srcpos(), E_UnexpectedToken, "unexpected dot");
+          HR_LOG(kError, fToken.srcpos(), E_UnexpectedToken) << "unexpected dot";
           return TokenVector();
         }
       }
@@ -305,7 +295,7 @@ TokenVector FirstPass::parseQualifiedName(bool acceptLeadingDot)
         nextToken();
       }
       else {
-        errorf(fToken.srcpos(), E_SymbolExpected, "qualified name ends in '.'");
+        HR_LOG(kError, fToken.srcpos(), E_SymbolExpected) << "qualified name ends in '.'";
       }
     }
   }
@@ -445,8 +435,8 @@ struct ExportParser {
         pass->nextToken();
 
         if (pass->fToken != kSymbol) {
-          errorf(pass->fToken.srcpos(), E_SymbolExpected,
-                 "expected symbol domain identifier");
+          HR_LOG(kError, pass->fToken.srcpos(), E_SymbolExpected)
+              << "expected symbol domain identifier";
           pass->scanUntilNextParameter();
         }
         else {
@@ -462,7 +452,7 @@ struct ExportParser {
       pass->nextToken();
     }
     else {
-      errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL or '*'");
+      HR_LOG(kError, pass->fToken.srcpos(), E_SymbolExpected) << "expected SYMBOL or '*'";
       pass->scanUntilNextParameter();
     }
 
@@ -485,8 +475,8 @@ Token FirstPass::parseExport()
       expr << fToken;
     }
     else
-      errorf(fToken.srcpos(), E_ExportVisibility, "unknown visibility type '%s'",
-             (zstring)StrHelper(fToken.toString()));
+      HR_LOG(kError, fToken.srcpos(), E_ExportVisibility)
+          << "unknown visibility type '" << fToken << "'";
 
     nextToken();
   }
@@ -509,14 +499,14 @@ Token FirstPass::parseExport()
     parseSequence(ExportParser(), kParanOpen, kParanClose, K(hasSeparator),
                   E_BadParameterList, symbols, "export-symbols");
     if (symbols.isEmpty()) {
-      errorf(fToken.srcpos(), E_EmptyExportList, "empty export list");
+      HR_LOG(kError, fToken.srcpos(), E_EmptyExportList) << "empty export list";
       ignore = true;
     }
     else
       expr << symbols;
   }
   else {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "expected '('";
     return scanUntilTopExprAndResume();
   }
 
@@ -526,7 +516,7 @@ Token FirstPass::parseExport()
     nextToken();
 
     if (fToken != Compiler::finalToken) {
-      errorf(fToken.srcpos(), E_UnexpectedToken, "expected 'final'");
+      HR_LOG(kError, fToken.srcpos(), E_UnexpectedToken) << "expected 'final'";
     }
     else {
       isFinal = true;
@@ -563,7 +553,7 @@ struct IncludeParser {
       result << str;
     }
     else {
-      errorf(pass->fToken.srcpos(), E_StringExpected, "expected STRING");
+      HR_LOG(kError, pass->fToken.srcpos(), E_StringExpected) << "expected STRING";
       pass->scanUntilNextParameter();
     }
 
@@ -583,8 +573,8 @@ TokenVector FirstPass::parseInclude()
       isPublic = true;
     }
     else
-      errorf(fToken.srcpos(), E_UnknownIncludeScope, "unknown include scope '%s'",
-             (zstring)StrHelper(fToken.toString()));
+      HR_LOG(kError, fToken.srcpos(), E_UnknownIncludeScope)
+          << "unknown include scope '" << fToken << "'";
 
     nextToken();
   }
@@ -608,8 +598,8 @@ TokenVector FirstPass::parseInclude()
     }
   }
   else {
-    error(fToken.srcpos(), E_StringExpected,
-          String("expected STRING or '('") + fToken.toString());
+    HR_LOG(kError, fToken.srcpos(), E_StringExpected)
+        << "expected STRING or '('.  Found " << fToken;
     return scanUntilTopExprAndResume().toTokenVector();
   }
 
@@ -636,7 +626,7 @@ TokenVector FirstPass::parseInclude()
         nextToken();
       }
       catch (const Exception& e) {
-        error(srcp.first, E_UnknownInputFile, e.message());
+        HR_LOG(kError, srcp.first, E_UnknownInputFile) << e.message();
       }
     }
   }
@@ -655,7 +645,7 @@ struct ImportParser {
       result << sym;
     }
     else {
-      errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+      HR_LOG(kError, pass->fToken.srcpos(), E_SymbolExpected) << "expected SYMBOL";
       pass->scanUntilNextParameter();
     }
 
@@ -687,7 +677,7 @@ TokenVector FirstPass::parseImport()
     }
   }
   else {
-    errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+    HR_LOG(kError, fToken.srcpos(), E_SymbolExpected) << "expected SYMBOL";
     return scanUntilTopExprAndResume().toTokenVector();
   }
 
@@ -709,7 +699,7 @@ TokenVector FirstPass::parseImport()
       }
     }
     catch (const Exception& e) {
-      error(libNameSymb.srcpos(), E_UnknownLibrary, e.message());
+      HR_LOG(kError, libNameSymb.srcpos(), E_UnknownLibrary) << e.message();
     }
   }
 
@@ -730,8 +720,8 @@ struct TypeParser {
     SrcPos pos = pass->fToken.srcpos();
     Token type = pass->parseTypeSpec(!K(onlyNestedConstr), K(needParans));
     if (!type.isSet()) {
-      errorf(pos, E_UnexpectedToken, "returntype expression expected, but found: %s",
-             (zstring)StrHelper(pass->fToken.toString()));
+      HR_LOG(kError, pos, E_UnexpectedToken)
+          << "returntype expression expected, but found: " << pass->fToken;
       pass->scanUntilNextParameter(fEndToken);
     }
     else
@@ -752,7 +742,7 @@ Token FirstPass::parseSymbolOrSimpleType(const Token& baseToken)
     auto qSymbol = parseQualifiedName(true);
 
     if (qSymbol.empty()) {
-      errorf(baseToken.srcpos(), E_UnexpectedQuote, "Unexpected quote");
+      HR_LOG(kError, baseToken.srcpos(), E_UnexpectedQuote) << "Unexpected quote";
       return Token();
     }
 
@@ -763,7 +753,7 @@ Token FirstPass::parseSymbolOrSimpleType(const Token& baseToken)
     nextToken();
 
     if (fToken != kSymbol) {
-      errorf(t.srcpos(), E_UnexpectedQuote, "Unexpected quote");
+      HR_LOG(kError, t.srcpos(), E_UnexpectedQuote) << "Unexpected quote";
       return Token();
     }
 
@@ -808,13 +798,13 @@ Token FirstPass::parseArrayExtend(const Token& baseType)
       SrcPos idxPos = fToken.srcpos();
       idxExpr = parseExpr(!K(acceptComma));
       if (!idxExpr.isSet())
-        errorf(idxPos, E_UnexpectedToken, "expected index expression");
+        HR_LOG(kError, idxPos, E_UnexpectedToken) << "expected index expression";
       else
         arrayType << idxExpr;
     }
 
     if (fToken != kBracketClose) {
-      errorf(fToken.srcpos(), E_MissingBracketClose, "expected ']'");
+      HR_LOG(kError, fToken.srcpos(), E_MissingBracketClose) << "expected ']'";
     }
     else
       nextToken();
@@ -841,9 +831,8 @@ Token FirstPass::parseConstraintExtend(const Token& baseType)
 
     Token constExpr = parseExpr(!K(acceptComma));
     if (!(constExpr.isLit() || constExpr.isSymbol() || constExpr.isConstRange())) {
-      error(constExpr.srcpos(), E_ConstExprExpected,
-            String("constraint types only accept constant expressions") +
-                constExpr.toString());
+      HR_LOG(kError, constExpr.srcpos(), E_ConstExprExpected)
+          << "constraint types only accept constant expressions.  Found " << constExpr;
       return baseType;
     }
 
@@ -857,7 +846,7 @@ Token FirstPass::parseConstraintExtend(const Token& baseType)
 Token FirstPass::parseFunctionSignature()
 {
   if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "expected '('";
     return scanUntilTopExprAndResume();
   }
 
@@ -873,7 +862,7 @@ Token FirstPass::parseFunctionSignature()
       SrcPos pos = fToken.srcpos();
       returnType = parseTypeSpec(K(onlyNestedConstr), !K(needParans));
       if (!returnType.isSet()) {
-        errorf(pos, E_MissingType, "returntype expression expected");
+        HR_LOG(kError, pos, E_MissingType) << "returntype expression expected";
         returnType = makeAnySymbol(pos);
       }
     }
@@ -908,7 +897,7 @@ Token FirstPass::parseQuotedType()
   nextToken();
 
   if (fToken != kSymbol) {
-    errorf(fToken.srcpos(), E_SymbolExpected, "missing type name");
+    HR_LOG(kError, fToken.srcpos(), E_SymbolExpected) << "missing type name";
     return Token();
   }
 
@@ -952,8 +941,8 @@ Token FirstPass::parseTypeSpec(bool onlyNestedConstraints, bool needParans)
       retval = parseArrayExtend(parseGroupType());
     }
     else {
-      errorf(fToken.srcpos(), E_UnexpectedToken,
-             "Unexpect token, type expression expected");
+      HR_LOG(kError, fToken.srcpos(), E_UnexpectedToken)
+          << "Unexpect token, type expression expected";
     }
 
     if (!needParans && fToken == kComma) {
@@ -995,8 +984,8 @@ struct LiteralVectorParser {
         if (fIsFirst)
           fIsDict = true;
         else if (!fIsDict) {
-          errorf(pass->fToken.srcpos(), E_InconsistentArgs,
-                 "For literal dictionaries all elements must be '->' pairs");
+          HR_LOG(kError, pass->fToken.srcpos(), E_InconsistentArgs)
+              << "For literal dictionaries all elements must be '->' pairs";
           pass->scanUntilNextParameter();
           return true;
         }
@@ -1006,7 +995,8 @@ struct LiteralVectorParser {
 
         Token toValue = pass->parseExpr(!K(acceptComma));
         if (!toValue.isSet()) {
-          errorf(mapToken.srcpos(), E_MissingRHExpr, "'->' requires a second expression");
+          HR_LOG(kError, mapToken.srcpos(), E_MissingRHExpr)
+              << "'->' requires a second expression";
           pass->scanUntilNextParameter();
         }
         else
@@ -1014,8 +1004,8 @@ struct LiteralVectorParser {
       }
       else {
         if (fIsDict)
-          errorf(expr.srcpos(), E_InconsistentArgs,
-                 "For literal dictionaries all elements must be '->' pairs");
+          HR_LOG(kError, expr.srcpos(), E_InconsistentArgs)
+              << "For literal dictionaries all elements must be '->' pairs";
         else
           result << expr;
       }
@@ -1046,9 +1036,8 @@ struct LiteralArrayParser {
     if (n.isSet())
       result << n;
     else {
-      errorf(pass->fToken.srcpos(), E_UnexpectedToken,
-             "Unexpected token while parsing array: %s",
-             (zstring)StrHelper(pass->fToken.toString()));
+      HR_LOG(kError, pass->fToken.srcpos(), E_UnexpectedToken)
+          << "Unexpected token while parsing array: " << pass->fToken;
       return false;
     }
 
@@ -1073,7 +1062,7 @@ Token FirstPass::parseIf()
   nextToken();
 
   if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "expected '('";
     return scanUntilTopExprAndResume();
   }
   SrcPos paranPos = fToken.srcpos();
@@ -1081,7 +1070,7 @@ Token FirstPass::parseIf()
 
   Token test = parseExpr(!K(acceptComma));
   if (fToken != kParanClose) {
-    errorf(fToken.srcpos(), E_ParamMissParanClose, "Syntax error, missing ')'");
+    HR_LOG(kError, fToken.srcpos(), E_ParamMissParanClose) << "Syntax error, missing ')'";
   }
   else
     nextToken();
@@ -1171,8 +1160,8 @@ Token FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
         nextToken();
       }
       else {
-        error(fToken.srcpos(), E_SymbolExpected,
-              String("parameter name expected: ") + fToken);
+        HR_LOG(kError, fToken.srcpos(), E_SymbolExpected)
+            << "parameter name expected: " << fToken;
         scanUntilNextParameter();
         return Token();
       }
@@ -1185,7 +1174,7 @@ Token FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
       SrcPos pos = fToken.srcpos();
       Token type = parseTypeSpec(K(onlyNestedConstr), K(needParans));
       if (!type.isSet()) {
-        errorf(pos, E_MissingType, "type expression expected");
+        HR_LOG(kError, pos, E_MissingType) << "type expression expected";
         if (autoCompleteTypes)
           paramSeq << typeIntroToken << makeAnySymbol(pos);
       }
@@ -1203,7 +1192,7 @@ Token FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
       SrcPos pos = fToken.srcpos();
       Token initExpr = parseExpr(!K(acceptComma));
       if (!initExpr.isSet())
-        errorf(pos, E_MissingRHExpr, "no value in keyed argument");
+        HR_LOG(kError, pos, E_MissingRHExpr) << "no value in keyed argument";
       else {
         paramSeq << assignToken << initExpr;
         paramType = kNamed;
@@ -1214,7 +1203,8 @@ Token FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
       nextToken();
 
       if (paramType != kPositional) {
-        errorf(restToken.srcpos(), E_InvalidRestParam, "orphaned rest parameter");
+        HR_LOG(kError, restToken.srcpos(), E_InvalidRestParam)
+            << "orphaned rest parameter";
       }
       else {
         paramSeq << restToken;
@@ -1229,14 +1219,16 @@ Token FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
   }
   else if (*expected == kNamed) {
     if (paramType == kPositional)
-      errorf(paramSeq.srcpos(), E_ParamOrder, "out of order (positional) parameter");
+      HR_LOG(kError, paramSeq.srcpos(), E_ParamOrder)
+          << "out of order (positional) parameter";
     else {
       *expected = paramType;
       return paramSeq.unwrapSingleton();
     }
   }
   else if (*expected == kRest) {
-    errorf(paramSeq.srcpos(), E_ParamOrder, "no parameter after rest parameter");
+    HR_LOG(kError, paramSeq.srcpos(), E_ParamOrder)
+        << "no parameter after rest parameter";
   }
 
   return Token();
@@ -1296,7 +1288,7 @@ Token FirstPass::parseAnonFun()
   nextToken();
 
   if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "expected '('";
     return scanUntilTopExprAndResume();
   }
 
@@ -1312,7 +1304,7 @@ Token FirstPass::parseAnonFun()
       SrcPos pos = fToken.srcpos();
       returnType = parseTypeSpec(K(onlyNestedConstr), K(needParans));
       if (!returnType.isSet()) {
-        errorf(pos, E_MissingType, "returntype expression expected");
+        HR_LOG(kError, pos, E_MissingType) << "returntype expression expected";
         returnType = makeAnySymbol(pos);
       }
     }
@@ -1339,9 +1331,9 @@ struct FuncallArgsParser {
 
       Token val = pass->parseExpr(!K(acceptComma));
       if (!val.isSet()) {
-        errorf(pass->fToken.srcpos(), E_UnexpectedToken,
-               "Unexpected token while parsing function keyed argument's expr:",
-               (zstring)StrHelper(pass->fToken.toString()));
+        HR_LOG(kError, pass->fToken.srcpos(), E_UnexpectedToken)
+            << "Unexpected token while parsing function keyed argument's expr: "
+            << pass->fToken;
         pass->scanUntilNextParameter();
         return true;
       }
@@ -1351,9 +1343,8 @@ struct FuncallArgsParser {
     else {
       Token val = pass->parseExpr(!K(acceptComma));
       if (!val.isSet()) {
-        errorf(pass->fToken.srcpos(), E_UnexpectedToken,
-               "unexpected token while parsing function arguments: ",
-               (zstring)StrHelper(pass->fToken.toString()));
+        HR_LOG(kError, pass->fToken.srcpos(), E_UnexpectedToken)
+            << "unexpected token while parsing function arguments: " << pass->fToken;
         pass->scanUntilNextParameter();
         return true;
       }
@@ -1433,7 +1424,7 @@ Token FirstPass::parseSlice(const Token& expr)
     Token idx = parseExpr(!K(acceptComma));
 
     if (fToken != kBracketClose)
-      errorf(fToken.srcpos(), E_MissingBracketClose, "expected ']'");
+      HR_LOG(kError, fToken.srcpos(), E_MissingBracketClose) << "expected ']'";
     else
       nextToken();
 
@@ -1467,7 +1458,7 @@ Token FirstPass::parseAccess(const Token& expr)
     nextToken();
 
     if (fToken != kSymbol) {
-      errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+      HR_LOG(kError, fToken.srcpos(), E_SymbolExpected) << "expected SYMBOL";
       return scanUntilTopExprAndResume();
     }
 
@@ -1502,7 +1493,7 @@ Token FirstPass::parseGroup()
 {
   Token expr = parseExpr(K(acceptComma));
   if (fToken != kParanClose) {
-    errorf(fToken.srcpos(), E_MissingParanClose, "expected closing ')'");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanClose) << "expected closing ')'";
   }
   else
     nextToken();
@@ -1519,8 +1510,8 @@ bool FirstPass::parseExprListUntilBrace(TokenVector* result, bool endAtToplevelI
         fToken == kImportId || fToken == kIncludeId || fToken == kModuleId ||
         fToken == kLibraryId) {
       if (!endAtToplevelId) {
-        error(fToken.srcpos(), E_UnexpectedTopExpr,
-              String("unexpected top level expression: ") + fToken.toString());
+        HR_LOG(kError, fToken.srcpos(), E_UnexpectedTopExpr)
+            << "unexpected top level expression: " << fToken;
         return false;
       }
       else
@@ -1528,7 +1519,7 @@ bool FirstPass::parseExprListUntilBrace(TokenVector* result, bool endAtToplevelI
     }
     else if (fToken == kLetId) {
       if (!isLocal) {
-        errorf(fToken.srcpos(), E_GlobalLet, "'let' is not allowed here");
+        HR_LOG(kError, fToken.srcpos(), E_GlobalLet) << "'let' is not allowed here";
         parseDef(isLocal);
         continue;
       }
@@ -1557,8 +1548,8 @@ bool FirstPass::parseExprListUntilBrace(TokenVector* result, bool endAtToplevelI
       Token expr = parseExpr(K(acceptComma));
 
       if (!expr.isSet()) {
-        error(startPos, E_UnexpectedToken,
-              String("unexpected token while scanning block: ") + before);
+        HR_LOG(kError, startPos, E_UnexpectedToken)
+            << "unexpected token while scanning block: " << before;
         return false;
       }
       result->push_back(expr);
@@ -1579,10 +1570,10 @@ Token FirstPass::parseBlock()
 
   SrcPos bosp = fToken.srcpos();
   if (fToken != kBraceClose) {
-    errorf(fToken.srcpos(), E_MissingBraceClose, "expected '}'");
+    HR_LOG(kError, fToken.srcpos(), E_MissingBraceClose) << "expected '}'";
 
     if (startPos != fToken.srcpos())
-      error(startPos, E_MissingBraceClose, String("beginning '{' was here"));
+      HR_LOG(kError, startPos, E_MissingBraceClose) << "beginning '{' was here";
   }
   else
     nextToken();
@@ -1598,7 +1589,7 @@ Token FirstPass::parseUnaryOp(const Token& inOpToken)
 
   Token t = parseAtomicExpr();
   if (!t.isSet()) {
-    errorf(opToken.srcpos(), E_UnexpectedToken, "expected expression");
+    HR_LOG(kError, opToken.srcpos(), E_UnexpectedToken) << "expected expression";
     return Token();
   }
   return Token() << opToken << (Token(opToken.srcpos(), kParanOpen, kParanClose) << t);
@@ -1626,7 +1617,8 @@ protected:
       result.push_back(body);
     }
     else {
-      errorf(bodySrcpos, E_MissingExpr, "Missing expression for select pattern");
+      HR_LOG(kError, bodySrcpos, E_MissingExpr)
+          << "Missing expression for select pattern";
     }
     return result;
   }
@@ -1642,7 +1634,7 @@ struct SelectPatternParser : public BasePatternParser {
   bool operator()(FirstPass* pass, Token& result)
   {
     if (pass->fToken != kPipe) {
-      errorf(pass->fToken.srcpos(), E_ExpectedPipe, "expect '|'");
+      HR_LOG(kError, pass->fToken.srcpos(), E_ExpectedPipe) << "expect '|'";
       pass->scanUntilBrace();
       return false;
     }
@@ -1654,15 +1646,16 @@ struct SelectPatternParser : public BasePatternParser {
       Token elseToken = pass->fToken;
 
       if (fElseSeen) {
-        errorf(pass->fToken.srcpos(), E_RedefinedPattern, "'else' pattern redefined");
+        HR_LOG(kError, pass->fToken.srcpos(), E_RedefinedPattern)
+            << "'else' pattern redefined";
         ignore = true;
       }
       fElseSeen = true;
       pass->nextToken();
 
       if (pass->fToken == kMapTo) {
-        warningf(pass->fToken.srcpos(), E_UnexpectedMapTo,
-                 "Misplaced '->' after 'else' in select");
+        HR_LOG(kWarn, pass->fToken.srcpos(), E_UnexpectedMapTo)
+            << "Misplaced '->' after 'else' in select";
         pass->nextToken();
       }
 
@@ -1677,8 +1670,8 @@ struct SelectPatternParser : public BasePatternParser {
           return false;
 
         if (fElseSeen) {
-          errorf(pass->fToken.srcpos(), E_ElseNotLastPattern,
-                 "'else' must be last pattern");
+          HR_LOG(kError, pass->fToken.srcpos(), E_ElseNotLastPattern)
+              << "'else' must be last pattern";
           pass->scanUntilBrace();
           return false;
         }
@@ -1694,14 +1687,14 @@ struct SelectPatternParser : public BasePatternParser {
             else if (pass->fToken == kMapTo)
               break;
             else {
-              error(pass->fToken.srcpos(), E_BadPatternList,
-                    String("unexpected token: ") + pass->fToken.toString());
+              HR_LOG(kError, pass->fToken.srcpos(), E_BadPatternList)
+                  << "unexpected token: " << pass->fToken;
               return false;
             }
           }
           else {
-            error(pass->fToken.srcpos(), E_UnexpectedToken,
-                  String("unexpected token in select: ") + pass->fToken.toString());
+            HR_LOG(kError, pass->fToken.srcpos(), E_UnexpectedToken)
+                << "unexpected token in select: " << pass->fToken;
             return false;
           }
         }
@@ -1729,7 +1722,7 @@ Token FirstPass::parseSelect()
   nextToken();
 
   if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "expected '('";
     return scanUntilTopExprAndResume();
   }
   SrcPos paranPos = fToken.srcpos();
@@ -1739,7 +1732,7 @@ Token FirstPass::parseSelect()
   parseFuncallArgs(&args);
 
   if (fToken != kPipe) {
-    errorf(fToken.srcpos(), E_MissingPipe, "expected '|'");
+    HR_LOG(kError, fToken.srcpos(), E_MissingPipe) << "expected '|'";
     return scanUntilTopExprAndResume();
   }
 
@@ -1755,7 +1748,7 @@ struct MatchPatternParser : public BasePatternParser {
   bool operator()(FirstPass* pass, Token& result)
   {
     if (pass->fToken != kPipe) {
-      errorf(pass->fToken.srcpos(), E_ExpectedPipe, "expect '|'");
+      HR_LOG(kError, pass->fToken.srcpos(), E_ExpectedPipe) << "expect '|'";
       pass->scanUntilBrace();
       return false;
     }
@@ -1763,7 +1756,8 @@ struct MatchPatternParser : public BasePatternParser {
     pass->nextToken();
 
     if (pass->fToken != kSymbol && pass->fToken != kColon) {
-      errorf(pass->fToken.srcpos(), E_SymbolExpected, "variable name or ':' expected");
+      HR_LOG(kError, pass->fToken.srcpos(), E_SymbolExpected)
+          << "variable name or ':' expected";
       pass->scanUntilBrace();
       return false;
     }
@@ -1775,8 +1769,8 @@ struct MatchPatternParser : public BasePatternParser {
     }
 
     if (pass->fToken != kColon) {
-      errorf(pass->fToken.srcpos(), E_ColonExpected,
-             "match pattern require a type specification");
+      HR_LOG(kError, pass->fToken.srcpos(), E_ColonExpected)
+          << "match pattern require a type specification";
       pass->scanUntilBrace();
       return false;
     }
@@ -1790,7 +1784,7 @@ struct MatchPatternParser : public BasePatternParser {
     }
 
     if (pass->fToken != kMapTo) {
-      errorf(pass->fToken.srcpos(), E_BadPatternList, "expected '->'");
+      HR_LOG(kError, pass->fToken.srcpos(), E_BadPatternList) << "expected '->'";
       pass->scanUntilBrace();
       return false;
     }
@@ -1815,7 +1809,7 @@ Token FirstPass::parseMatch()
   nextToken();
 
   if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "expected '('";
     return scanUntilTopExprAndResume();
   }
   SrcPos paranPos = fToken.srcpos();
@@ -1825,7 +1819,7 @@ Token FirstPass::parseMatch()
   parseFuncallArgs(&args);
 
   if (fToken != kPipe) {
-    errorf(fToken.srcpos(), E_MissingPipe, "expected '|'");
+    HR_LOG(kError, fToken.srcpos(), E_MissingPipe) << "expected '|'";
     return scanUntilTopExprAndResume();
   }
 
@@ -1852,7 +1846,7 @@ Token FirstPass::parseForTestClause()
       SrcPos pos = fToken.srcpos();
       type = parseTypeSpec(K(onlyNestedConstr), K(needParans));
       if (!type.isSet()) {
-        errorf(pos, E_MissingType, "type expression expected");
+        HR_LOG(kError, pos, E_MissingType) << "type expression expected";
         type = makeAnySymbol(pos);
       }
     }
@@ -1863,8 +1857,8 @@ Token FirstPass::parseForTestClause()
 
       Token collToken = parseExpr(!K(acceptComma));
       if (!collToken.isSet()) {
-        error(fToken.srcpos(), E_MissingRHExpr,
-              String("unexpected token: ") + fToken.toString());
+        HR_LOG(kError, fToken.srcpos(), E_MissingRHExpr)
+            << "unexpected token: " << fToken;
         scanUntilNextParameter();
         return Token();
       }
@@ -1881,14 +1875,14 @@ Token FirstPass::parseForTestClause()
       return Token(symToken.srcpos(), kParanOpen, kParanClose) << subexpr;
     }
     else {
-      error(fToken.srcpos(), E_UnexpectedToken,
-            String("'in' keyword expected: ") + fToken.toString());
+      HR_LOG(kError, fToken.srcpos(), E_UnexpectedToken)
+          << "'in' keyword expected: " << fToken;
       scanUntilNextParameter();
     }
   }
   else {
-    error(fToken.srcpos(), E_UnexpectedToken,
-          String("Symbol expected in for clause: ") + fToken.toString());
+    HR_LOG(kError, fToken.srcpos(), E_UnexpectedToken)
+        << "Symbol expected in for clause: " << fToken;
     scanUntilNextParameter();
   }
 
@@ -1903,7 +1897,7 @@ Token FirstPass::parseFor()
   nextToken();
 
   if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "expected '('";
     return scanUntilTopExprAndResume();
   }
   SrcPos paranPos = fToken.srcpos();
@@ -1911,7 +1905,7 @@ Token FirstPass::parseFor()
 
   Token test = parseForTestClause();
   if (fToken != kParanClose) {
-    errorf(fToken.srcpos(), E_ParamMissParanClose, "Syntax error, missing ')'");
+    HR_LOG(kError, fToken.srcpos(), E_ParamMissParanClose) << "Syntax error, missing ')'";
   }
   else
     nextToken();
@@ -1944,7 +1938,7 @@ Token FirstPass::parseWhile()
   nextToken();
 
   if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "expected '('";
     return scanUntilTopExprAndResume();
   }
   SrcPos paranPos = fToken.srcpos();
@@ -1952,7 +1946,7 @@ Token FirstPass::parseWhile()
 
   Token test = parseExpr(!K(acceptComma));
   if (fToken != kParanClose) {
-    errorf(fToken.srcpos(), E_ParamMissParanClose, "Syntax error, missing ')'");
+    HR_LOG(kError, fToken.srcpos(), E_ParamMissParanClose) << "Syntax error, missing ')'";
   }
   else
     nextToken();
@@ -2001,7 +1995,7 @@ Token FirstPass::parseExplicitTypedNumber(const Token& token)
     SrcPos typePos = fToken.srcpos();
     Token type = parseTypeSpec(K(onlyNestedConstr), K(needParans));
     if (!type.isSet()) {
-      errorf(typePos, E_MissingType, "expected type specifier");
+      HR_LOG(kError, typePos, E_MissingType) << "expected type specifier";
       return number;
     }
 
@@ -2061,7 +2055,9 @@ Token FirstPass::parseAtomicExpr()
   case kForId: return parseFor();
   case kWhileId: return parseWhile();
 
-  case kLetId: errorf(fToken.srcpos(), E_UnexpectedToken, "Unexpected let token"); break;
+  case kLetId:
+    HR_LOG(kError, fToken.srcpos(), E_UnexpectedToken) << "Unexpected let token";
+    break;
 
   case kSymbol:
   case kDot:
@@ -2237,11 +2233,11 @@ Token FirstPass::parseExprRec(const TokenVector& exprs, OperatorType op1,
 
   if (op1 == kOpInvalid) {
     if (exprs.size() > 1)
-      errorf(exprs[0].srcpos(), E_OrphanedMultiValue,
-             "Multiple variables without assign");
+      HR_LOG(kError, exprs[0].srcpos(), E_OrphanedMultiValue)
+          << "Multiple variables without assign";
     if (hasRest)
-      errorf(exprs[0].srcpos(), E_OrphanedRestInd,
-             "Multiple variables (rest notation) without assign");
+      HR_LOG(kError, exprs[0].srcpos(), E_OrphanedRestInd)
+          << "Multiple variables (rest notation) without assign";
     return exprs[0];
   }
 
@@ -2258,7 +2254,7 @@ Token FirstPass::parseExprRec(const TokenVector& exprs, OperatorType op1,
   SrcPos op2Srcpos = fToken.srcpos();
 
   if (!expr2.isSet()) {
-    errorf(before2ndPos, E_MissingRHExpr, "no right hand expression");
+    HR_LOG(kError, before2ndPos, E_MissingRHExpr) << "no right hand expression";
     return exprs[0];
   }
 
@@ -2268,8 +2264,8 @@ Token FirstPass::parseExprRec(const TokenVector& exprs, OperatorType op1,
     }
     else {
       if (exprs.size() > 1) {
-        errorf(exprs[0].srcpos(), E_BadLHExpr,
-               "Multiple left hand variables only allowed with assignments.");
+        HR_LOG(kError, exprs[0].srcpos(), E_BadLHExpr)
+            << "Multiple left hand variables only allowed with assignments.";
         return Token();
       }
       return Token() << exprs[0] << Token(op1Srcpos, operatorToTokenType(op1)) << expr2;
@@ -2277,8 +2273,8 @@ Token FirstPass::parseExprRec(const TokenVector& exprs, OperatorType op1,
   }
   else {
     if (exprs.size() > 1) {
-      errorf(exprs[0].srcpos(), E_BadLHExpr,
-             "Multiple left hand variables only allowed with assignments.");
+      HR_LOG(kError, exprs[0].srcpos(), E_BadLHExpr)
+          << "Multiple left hand variables only allowed with assignments.";
       return Token();
     }
 
@@ -2387,9 +2383,9 @@ bool FirstPass::scanBlock(bool isTopLevel)
     int braceCount = 0;
     for (;;) {
       if (fToken == kEOF) {
-        errorf(fToken.srcpos(), E_UnexpectedEOF, "unfinished when component");
+        HR_LOG(kError, fToken.srcpos(), E_UnexpectedEOF) << "unfinished when component";
         if (startPos != fToken.srcpos())
-          errorf(startPos, E_MissingBraceClose, "beginning '{' was here");
+          HR_LOG(kError, startPos, E_MissingBraceClose) << "beginning '{' was here";
         return false;
       }
 
@@ -2436,9 +2432,9 @@ Token FirstPass::parseWhen(bool isTopLevel)
       inclAlternate = false;
     }
     else {
-      error(fToken.srcpos(), E_UnexpectedToken,
-            String("only 'ignore' or 'include' are valid symbols here: ") + fToken);
-      errorf(fToken.srcpos(), E_UnexpectedToken, "assume 'ignore'");
+      HR_LOG(kError, fToken.srcpos(), E_UnexpectedToken)
+          << "only 'ignore' or 'include' are valid symbols here: " << fToken;
+      HR_LOG(kError, fToken.srcpos(), E_UnexpectedToken) << "assume 'ignore'";
 
       inclConsequent = false;
     }
@@ -2450,7 +2446,7 @@ Token FirstPass::parseWhen(bool isTopLevel)
 
     Token test = parseExpr(!K(acceptComma));
     if (fToken != kParanClose) {
-      errorf(fToken.srcpos(), E_ParamMissParanClose, "missing ')'");
+      HR_LOG(kError, fToken.srcpos(), E_ParamMissParanClose) << "missing ')'";
       if (fToken == kBraceOpen) {
         // try to continue with this
       }
@@ -2468,9 +2464,8 @@ Token FirstPass::parseWhen(bool isTopLevel)
         inclAlternate = !p.boolValue();
       }
       else {
-        warningf(p.srcpos(), E_BadType,
-                 "when-expression did not evaluate to boolean. "
-                 "Treat it as false");
+        HR_LOG(kWarn, p.srcpos(), E_BadType)
+            << "when-expression did not evaluate to boolean. Treat it as false";
         inclConsequent = false;
         inclAlternate = true;
       }
@@ -2479,16 +2474,16 @@ Token FirstPass::parseWhen(bool isTopLevel)
       result << (Token(paranPos, kParanOpen, kParanClose) << test);
   }
   else if (fToken == kBraceOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen,
-           "missing parameters or key for 'when' clause");
-    errorf(fToken.srcpos(), E_MissingParanOpen, "assume 'ignore' here");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen)
+        << "missing parameters or key for 'when' clause";
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "assume 'ignore' here";
     // try to continue with this
 
     inclConsequent = false;
     inclAlternate = true;
   }
   else {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "expected '('";
     scanUntilTopExprAndResume();
     return Token();
   }
@@ -2550,14 +2545,14 @@ Token FirstPass::parseWith()
 
     auto qSymbol = parseQualifiedName(false);
     if (qSymbol.empty()) {
-      errorf(fToken.srcpos(), E_SymbolExpected, "expected SYMBOL");
+      HR_LOG(kError, fToken.srcpos(), E_SymbolExpected) << "expected SYMBOL";
       return scanUntilTopExprAndResume();
     }
 
     Token nsNameToken = qualifyIdToken(qSymbol);
 
     if (fToken != kBraceOpen) {
-      errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+      HR_LOG(kError, fToken.srcpos(), E_MissingBraceOpen) << "expected '{'";
       return scanUntilTopExprAndResume();
     }
 
@@ -2574,8 +2569,8 @@ Token FirstPass::parseWith()
       return Token();
   }
   else {
-    error(fToken.srcpos(), E_UnexpectedToken,
-          String("unknown scope in 'with': ") + fToken);
+    HR_LOG(kError, fToken.srcpos(), E_UnexpectedToken)
+        << "unknown scope in 'with': " << fToken;
     return scanUntilTopExprAndResume();
   }
 }
@@ -2588,13 +2583,13 @@ TokenVector FirstPass::parseExtern()
   nextToken();
 
   if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '(' after extern");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "expected '(' after extern";
     return scanUntilTopExprAndResume().toTokenVector();
   }
   SrcPos paranPos = fToken.srcpos();
   nextToken();
   if (fToken != kString) {
-    errorf(fToken.srcpos(), E_StringExpected, "expected external linkage name");
+    HR_LOG(kError, fToken.srcpos(), E_StringExpected) << "expected external linkage name";
     return scanUntilTopExprAndResume().toTokenVector();
   }
   Token linkage = fToken;
@@ -2602,13 +2597,13 @@ TokenVector FirstPass::parseExtern()
 
   nextToken();
   if (fToken != kParanClose) {
-    errorf(fToken.srcpos(), E_MissingParanClose, "expected ')'");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanClose) << "expected ')'";
     return scanUntilTopExprAndResume().toTokenVector();
   }
   nextToken();
 
   if (fToken != kBraceOpen) {
-    errorf(fToken.srcpos(), E_MissingBraceOpen, "expected '{'");
+    HR_LOG(kError, fToken.srcpos(), E_MissingBraceOpen) << "expected '{'";
     return scanUntilTopExprAndResume().toTokenVector();
   }
   SrcPos bracePos = fToken.srcpos();
@@ -2621,8 +2616,8 @@ TokenVector FirstPass::parseExtern()
   }
 #endif
 
-  errorf(fToken.srcpos(), E_UnknownLinkage, "Unknown linkage type: '%s'",
-         (zstring)StrHelper(linkageType));
+  HR_LOG(kError, fToken.srcpos(), E_UnknownLinkage)
+      << "Unknown linkage type: " << linkageType;
   return scanUntilTopExprAndResume().toTokenVector();
 }
 
@@ -2636,7 +2631,7 @@ TokenVector FirstPass::parseVarDef(const Token& defToken, const Token& tagToken,
 
   auto qSymbol = parseQualifiedName(true);
   if (qSymbol.empty()) {
-    errorf(fToken.srcpos(), E_MissingDefName, "Missing name");
+    HR_LOG(kError, fToken.srcpos(), E_MissingDefName) << "Missing name";
     return scanUntilTopExprAndResume().toTokenVector();
   }
   Token symbolToken = qualifyIdToken(qSymbol);
@@ -2676,7 +2671,7 @@ TokenVector FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken
       SrcPos pos = fToken.srcpos();
       type = parseTypeSpec(K(onlyNestedConstr), K(needParans));
       if (!type.isSet()) {
-        errorf(pos, E_MissingType, "type expression expected");
+        HR_LOG(kError, pos, E_MissingType) << "type expression expected";
         type = makeAnySymbol(pos);
       }
     }
@@ -2708,14 +2703,14 @@ TokenVector FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken
 
     if (fToken == kComma) {
       if (ellipsisToken.isSet()) {
-        errorf(fToken.srcpos(), E_InvalidRestParam,
-               "Rest var declaration must be last in sequence");
+        HR_LOG(kError, fToken.srcpos(), E_InvalidRestParam)
+            << "Rest var declaration must be last in sequence";
         return scanUntilTopExprAndResume().toTokenVector();
       }
 
       nextToken();
       if (fToken != kSymbol) {
-        errorf(fToken.srcpos(), E_MissingDefName, "Missing name");
+        HR_LOG(kError, fToken.srcpos(), E_MissingDefName) << "Missing name";
         return scanUntilTopExprAndResume().toTokenVector();
       }
       sym = fToken;
@@ -2733,7 +2728,7 @@ TokenVector FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken
     SrcPos pos = fToken.srcpos();
     initExpr = parseExpr(!K(acceptComma));
     if (!initExpr.isSet())
-      errorf(pos, E_MissingRHExpr, "no value in var init");
+      HR_LOG(kError, pos, E_MissingRHExpr) << "no value in var init";
   }
 
   TokenVector result;
@@ -2779,8 +2774,8 @@ TokenVector FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken
     if (tagToken == Compiler::configToken) {
       if (fEvaluateExprs) {
         if (!effInitExpr.isSet()) {
-          error(vardefSym.srcpos(), E_DefNoInitValue,
-                (String("Config variable '") + symbolToken + "' without default value"));
+          HR_LOG(kError, vardefSym.srcpos(), E_DefNoInitValue)
+              << "Config variable '" << symbolToken << "' without default value";
 
           // if no default value is given assume ''
           effInitExpr = Token(vardefSym.srcpos(), kString, "");
@@ -2812,7 +2807,7 @@ Token FirstPass::parseCharDef(const Token& defToken)
   nextToken();
 
   if (!fToken.isCharOrUnitName()) {
-    errorf(fToken.srcpos(), E_MissingDefName, "missing char name");
+    HR_LOG(kError, fToken.srcpos(), E_MissingDefName) << "missing char name";
     return scanUntilTopExprAndResume();
   }
   Token charNameToken =
@@ -2824,7 +2819,7 @@ Token FirstPass::parseCharDef(const Token& defToken)
 
   Token assignToken = fToken;
   if (fToken != kAssign) {
-    errorf(fToken.srcpos(), E_DefNoInitValue, "expected '='");
+    HR_LOG(kError, fToken.srcpos(), E_DefNoInitValue) << "expected '='";
     assignToken = Token(fToken.srcpos(), kAssign);
   }
   else
@@ -2834,13 +2829,13 @@ Token FirstPass::parseCharDef(const Token& defToken)
   int codePoint = 0xffff;
 
   if (fToken != kInt && fToken != kUInt) {
-    errorf(fToken.srcpos(), E_DefInitUnexpToken, "expected INTEGER");
+    HR_LOG(kError, fToken.srcpos(), E_DefInitUnexpToken) << "expected INTEGER";
     codePointToken = Token(fToken.srcpos(), kUInt, 0xffff);
   }
   else {
     codePoint = fToken.intValue();
     if (codePoint < 0 || codePoint > 0x10FFFF) {
-      errorf(fToken.srcpos(), E_BadCharValue, "invalid expected INTEGER");
+      HR_LOG(kError, fToken.srcpos(), E_BadCharValue) << "invalid expected INTEGER";
 
       codePointToken = Token(fToken.srcpos(), kUInt, 0xffff);
       codePoint = 0xffff;
@@ -2875,13 +2870,13 @@ Token FirstPass::parseWhereClause()
 
   for (;;) {
     if (fToken == kEOF) {
-      errorf(fToken.srcpos(), E_UnexpectedEOF,
-             "unexpected eof while scanning 'where' clause");
+      HR_LOG(kError, fToken.srcpos(), E_UnexpectedEOF)
+          << "unexpected eof while scanning 'where' clause";
       return Token();
     }
 
     if (fToken != kSymbol) {
-      errorf(fToken.srcpos(), E_SymbolExpected, "missing type name");
+      HR_LOG(kError, fToken.srcpos(), E_SymbolExpected) << "missing type name";
       return Token();
     }
     Token symToken = fToken;
@@ -2916,7 +2911,8 @@ Token FirstPass::parseWhereClause()
       constraints.push_back(constrToken);
     }
     else {
-      errorf(fToken.srcpos(), E_SymbolExpected, "unexpected operator in where clause");
+      HR_LOG(kError, fToken.srcpos(), E_SymbolExpected)
+          << "unexpected operator in where clause";
       return Token();
     }
 
@@ -2961,7 +2957,7 @@ Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
       SrcPos pos = fToken.srcpos();
       returnType = parseTypeSpec(K(onlyNestedConstr), !K(needParans));
       if (!returnType.isSet()) {
-        errorf(pos, E_MissingType, "type expression expected");
+        HR_LOG(kError, pos, E_MissingType) << "type expression expected";
         returnType = makeAnySymbol(pos);
       }
     }
@@ -2987,7 +2983,7 @@ Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
 
       body = parseExpr(!K(acceptComma));
       if (!body.isSet()) {
-        errorf(bodyPos, E_MissingBody, "expected function body");
+        HR_LOG(kError, bodyPos, E_MissingBody) << "expected function body";
         return Token();
       }
     }
@@ -3019,7 +3015,7 @@ TokenVector FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal
   Token firstToken = fToken;
   auto qSymbol = parseQualifiedName(true);
   if (qSymbol.empty()) {
-    errorf(firstToken.srcpos(), E_MissingDefName, "Missing name");
+    HR_LOG(kError, firstToken.srcpos(), E_MissingDefName) << "Missing name";
     return TokenVector();
   }
 
@@ -3032,8 +3028,8 @@ TokenVector FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal
 
     if (macro->type() == kMacro_Def) {
       if (linkage.isSet())
-        errorf(linkage.srcpos(), E_UnexpLinkage,
-               "Unsupported linkage for macro appliance ignored");
+        HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
+            << "Unsupported linkage for macro appliance ignored";
 
       TokenVector dummyArgs;
       TokenVector exprs =
@@ -3054,8 +3050,8 @@ Token FirstPass::parseGenericFunctionDef(const Token& defToken, bool isLocal)
 {
   Token tagToken;
   if (isLocal) {
-    errorf(fToken.srcpos(), E_LocalGenericFunc,
-           "inner generic functions are not supported.  'generic' ignored");
+    HR_LOG(kError, fToken.srcpos(), E_LocalGenericFunc)
+        << "inner generic functions are not supported.  'generic' ignored";
   }
   else
     tagToken = fToken;
@@ -3064,13 +3060,13 @@ Token FirstPass::parseGenericFunctionDef(const Token& defToken, bool isLocal)
 
   auto qSymbol = parseQualifiedName(true);
   if (qSymbol.empty()) {
-    errorf(fToken.srcpos(), E_MissingDefName, "expected function name");
+    HR_LOG(kError, fToken.srcpos(), E_MissingDefName) << "expected function name";
     return scanUntilTopExprAndResume();
   }
   Token symToken = qualifyIdToken(qSymbol);
 
   if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '('");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "expected '('";
     return scanUntilTopExprAndResume();
   }
 
@@ -3087,7 +3083,7 @@ Token FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
 
   auto qSymbol = parseQualifiedName(true);
   if (qSymbol.empty()) {
-    errorf(fToken.srcpos(), E_MissingDefName, "expected alias name");
+    HR_LOG(kError, fToken.srcpos(), E_MissingDefName) << "expected alias name";
     return scanUntilTopExprAndResume();
   }
   Token symToken = qualifyIdToken(qSymbol);
@@ -3106,7 +3102,7 @@ Token FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
   Token docString = parseOptDocString();
 
   if (fToken != kAssign) {
-    errorf(fToken.srcpos(), E_AssignExpected, "expected '='");
+    HR_LOG(kError, fToken.srcpos(), E_AssignExpected) << "expected '='";
     return scanUntilTopExprAndResume();
   }
   Token assignToken = fToken;
@@ -3115,7 +3111,7 @@ Token FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
   SrcPos pos = fToken.srcpos();
   Token type = parseTypeSpec(!K(onlyNestedConstr), !K(needParans));
   if (!type.isSet()) {
-    errorf(pos, E_MissingType, "type expression expected");
+    HR_LOG(kError, pos, E_MissingType) << "type expression expected";
     return scanUntilTopExprAndResume();
   }
 
@@ -3154,8 +3150,8 @@ Token FirstPass::parseTypeDef(const Token& defToken, bool isRecord, bool isLocal
 
   Token tagToken;
   if (isLocal) {
-    errorf(fToken.srcpos(), E_LocalTypeDef,
-           "inner type/class definitions are not supported.");
+    HR_LOG(kError, fToken.srcpos(), E_LocalTypeDef)
+        << "inner type/class definitions are not supported.";
     return scanUntilTopExprAndResume();
   }
   else
@@ -3164,7 +3160,7 @@ Token FirstPass::parseTypeDef(const Token& defToken, bool isRecord, bool isLocal
 
   auto qSymbol = parseQualifiedName(true);
   if (qSymbol.empty()) {
-    errorf(fToken.srcpos(), E_MissingDefName, "expected alias name");
+    HR_LOG(kError, fToken.srcpos(), E_MissingDefName) << "expected alias name";
     return scanUntilTopExprAndResume();
   }
   Token symToken = qualifyIdToken(qSymbol);
@@ -3184,7 +3180,7 @@ Token FirstPass::parseTypeDef(const Token& defToken, bool isRecord, bool isLocal
     SrcPos pos = fToken.srcpos();
     isaType = parseTypeSpec(K(onlyNestedConstr), !K(needParans));
     if (!isaType.isSet()) {
-      errorf(pos, E_MissingType, "type expression expected");
+      HR_LOG(kError, pos, E_MissingType) << "type expression expected";
       isaType = makeAnySymbol(fToken.srcpos());
     }
   }
@@ -3207,7 +3203,7 @@ Token FirstPass::parseTypeDef(const Token& defToken, bool isRecord, bool isLocal
       slotParams = Token(paranPos, kParanOpen, kParanClose) << params;
     }
     else {
-      errorf(paranPos, E_NoSlotsInTypeDef, "def type does not accept slots");
+      HR_LOG(kError, paranPos, E_NoSlotsInTypeDef) << "def type does not accept slots";
       nextToken();
       scanUntilEndOfParameters();
     }
@@ -3238,7 +3234,8 @@ struct EnumItemParser {
   bool operator()(FirstPass* pass, Token& result)
   {
     if (pass->fToken != kSymbol) {
-      errorf(pass->fToken.srcpos(), E_SymbolExpected, "expected enum item name");
+      HR_LOG(kError, pass->fToken.srcpos(), E_SymbolExpected)
+          << "expected enum item name";
       pass->scanUntilBrace();
       return true;
     }
@@ -3282,7 +3279,7 @@ Token FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
 
   auto qSymbol = parseQualifiedName(true);
   if (qSymbol.empty()) {
-    errorf(fToken.srcpos(), E_MissingDefName, "expected enum name");
+    HR_LOG(kError, fToken.srcpos(), E_MissingDefName) << "expected enum name";
     return scanUntilTopExprAndResume();
   }
   Token enumToken = qualifyIdToken(qSymbol);
@@ -3295,7 +3292,7 @@ Token FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
     SrcPos pos = fToken.srcpos();
     isaType = parseTypeSpec(K(onlyNestedConstr), !K(needParans));
     if (!isaType.isSet()) {
-      errorf(pos, E_MissingType, "type expression expected");
+      HR_LOG(kError, pos, E_MissingType) << "type expression expected";
       isaType = makeAnySymbol(fToken.srcpos());
     }
   }
@@ -3303,7 +3300,7 @@ Token FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
   Token docString = parseOptDocString();
 
   if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen, "expected '{'");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "expected '{'";
     return scanUntilTopExprAndResume();
   }
 
@@ -3330,9 +3327,9 @@ MacroType FirstPass::dertermineMacroPatternType(const Token& macroName,
     if (pattern[0] == macroName)
       return kMacro_Any;
 
-    error(pattern[1].srcpos(), E_PatternNameMismatch,
-          String("macro name and pattern mismatch.  Expected: ") + macroName +
-              " found: " + pattern[0]);
+    HR_LOG(kError, pattern[1].srcpos(), E_PatternNameMismatch)
+        << "macro name and pattern mismatch.  Expected: " << macroName
+        << " found: " << pattern[0];
     return kMacro_Invalid;
   }
   else if (pattern.size() > 1) {
@@ -3340,17 +3337,17 @@ MacroType FirstPass::dertermineMacroPatternType(const Token& macroName,
       if (pattern[1] == macroName)
         return kMacro_Def;
 
-      error(pattern[1].srcpos(), E_PatternNameMismatch,
-            String("macro name and pattern mismatch.  Expected: ") + macroName +
-                " found: " + pattern[1]);
+      HR_LOG(kError, pattern[1].srcpos(), E_PatternNameMismatch)
+          << "macro name and pattern mismatch.  Expected: " << macroName
+          << " found: " << pattern[1];
       return kMacro_Invalid;
     }
 
     TokenVector::const_iterator it = pattern.begin();
     if (*it != macroName) {
-      error(pattern[1].srcpos(), E_PatternNameMismatch,
-            String("macro name and pattern mismatch.  Expected: ") + macroName +
-                " found: " + *it);
+      HR_LOG(kError, pattern[1].srcpos(), E_PatternNameMismatch)
+          << "macro name and pattern mismatch.  Expected: " << macroName
+          << " found: " << *it;
       return kMacro_Invalid;
     }
     it++;
@@ -3374,13 +3371,14 @@ MacroType FirstPass::dertermineMacroPatternType(const Token& macroName,
         }
       }
 
-      errorf(paranOpenPos, E_BadMacroPattern, "Unbalanced paranthesis in macro pattern");
+      HR_LOG(kError, paranOpenPos, E_BadMacroPattern)
+          << "Unbalanced paranthesis in macro pattern";
       return kMacro_Invalid;
     }
     return kMacro_Any;
   }
 
-  errorf(patternPos, E_BadMacroPattern, "empty macro pattern");
+  HR_LOG(kError, patternPos, E_BadMacroPattern) << "empty macro pattern";
   return kMacro_Invalid;
 }
 
@@ -3400,7 +3398,8 @@ MacroType FirstPass::determineMacroType(const Token& macroName,
       lastType = pType;
     }
     else {
-      errorf(it->fSrcPos, E_MacroInconsistency, "Macro has inconsistent patterns");
+      HR_LOG(kError, it->fSrcPos, E_MacroInconsistency)
+          << "Macro has inconsistent patterns";
       return kMacro_Invalid;
     }
   }
@@ -3417,9 +3416,9 @@ bool FirstPass::parseMacroComponent(TokenVector* component, TokenType beginToken
   int braceCount = 1;
   for (;;) {
     if (fToken == kEOF) {
-      errorf(fToken.srcpos(), E_UnexpectedEOF, "unfinished macro component");
+      HR_LOG(kError, fToken.srcpos(), E_UnexpectedEOF) << "unfinished macro component";
       if (startPos != fToken.srcpos())
-        errorf(startPos, E_MissingBraceClose, "beginning '{' was here");
+        HR_LOG(kError, startPos, E_MissingBraceClose) << "beginning '{' was here";
       return false;
     }
 
@@ -3472,8 +3471,8 @@ bool FirstPass::parseMacroPatterns(MacroPatternVector* patterns)
     nextToken();
 
     if (!isMacroOpen(fToken)) {
-      error(fToken.srcpos(), E_MissingBraceOpen,
-            String("expected '\302\253' or '?(', found: ") + fToken);
+      HR_LOG(kError, fToken.srcpos(), E_MissingBraceOpen)
+          << "expected '\302\253' or '?(', found: " << fToken;
       scanUntilTopExprAndResume();
       return false;
     }
@@ -3489,8 +3488,8 @@ bool FirstPass::parseMacroPatterns(MacroPatternVector* patterns)
         nextToken();
 
         if (!isMacroOpen(fToken)) {
-          error(fToken.srcpos(), E_MissingBraceOpen,
-                String("expected '\302\253' or '?(', found: ") + fToken);
+          HR_LOG(kError, fToken.srcpos(), E_MissingBraceOpen)
+              << "expected '\302\253' or '?(', found: " << fToken;
           scanUntilTopExprAndResume();
           return false;
         }
@@ -3504,19 +3503,19 @@ bool FirstPass::parseMacroPatterns(MacroPatternVector* patterns)
           patterns->push_back(MacroPattern(patternPos, pattern, replacement));
         }
         else {
-          errorf(pos, E_BadMacroReplcment, "bad macro replacement");
+          HR_LOG(kError, pos, E_BadMacroReplcment) << "bad macro replacement";
           scanUntilTopExprAndResume();
           return false;
         }
       }
       else {
-        errorf(fToken.srcpos(), E_MapToExpected, "expected '->'");
+        HR_LOG(kError, fToken.srcpos(), E_MapToExpected) << "expected '->'";
         scanUntilTopExprAndResume();
         return false;
       }
     }
     else {
-      errorf(fToken.srcpos(), E_BadMacroPattern, "bad macro pattern");
+      HR_LOG(kError, fToken.srcpos(), E_BadMacroPattern) << "bad macro pattern";
       scanUntilTopExprAndResume();
       return false;
     }
@@ -3534,7 +3533,7 @@ Token FirstPass::parseMacroDef(const Token& defToken)
 
   auto qSymbol = parseQualifiedName(true);
   if (qSymbol.empty()) {
-    errorf(fToken.srcpos(), E_MissingDefName, "expected macro name");
+    HR_LOG(kError, fToken.srcpos(), E_MissingDefName) << "expected macro name";
     return scanUntilTopExprAndResume();
   }
   Token macroNameToken = qualifyIdToken(qSymbol);
@@ -3542,7 +3541,7 @@ Token FirstPass::parseMacroDef(const Token& defToken)
   Token docString = parseOptDocString();
 
   if (fToken != kPipe) {
-    errorf(fToken.srcpos(), E_MissingPipe, "expected '|'");
+    HR_LOG(kError, fToken.srcpos(), E_MissingPipe) << "expected '|'";
     return scanUntilTopExprAndResume();
   }
 
@@ -3580,24 +3579,24 @@ Token FirstPass::parseLinkageType()
   Token externToken = fToken;
   nextToken();
   if (fToken != kParanOpen) {
-    errorf(fToken.srcpos(), E_MissingParanOpen,
-           "Expected linkage specification for extern keyword");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen)
+        << "Expected linkage specification for extern keyword";
     return scanUntilTopExprAndResume();
   }
   SrcPos paranPos = fToken.srcpos();
 
   nextToken();
   if (fToken != kString) {
-    errorf(fToken.srcpos(), E_StringExpected,
-           "Expected linkage specification for extern keyword");
+    HR_LOG(kError, fToken.srcpos(), E_StringExpected)
+        << "Expected linkage specification for extern keyword";
     return scanUntilTopExprAndResume();
   }
   Token linkage = fToken;
 
   nextToken();
   if (fToken != kParanClose) {
-    errorf(fToken.srcpos(), E_MissingParanClose,
-           "Expected linkage specification for extern keyword");
+    HR_LOG(kError, fToken.srcpos(), E_MissingParanClose)
+        << "Expected linkage specification for extern keyword";
     return scanUntilTopExprAndResume();
   }
   nextToken();
@@ -3618,58 +3617,57 @@ TokenVector FirstPass::parseDef(bool isLocal)
 
   if (fToken == Compiler::typeToken) {
     if (linkage.isSet())
-      errorf(linkage.srcpos(), E_UnexpLinkage,
-             "Unsupported linkage for type definition ignored");
+      HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
+          << "Unsupported linkage for type definition ignored";
     return parseTypeDef(defToken, !K(isClass), isLocal).toTokenVector();
   }
   else if (fToken == Compiler::recordToken) {
     if (linkage.isSet())
-      errorf(linkage.srcpos(), E_UnexpLinkage,
-             "Unsupported linkage for class definition ignored");
+      HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
+          << "Unsupported linkage for class definition ignored";
     return parseTypeDef(defToken, K(isRecord), isLocal).toTokenVector();
   }
   else if (fToken == Compiler::aliasToken) {
     if (linkage.isSet())
-      errorf(linkage.srcpos(), E_UnexpLinkage,
-             "Unsupported linkage for alias definition ignored");
+      HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
+          << "Unsupported linkage for alias definition ignored";
     return parseAliasDef(defToken, isLocal).toTokenVector();
   }
   else if (fToken == Compiler::enumToken) {
     if (linkage.isSet())
-      errorf(linkage.srcpos(), E_UnexpLinkage,
-             "Unsupported linkage for enum definition ignored");
+      HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
+          << "Unsupported linkage for enum definition ignored";
     return parseEnumDef(defToken, isLocal).toTokenVector();
   }
   else if (fToken == Compiler::constToken || fToken == Compiler::configToken) {
     if (linkage.isSet())
-      errorf(linkage.srcpos(), E_UnexpLinkage,
-             "Unsupported linkage for special variable definition ignored");
+      HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
+          << "Unsupported linkage for special variable definition ignored";
     return parseVarDef(defToken, fToken, isLocal);
   }
   else if (fToken == Compiler::genericToken) {
     if (linkage.isSet())
-      errorf(linkage.srcpos(), E_UnexpLinkage,
-             "Unsupported linkage for generic method ignored");
+      HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
+          << "Unsupported linkage for generic method ignored";
     return parseGenericFunctionDef(defToken, isLocal).toTokenVector();
   }
   else if (fToken == Compiler::charToken) {
     if (linkage.isSet())
-      errorf(linkage.srcpos(), E_UnexpLinkage,
-             "Unsupported linkage for char definition ignored");
+      HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
+          << "Unsupported linkage for char definition ignored";
     return parseCharDef(defToken).toTokenVector();
   }
   else if (fToken == Compiler::macroToken) {
     if (linkage.isSet())
-      errorf(linkage.srcpos(), E_UnexpLinkage,
-             "Unsupported linkage for macro definition ignored");
+      HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
+          << "Unsupported linkage for macro definition ignored";
     return parseMacroDef(defToken).toTokenVector();
   }
   else if (fToken == kSymbol || fToken == kDot) {
     return parseFunctionOrVarDef(defToken, isLocal, linkage);
   }
   else {
-    errorf(fToken.srcpos(), E_DefInitUnexpToken, "Bad init value: %s",
-           (zstring)StrHelper(fToken.toString()));
+    HR_LOG(kError, fToken.srcpos(), E_DefInitUnexpToken) << "Bad init value: " << fToken;
     return scanUntilTopExprAndResume().toTokenVector();
   }
 
@@ -3687,7 +3685,8 @@ TokenVector FirstPass::parseTop()
       return parseLibrary().toTokenVector();
     }
     else {
-      errorf(fToken.srcpos(), E_NestedLibrary, "Nested library not supported. Skipped");
+      HR_LOG(kError, fToken.srcpos(), E_NestedLibrary)
+          << "Nested library not supported. Skipped";
       nextToken();
       return scanUntilTopExprAndResume().toTokenVector();
     }
@@ -3697,8 +3696,8 @@ TokenVector FirstPass::parseTop()
   }
   else if (fToken == kIncludeId) {
     if (!fInLibrary) {
-      warningf(fToken.srcpos(), E_IncludeOutsideOfLibrary,
-               "'include' found outside of library");
+      HR_LOG(kWarn, fToken.srcpos(), E_IncludeOutsideOfLibrary)
+          << "'include' found outside of library";
     }
 
     return parseInclude();
@@ -3719,8 +3718,8 @@ TokenVector FirstPass::parseTop()
     return parseExtern();
   }
   else {
-    errorf(fToken.srcpos(), E_UnexpectedToken, "I: Unexpected top expression: %s",
-           (zstring)StrHelper(fToken.toString()));
+    HR_LOG(kError, fToken.srcpos(), E_UnexpectedToken)
+        << "Unexpected top expression: " << fToken;
     return scanUntilTopExprAndResume().toTokenVector();
   }
 
@@ -3781,8 +3780,8 @@ bool FirstPass::replaceSangHashIds(TokenVector* result, const TokenVector& sourc
                 continue;
               }
               else {
-                errorf(source[idx + 2].srcpos(), E_OrphanedSangHash,
-                       "## requires right hand symbol");
+                HR_LOG(kError, source[idx + 2].srcpos(), E_OrphanedSangHash)
+                    << "## requires right hand symbol";
                 result->push_back(token);
 
                 idx += 3;
@@ -3794,8 +3793,8 @@ bool FirstPass::replaceSangHashIds(TokenVector* result, const TokenVector& sourc
               }
             }
             else {
-              errorf(source[idx + 1].srcpos(), E_OrphanedSangHash,
-                     "Orphaned ## without following ID");
+              HR_LOG(kError, source[idx + 1].srcpos(), E_OrphanedSangHash)
+                  << "Orphaned ## without following ID";
               result->push_back(token);
               idx += 2;
               if (idx < srcSize) {
@@ -3808,7 +3807,7 @@ bool FirstPass::replaceSangHashIds(TokenVector* result, const TokenVector& sourc
         }
       }
       else if (token == kSangHash) {
-        errorf(token.srcpos(), E_OrphanedSangHash, "Unexpected ##");
+        HR_LOG(kError, token.srcpos(), E_OrphanedSangHash) << "Unexpected ##";
         idx++;
         if (idx < srcSize) {
           token = source[idx];
@@ -3881,8 +3880,8 @@ bool FirstPass::replaceMatchBindings(TokenVector* result, const TokenVector& tem
           }
         }
         else
-          errorf(token.srcpos(), E_UnknownMacroParam, "Undefined macro parameter %s",
-                 (zstring)StrHelper(token.toString()));
+          HR_LOG(kError, token.srcpos(), E_UnknownMacroParam)
+              << "Undefined macro parameter " << token;
       }
       else
         replacement.push_back(token);
@@ -3933,8 +3932,8 @@ struct ExprParamSyntaxMatcher : public ParameterSyntaxMatcher {
     SrcPos pos = pass->fToken.srcpos();
     Token expr = pass->parseExpr(!K(acceptComma));
     if (!expr.isSet()) {
-      errorf(pos, E_MacroParamMismatch, "Macro parameter %s requires expression",
-             (zstring)StrHelper(paramName));
+      HR_LOG(kError, pos, E_MacroParamMismatch)
+          << "Macro parameter " << paramName << " requires expression";
       return false;
     }
 
@@ -3954,8 +3953,8 @@ struct NameParamSyntaxMatcher : public ParameterSyntaxMatcher {
       return true;
     }
 
-    errorf(pass->fToken.srcpos(), E_MacroParamMismatch,
-           "Macro parameter %s requires identifier", (zstring)StrHelper(paramName));
+    HR_LOG(kError, pass->fToken.srcpos(), E_MacroParamMismatch)
+        << "Macro parameter " << paramName << " requires identifier";
     return false;
   }
 };
@@ -3972,8 +3971,8 @@ struct OperatorParamSyntaxMatcher : public ParameterSyntaxMatcher {
       return true;
     }
 
-    errorf(pass->fToken.srcpos(), E_MacroParamMismatch,
-           "Macro parameter %s requires operator", (zstring)StrHelper(paramName));
+    HR_LOG(kError, pass->fToken.srcpos(), E_MacroParamMismatch)
+        << "Macro parameter " << paramName << " requires operator";
     return false;
   }
 };
@@ -3988,8 +3987,8 @@ struct AnyParamParamSyntaxMatcher : public ParameterSyntaxMatcher {
     Token param = pass->parseParameter(&expected, !K(autoCompleteTypes));
 
     if (!param.isSet()) {
-      errorf(pos, E_MacroParamMismatch, "Macro parameter %s requires parameter",
-             (zstring)StrHelper(paramName));
+      HR_LOG(kError, pos, E_MacroParamMismatch)
+          << "Macro parameter " << paramName << " requires parameter";
       return false;
     }
 
@@ -4015,9 +4014,8 @@ struct SpecParamParamSyntaxMatcher : public ParameterSyntaxMatcher {
     Token param = pass->parseParameter(&expected, !K(autoCompleteTypes));
 
     if (expected != fReqType || !param.isSet()) {
-      errorf(pos, E_MacroParamMismatch,
-             "Macro parameter %s requires positional parameter",
-             (zstring)StrHelper(paramName));
+      HR_LOG(kError, pos, E_MacroParamMismatch)
+          << "Macro parameter " << paramName << " requires positional parameter";
       return false;
     }
 
@@ -4087,8 +4085,8 @@ bool FirstPass::matchParameter(const Token& macroParam, NamedReplacementMap* bin
     return it->second->match(this, paramName, bindings, followSet);
   }
   else {
-    errorf(macroParam.srcpos(), E_MacroParamType, "Unknown macro parameter type: %s",
-           (zstring)StrHelper(macroParam.toString()));
+    HR_LOG(kError, macroParam.srcpos(), E_MacroParamType)
+        << "Unknown macro parameter type: " << macroParam;
     return false;
   }
 }
@@ -4214,9 +4212,8 @@ bool FirstPass::parseExprStream(TokenVector* result, bool isTopLevel)
     if (!exprs.empty())
       result->insert(result->end(), exprs.begin(), exprs.end());
     else {
-      errorf(pos, E_UnexpectedToken,
-             "unexpected token while scanning macro replacement: %s",
-             (zstring)StrHelper(fToken.toString()));
+      HR_LOG(kError, pos, E_UnexpectedToken)
+          << "unexpected token while scanning macro replacement: " << fToken;
       return false;
     }
   }

@@ -12,6 +12,7 @@
 
 #include "common.hpp"
 
+#include "log.hpp"
 #include "optional.hpp"
 #include "token.hpp"
 
@@ -719,8 +720,6 @@ bool containsAny(const Type& left, const SrcPos& srcpos, bool reportErrors = tru
 Type makeRangeType(const Type& generic);
 
 
-void tyerror(const Type& type, zstring msg);
-
 int floatTypeBitsize(const Type& ty);
 int intTypeBitsize(const Type& ty);
 
@@ -735,5 +734,12 @@ Type resolveType(const Type& type, const Scope& scope);
 
 String arrayTypeName(const String& baseName);
 String arrayTypeName(zstring baseName);
+
+
+inline LineLogger& operator<<(LineLogger& ll, const Type& type)
+{
+  ll.fMsgBuffer << type.typeId();
+  return ll;
+}
 
 }  // namespace herschel

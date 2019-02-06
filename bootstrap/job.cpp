@@ -54,7 +54,7 @@ int startProcess(const String& cmd, const std::vector<String>& args, bool logCal
         buf << argv[j] << " ";
     }
 
-    log(kInfo, buf.toString());
+    HR_LOG(kInfo) << buf.toString();
   }
 
   int status = 0;

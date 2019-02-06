@@ -32,8 +32,8 @@ void setRequiresAreFatal(bool value)
 
 void requireHandler(zstring file, int line, zstring title, zstring msg, zstring expr)
 {
-  logf(kError, "%s:%d: %s: %s%s%s\n", file, line, title, msg, expr ? ": " : "",
-       expr ? expr : "");
+  HR_LOG(kError) << file << ":" << line << ": " << title << ": " << msg
+                 << (expr ? ": " : "") << (expr ? expr : "");
 
   if (areRequiresFatal)
     abort();

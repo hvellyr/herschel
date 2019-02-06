@@ -391,7 +391,7 @@ namespace {
       if (localCtx.hasType(typeName)) {
         if (!isContravariant(localCtx.lookupType(typeName), right0, scope, srcpos) &&
             !isSameType(localCtx.lookupType(typeName), right0, scope, srcpos)) {
-          errorf(srcpos, E_TypeMismatch, "type mismatch for generic parameter");
+          HR_LOG(kError, srcpos, E_TypeMismatch) << "type mismatch for generic parameter";
           return false;
         }
         return true;
@@ -1389,8 +1389,8 @@ bool Type::isClassTypeOf() const
 Type Type::classTypeOfType() const
 {
   return isClassTypeOf()
-    ? std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl)->generics()[0]
-    : Type();
+             ? std::dynamic_pointer_cast<TypeRefTypeImpl>(fImpl)->generics()[0]
+             : Type();
 }
 
 
@@ -2739,12 +2739,11 @@ bool isSameType(const Type& left0, const Type& right0, const Scope& scope,
 {
   if (!left0.isDef() || !right0.isDef()) {
     if (reportErrors)
-      errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      HR_LOG(kError, srcpos, E_UndefinedType)
+          << "Undefined type (" << __FILE__ << ":" << __LINE__ << ")";
     return false;
   }
 
-  // tyerror(left0, "LEFT IS");
-  // tyerror(right0, "RIGHT IS");
   if (left0.isOpenSelf() && right0.isOpenSelf())
     // TODO: handle complex generic types like 'T[]
     return left0.typeName() == right0.typeName();
@@ -2756,8 +2755,8 @@ bool isSameType(const Type& left0, const Type& right0, const Scope& scope,
     right = resolveType(right0, scope);
     if (!right.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type: '%s' (%s:%d)",
-               (zstring)StrHelper(right0.typeId()), __FILE__, __LINE__);
+        HR_LOG(kError, srcpos, E_UndefinedType)
+            << "Undefined type: '" << right0 << "' (" << __FILE__ << __LINE__ << ")";
       return false;
     }
     // if only one of both types is open is can not be the same type.
@@ -2767,8 +2766,8 @@ bool isSameType(const Type& left0, const Type& right0, const Scope& scope,
     left = resolveType(left0, scope);
     if (!left.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type: '%s' (%s:%d)",
-               (zstring)StrHelper(left0.typeId()), __FILE__, __LINE__);
+        HR_LOG(kError, srcpos, E_UndefinedType) << "Undefined type: '" << left0 << "' ("
+                                                << __FILE__ << ":" << __LINE__ << ")";
       return false;
     }
     // if only one of both types is open is can not be the same type.
@@ -2779,18 +2778,16 @@ bool isSameType(const Type& left0, const Type& right0, const Scope& scope,
     right = resolveType(right0, scope);
   }
 
-  // tyerror(left, "LEFT IS");
-  // tyerror(right, "RIGHT IS");
   if (!left.isDef()) {
     if (reportErrors)
-      errorf(srcpos, E_UndefinedType, "Undefined type: '%s' (%s:%d)",
-             (zstring)StrHelper(left0.typeId()), __FILE__, __LINE__);
+      HR_LOG(kError, srcpos, E_UndefinedType)
+          << "Undefined type: '" << left0 << "' (" << __FILE__ << ":" << __LINE__ << ")";
     return false;
   }
   if (!right.isDef()) {
     if (reportErrors)
-      errorf(srcpos, E_UndefinedType, "Undefined type: '%s' (%s:%d)",
-             (zstring)StrHelper(right0.typeId()), __FILE__, __LINE__);
+      HR_LOG(kError, srcpos, E_UndefinedType)
+          << "Undefined type: '" << right0 << "' (" << __FILE__ << ":" << __LINE__ << ")";
     return false;
   }
 
@@ -2860,7 +2857,8 @@ bool inheritsFrom(const Type& left0, const Type& right0, const Scope& scope,
 {
   if (!left0.isDef() || !right0.isDef()) {
     if (reportErrors)
-      errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      HR_LOG(kError, srcpos, E_UndefinedType)
+          << "Undefined type (" << __FILE__ << ":" << __LINE__ << ")";
     return false;
   }
 
@@ -2869,7 +2867,8 @@ bool inheritsFrom(const Type& left0, const Type& right0, const Scope& scope,
 
   if (!left.isDef() || !right.isDef()) {
     if (reportErrors)
-      errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      HR_LOG(kError, srcpos, E_UndefinedType)
+          << "Undefined type (" << __FILE__ << ":" << __LINE__ << ")";
     return false;
   }
 
@@ -2923,7 +2922,8 @@ namespace {
   {
     if (!left0.isDef() || !right0.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+        HR_LOG(kError, srcpos, E_UndefinedType)
+            << "Undefined type (" << __FILE__ << ":" << __LINE__ << ")";
       return {};
     }
 
@@ -2932,7 +2932,8 @@ namespace {
 
     if (!left.isDef() || !right.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+        HR_LOG(kError, srcpos, E_UndefinedType)
+            << "Undefined type (" << __FILE__ << ":" << __LINE__ << ")";
       return {};
     }
 
@@ -2949,7 +2950,8 @@ namespace {
 
     if (!inheritance.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+        HR_LOG(kError, srcpos, E_UndefinedType)
+            << "Undefined type (" << __FILE__ << ":" << __LINE__ << ")";
       return {};
     }
 
@@ -3079,8 +3081,6 @@ bool isCovariant(const FunctionSignature& leftsig, const FunctionSignature& righ
 {
   if (!isCovariant(leftsig.returnType(), rightsig.returnType(), scope, srcpos,
                    reportErrors)) {
-    //tyerror(leftsig.returnType(), "leftsig returntype");
-    //tyerror(rightsig.returnType(), "rightsig returntype");
     return false;
   }
 
@@ -3096,8 +3096,6 @@ bool isCovariant(const FunctionSignature& leftsig, const FunctionSignature& righ
     if (leftprm.kind() == rightprm.kind()) {
       if (leftprm.isSpecialized() && rightprm.isSpecialized()) {
         if (!isCovariant(leftprm.type(), rightprm.type(), scope, srcpos, reportErrors)) {
-          // tyerror(leftprm.type(), "leftprm type");
-          // tyerror(rightprm.type(), "rightprm type");
           return false;
         }
       }
@@ -3144,7 +3142,8 @@ bool containsAny(const Type& left, const SrcPos& srcpos, bool reportErrors)
 {
   if (!left.isDef()) {
     if (reportErrors)
-      errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      HR_LOG(kError, srcpos, E_UndefinedType)
+          << "Undefined type (" << __FILE__ << ":" << __LINE__ << ")";
     return false;
   }
 
@@ -3167,7 +3166,8 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
 {
   if (!left0.isDef() || !right0.isDef()) {
     if (reportErrors)
-      errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      HR_LOG(kError, srcpos, E_UndefinedType)
+          << "Undefined type (" << __FILE__ << ":" << __LINE__ << ")";
     return false;
   }
 
@@ -3201,7 +3201,8 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
     right = resolveType(right0, scope);
     if (!right.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+        HR_LOG(kError, srcpos, E_UndefinedType)
+            << "Undefined type (" << __FILE__ << ":" << __LINE__ << ")";
       return false;
     }
     if (isCovariant(right, Type::makeAny(), scope, srcpos, reportErrors)) {
@@ -3215,7 +3216,8 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
 
     if (!left.isDef()) {
       if (reportErrors)
-        errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+        HR_LOG(kError, srcpos, E_UndefinedType)
+            << "Undefined type (" << __FILE__ << ":" << __LINE__ << ")";
       return false;
     }
 
@@ -3232,12 +3234,14 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
 
   if (!right.isDef()) {
     if (reportErrors)
-      errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      HR_LOG(kError, srcpos, E_UndefinedType)
+          << "Undefined type (" << __FILE__ << ":" << __LINE__ << ")";
     return false;
   }
   if (!left.isDef()) {
     if (reportErrors)
-      errorf(srcpos, E_UndefinedType, "Undefined type (%s:%d)", __FILE__, __LINE__);
+      HR_LOG(kError, srcpos, E_UndefinedType)
+          << "Undefined type (" << __FILE__ << ":" << __LINE__ << ")";
     return false;
   }
 
@@ -3345,8 +3349,8 @@ bool isCovariant(const Type& left0, const Type& right0, const Scope& scope,
     return false;
   }
 
-  tyerror(left, "LEFT");
-  tyerror(right, "RIGHT");
+  HR_LOG(kError) << "LEFT: " << left;
+  HR_LOG(kError) << "RIGHT: " << right;
   hr_invalid("unhandled type?");
   return false;
 }
@@ -3542,8 +3546,8 @@ namespace {
       return {};
     }
 
-    tyerror(left, "LEFT");
-    tyerror(right, "RIGHT");
+    HR_LOG(kError) << "LEFT: " << left;
+    HR_LOG(kError) << "RIGHT: " << right;
     hr_invalid("unhandled type?");
     return {};
   }
@@ -3578,12 +3582,6 @@ estd::optional<int> varianceDistance(const Type& left, const Type& right,
 Type makeRangeType(const Type& generic)
 {
   return Type::makeType(Names::kRangeTypeName, makeVector(generic), Type());
-}
-
-
-void tyerror(const Type& type, zstring msg)
-{
-  fprintf(stderr, "%s: %s\n", msg, (zstring)StrHelper(type.typeId()));
 }
 
 
@@ -3634,11 +3632,13 @@ Type degeneralizeType(const SrcPos& srcpos, const Type& type,
   if (type.isDef()) {
     if (type.hasGenerics()) {
       if (type.generics().size() != srcGenerics.size()) {
-        errorf(srcpos, E_GenericsMismatch, "Type instance generic number mismatch");
+        HR_LOG(kError, srcpos, E_GenericsMismatch)
+            << "Type instance generic number mismatch";
         return Type();
       }
       if (!srcGenerics.empty() && !type.isOpen()) {
-        errorf(srcpos, E_GenericsMismatch, "Type instance generic number mismatch");
+        HR_LOG(kError, srcpos, E_GenericsMismatch)
+            << "Type instance generic number mismatch";
         return Type();
       }
 
@@ -3656,7 +3656,8 @@ Type degeneralizeType(const SrcPos& srcpos, const Type& type,
     }
     else {
       if (!srcGenerics.empty()) {
-        errorf(srcpos, E_GenericsMismatch, "Type instance generic number mismatch");
+        HR_LOG(kError, srcpos, E_GenericsMismatch)
+            << "Type instance generic number mismatch";
         return Type();
       }
 

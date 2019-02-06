@@ -128,8 +128,8 @@ std::shared_ptr<AstNode> SecondPass::parseExport(const Token& expr)
     if (expr[1] == Compiler::publicToken)
       vizType = kPublic;
     else {
-      error(expr[1].srcpos(), E_UnknownVisibility,
-            String("unknown visibility level: ") + expr[1]);
+      HR_LOG(kError, expr[1].srcpos(), E_UnknownVisibility)
+          << "unknown visibility level: " << expr[1];
     }
 
     symbolOfs = 2;
@@ -154,8 +154,8 @@ std::shared_ptr<AstNode> SecondPass::parseExport(const Token& expr)
         if (symbolExprs[j][2] == Compiler::charToken)
           domain = Scope::kChar;
         else {
-          warning(symbolExprs[j][2].srcpos(), E_UnknownSymbolDomain,
-                  String("unknown symbol domain: ") + symbolExprs[j][2].idValue());
+          HR_LOG(kWarn, symbolExprs[j][2].srcpos(), E_UnknownSymbolDomain)
+              << "unknown symbol domain: " << symbolExprs[j][2].idValue();
         }
 
         symbols.push_back(Scope::ScopeName(domain, symbolExprs[j][0].idValue()));
@@ -196,7 +196,7 @@ std::shared_ptr<AstNode> SecondPass::parseImport(const Token& expr)
     fCompiler.requireLibrary(expr.srcpos(), libName, fScope);
   }
   catch (const Exception& e) {
-    error(expr.srcpos(), E_UnknownLibrary, e.message());
+    HR_LOG(kError, expr.srcpos(), E_UnknownLibrary) << e.message();
   }
 
   return nullptr;
@@ -284,8 +284,8 @@ Type SecondPass::parseBinaryTypeSpec(const Token& expr, bool forceGeneric, bool 
   if (expr[1] == kIsa) {
     Type rightType = parseTypeSpec(expr[2]);
     if (!rightType.isValueType()) {
-      errorf(expr[1].srcpos(), E_InheritsRefType,
-             "isa-constraints must not be reference types. Ignored");
+      HR_LOG(kError, expr[1].srcpos(), E_InheritsRefType)
+          << "isa-constraints must not be reference types. Ignored";
       rightType.setIsValueType(true);
     }
 
@@ -338,8 +338,8 @@ Type SecondPass::rephraseRefType(const SrcPos& srcpos, const Type& inType, bool 
 {
   if (!isValue) {
     if (!inType.isValueType())
-      warning(srcpos, k_DoubleRefType,
-              String("Double reference notation on singleton type group is ignored"));
+      HR_LOG(kWarn, srcpos, k_DoubleRefType)
+          << "Double reference notation on singleton type group is ignored";
     else
       return inType.clone().setIsValueType(isValue);
   }
@@ -360,21 +360,22 @@ Type SecondPass::parseGroupType(const Token& expr, bool isValue)
   TypeVector tyvect;
   parseTypeVector(&tyvect, expr);
   if (tyvect.empty()) {
-    errorf(expr.srcpos(), E_EmptyIntersectionType, "Empty sum type.");
+    HR_LOG(kError, expr.srcpos(), E_EmptyIntersectionType) << "Empty sum type.";
     return Type();
   }
 
   bool firstIsValue = tyvect.begin()->isValueType();
   for (TypeVector::iterator it = tyvect.begin(); it != tyvect.end(); it++) {
     if (it->isValueType() != firstIsValue) {
-      errorf(expr.srcpos(), E_MixedValueType, "Sum type with mixed value types");
+      HR_LOG(kError, expr.srcpos(), E_MixedValueType)
+          << "Sum type with mixed value types";
       return Type();
     }
   }
 
   if (!isValue && firstIsValue == isValue) {
-    warning(expr.srcpos(), k_DoubleRefType,
-            String("Double reference notation on sum type is ignored"));
+    HR_LOG(kWarn, expr.srcpos(), k_DoubleRefType)
+        << "Double reference notation on sum type is ignored";
     for (TypeVector::iterator it = tyvect.begin(); it != tyvect.end(); it++)
       it->setIsValueType(true);
   }
@@ -384,8 +385,8 @@ Type SecondPass::parseGroupType(const Token& expr, bool isValue)
   else if (expr[1] == kComma)
     return Type::makeIntersection(tyvect, isValue);
   else {
-    warning(expr.srcpos(), E_UnknownIntersectionTypeOperator,
-            String("Unknown intersection type: ") + expr[1]);
+    HR_LOG(kWarn, expr.srcpos(), E_UnknownIntersectionTypeOperator)
+        << "Unknown intersection type: " << expr[1];
     return Type::makeIntersection(tyvect, isValue);
   }
 }
@@ -417,7 +418,8 @@ Type SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceO
   else if (expr.isSeq()) {
     if (expr.count() == 2) {
       if (forceOpenType) {
-        errorf(expr.srcpos(), E_BadGenericType, "Unexpected generic type notation");
+        HR_LOG(kError, expr.srcpos(), E_BadGenericType)
+            << "Unexpected generic type notation";
         return Type();
       }
 
@@ -425,9 +427,8 @@ Type SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceO
           expr[1].leftToken() == kGenericOpen) {
         // identifier with generic arguments
         if (fCurrentGenericTypes.find(expr[0].idValue()) != fCurrentGenericTypes.end())
-          errorf(expr[0].srcpos(), E_SuperGenericType,
-                 "Generic type reference '%s' with parameters",
-                 (zstring)StrHelper(expr[0].idValue()));
+          HR_LOG(kError, expr[0].srcpos(), E_SuperGenericType)
+              << "Generic type reference '" << expr[0].idValue() << "' with parameters";
 
         TypeVector generics;
         TypeConstVector dummyConstraints;
@@ -437,8 +438,8 @@ Type SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceO
       else if (expr[0] == kFUNCTIONId && expr[1].isNested() &&
                expr[1].leftToken() == kParanOpen) {
         if (isValue)
-          warning(expr.srcpos(), E_RefToFunc,
-                  String("References to function types have no effect.  Ignored"));
+          HR_LOG(kWarn, expr.srcpos(), E_RefToFunc)
+              << "References to function types have no effect.  Ignored";
 
         NodeList defaultApplyParams;
         parseParameters(&defaultApplyParams, expr[1].children());
@@ -462,14 +463,14 @@ Type SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceO
             sizeInd = p.intValue();
           }
           else {
-            errorf(expr[1][0].srcpos(), E_InvalidArraySize,
-                   "array size expression did not evaluate to integer. Treat it as 0");
+            HR_LOG(kError, expr[1][0].srcpos(), E_InvalidArraySize)
+                << "array size expression did not evaluate to integer. Treat it as 0";
           }
         }
 
         if (baseType.isArray()) {
-          errorf(expr.srcpos(), E_MultiDimenArray,
-                 "Multi-dimensional array types are not defined");
+          HR_LOG(kError, expr.srcpos(), E_MultiDimenArray)
+              << "Multi-dimensional array types are not defined";
           return baseType;
         }
 
@@ -491,8 +492,8 @@ Type SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceO
         hr_assert(expr[2] == kMapTo);
 
         if (!isValue)
-          warning(expr.srcpos(), E_RefToFunc,
-                  String("References to function types have no effect.  Ignored"));
+          HR_LOG(kWarn, expr.srcpos(), E_RefToFunc)
+              << "References to function types have no effect.  Ignored";
 
         NodeList defaultApplyParams;
         parseParameters(&defaultApplyParams, expr[1].children());
@@ -630,8 +631,8 @@ std::shared_ptr<AstNode> SecondPass::parseSlotParam(const Token& expr)
 
   String sym = seq[ofs].idValue();
   if (hasNamespace(sym)) {
-    errorf(seq[ofs].srcpos(), E_QualifiedLocalSym,
-           "Slot names must not be qualified.  Ignore namespace");
+    HR_LOG(kError, seq[ofs].srcpos(), E_QualifiedLocalSym)
+        << "Slot names must not be qualified.  Ignore namespace";
     sym = baseName(sym);
   }
   ofs++;
@@ -643,7 +644,8 @@ std::shared_ptr<AstNode> SecondPass::parseSlotParam(const Token& expr)
       ofs += 2;
     }
     else
-      errorf(expr.srcpos(), E_SpecNamedParam, "Expect type declaration for slot");
+      HR_LOG(kError, expr.srcpos(), E_SpecNamedParam)
+          << "Expect type declaration for slot";
   }
 
   std::shared_ptr<AstNode> initExpr;
@@ -656,7 +658,7 @@ std::shared_ptr<AstNode> SecondPass::parseSlotParam(const Token& expr)
       ofs += 2;
     }
     // else
-    //   errorf(expr.srcpos(), E_SpecNamedParam, "Unexpected token");
+    //   HR_LOG(kError, expr.srcpos(), E_SpecNamedParam) << "Unexpected token";
   }
 
   if (!initExpr)
@@ -735,8 +737,8 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
     inheritsFrom = parseTypeSpec(seq[ofs + 1]);
 
     if (!inheritsFrom.isValueType()) {
-      errorf(seq[ofs + 1].srcpos(), E_InheritsRefType,
-             "Can't inherit from reference type.  Reference ignored.");
+      HR_LOG(kError, seq[ofs + 1].srcpos(), E_InheritsRefType)
+          << "Can't inherit from reference type.  Reference ignored.";
       inheritsFrom.setIsValueType(true);
     }
 
@@ -892,8 +894,7 @@ static ReqTypeInitTuple reqTypeInitTupleForType(const Type& type,
 {
   Type superType = scope->lookupType(type.typeName(), K(showAmbiguousSymDef));
   if (!superType.isDef()) {
-    errorf(SrcPos(), E_UnknownType, "Unknown super type: %s",
-           (zstring)StrHelper(type.typeId()));
+    HR_LOG(kError, SrcPos(), E_UnknownType) << "Unknown super type: " << type;
   }
   else if (superType.isRecord()) {
     ReqTypeInitTuple tuple;
@@ -971,9 +972,8 @@ std::shared_ptr<AstNode> SecondPass::parseAliasDef(const Token& expr, size_t ofs
   const TokenVector& seq = expr.children();
   String aliasName = seq[ofs].idValue();
   if (isLocal && hasNamespace(aliasName)) {
-    errorf(seq[ofs].srcpos(), E_QualifiedLocalSym,
-           "Local symbol in definition must not be qualified.  "
-           "Ignore namespace");
+    HR_LOG(kError, seq[ofs].srcpos(), E_QualifiedLocalSym)
+        << "Local symbol in definition must not be qualified. Ignore namespace";
     aliasName = baseName(aliasName);
   }
   ofs++;
@@ -1035,8 +1035,8 @@ std::shared_ptr<AstNode> SecondPass::nextEnumInitValue(const SrcPos& srcpos,
       initExpr = singletonNodeListOrNull(parseExpr(lastInitToken));
   }
   else {
-    errorf(srcpos, E_EnumNotBaseType, "Enum init value is not a base type");
-    tyerror(baseType, "Enum Basetype");
+    HR_LOG(kError, srcpos, E_EnumNotBaseType) << "Enum init value is not a base type";
+    HR_LOG(kError) << "Enum Basetype: " << baseType;
   }
 
   return initExpr;
@@ -1066,8 +1066,8 @@ std::shared_ptr<AstNode> SecondPass::parseEnumDef(const Token& expr, size_t ofs,
     baseType = parseTypeSpec(seq[ofs + 1]);
 
     if (!baseType.isValueType()) {
-      errorf(seq[ofs + 1].srcpos(), E_InheritsRefType,
-             "Can't inherit from reference type.  Reference ignored.");
+      HR_LOG(kError, seq[ofs + 1].srcpos(), E_InheritsRefType)
+          << "Can't inherit from reference type.  Reference ignored.";
       baseType.setIsValueType(true);
     }
 
@@ -1077,7 +1077,7 @@ std::shared_ptr<AstNode> SecondPass::parseEnumDef(const Token& expr, size_t ofs,
     baseType = Type::makeInt32();
 
   if (!baseType.isBaseType()) {
-    errorf(expr.srcpos(), E_EnumNotBaseType, "Enum base is not a base type.");
+    HR_LOG(kError, expr.srcpos(), E_EnumNotBaseType) << "Enum base is not a base type.";
     return nullptr;
   }
 
@@ -1116,9 +1116,8 @@ std::shared_ptr<AstNode> SecondPass::parseEnumDef(const Token& expr, size_t ofs,
       hr_invalid("");
 
     if (hasNamespace(sym)) {
-      errorf(enumVal.srcpos(), E_QualifiedEnumDefSym,
-             "Enum item definitions must not be qualified. "
-             "Ignore namespace");
+      HR_LOG(kError, enumVal.srcpos(), E_QualifiedEnumDefSym)
+          << "Enum item definitions must not be qualified. Ignore namespace";
       sym = baseName(sym);
     }
 
@@ -1163,9 +1162,8 @@ std::shared_ptr<AstNode> SecondPass::parseVarDef(const Token& expr, VardefFlags 
   const TokenVector& seq = expr.children();
   String sym = seq[ofs].idValue();
   if (isLocal && hasNamespace(sym)) {
-    errorf(expr[ofs].srcpos(), E_QualifiedLocalSym,
-           "Local symbol in definition must not be qualified.  "
-           "Ignore namespace");
+    HR_LOG(kError, expr[ofs].srcpos(), E_QualifiedLocalSym)
+        << "Local symbol in definition must not be qualified. Ignore namespace";
     sym = baseName(sym);
   }
   ofs++;
@@ -1329,9 +1327,8 @@ NodeList SecondPass::parseFunctionDef(const Token& expr, size_t ofs, bool isLoca
   hr_assert(expr[ofs] == kSymbol);
   String sym = expr[ofs].idValue();
   if ((isLocal || linkage == String("C")) && hasNamespace(sym)) {
-    errorf(expr[ofs].srcpos(), E_QualifiedLocalSym,
-           "Local symbol in definition must not be qualified.  "
-           "Ignore namespace");
+    HR_LOG(kError, expr[ofs].srcpos(), E_QualifiedLocalSym)
+        << "Local symbol in definition must not be qualified. Ignore namespace";
     sym = baseName(sym);
   }
 
@@ -1345,8 +1342,8 @@ NodeList SecondPass::parseFunctionDef(const Token& expr, size_t ofs, bool isLoca
     if ((data.fFlags & kFuncIsGeneric) == 0) {
       // a method implementation
       if ((data.fFlags & kFuncIsAbstract) != 0) {
-        errorf(expr.srcpos(), E_AbstractMethod,
-               "Generic function implementations must not be abstract");
+        HR_LOG(kError, expr.srcpos(), E_AbstractMethod)
+            << "Generic function implementations must not be abstract";
         return NodeList();
       }
       data.fFlags |= kFuncIsMethod;
@@ -1373,8 +1370,8 @@ NodeList SecondPass::parseFunctionDef(const Token& expr, size_t ofs, bool isLoca
   else {
     if ((data.fFlags & kFuncIsGeneric) != 0) {
       // generic function without specialized parameter?
-      errorf(expr.srcpos(), E_GenericNoSpecPrm,
-             "Generic function without specialized parameter");
+      HR_LOG(kError, expr.srcpos(), E_GenericNoSpecPrm)
+          << "Generic function without specialized parameter";
       return NodeList();
     }
 
@@ -1441,7 +1438,8 @@ NodeList SecondPass::parseDef(const Token& expr, bool isLocal)
   if (expr[ofs] == Compiler::typeToken) {
     hr_assert(linkage.isEmpty());
     if (isLocal) {
-      errorf(expr.srcpos(), E_LocalTypeDef, "Local type definitions are not supported");
+      HR_LOG(kError, expr.srcpos(), E_LocalTypeDef)
+          << "Local type definitions are not supported";
       return NodeList();
     }
     return parseTypeDef(expr, ofs, !K(isRecord), isLocal);
@@ -1450,7 +1448,8 @@ NodeList SecondPass::parseDef(const Token& expr, bool isLocal)
   else if (expr[ofs] == Compiler::recordToken) {
     hr_assert(linkage.isEmpty());
     if (isLocal) {
-      errorf(expr.srcpos(), E_LocalTypeDef, "Local type definitions are not supported");
+      HR_LOG(kError, expr.srcpos(), E_LocalTypeDef)
+          << "Local type definitions are not supported";
       return NodeList();
     }
     return parseTypeDef(expr, ofs, K(isRecord), isLocal);
@@ -1507,8 +1506,7 @@ NodeList SecondPass::parseDef(const Token& expr, bool isLocal)
     return rewriteDefNode(parseVarDef(expr, kNormalVar, ofs, isLocal, linkage), isLocal);
   }
 
-  errorf(expr[ofs].srcpos(), 0, "Unexpected token: %s\n",
-         (zstring)StrHelper(expr[ofs].toString()));
+  HR_LOG(kError, expr[ofs].srcpos()) << "Unexpected token: " << expr[ofs];
   hr_invalid("");
 
   return NodeList();
@@ -1527,7 +1525,7 @@ std::shared_ptr<AstNode> SecondPass::parseIf(const Token& expr)
   std::shared_ptr<AstNode> alternate;
 
   if (test.size() != 1) {
-    errorf(expr.srcpos(), E_BadParameterList, "broken if-test");
+    HR_LOG(kError, expr.srcpos(), E_BadParameterList) << "broken if-test";
     return nullptr;
   }
 
@@ -1556,8 +1554,8 @@ std::shared_ptr<AstNode> SecondPass::parseParameter(const Token& expr)
   if (expr.count() >= 3 && seq[ofs] == kSymbol && seq[ofs + 1] == kMapTo) {
     key = seq[ofs].idValue();
     if (hasNamespace(key)) {
-      errorf(seq[ofs].srcpos(), E_QualifiedParamKey,
-             "Named Parameter keys must not be qualified.  Ignore namespace");
+      HR_LOG(kError, seq[ofs].srcpos(), E_QualifiedParamKey)
+          << "Named Parameter keys must not be qualified.  Ignore namespace";
       key = baseName(key);
     }
 
@@ -1570,8 +1568,8 @@ std::shared_ptr<AstNode> SecondPass::parseParameter(const Token& expr)
 
   String sym = seq[ofs].idValue();
   if (hasNamespace(sym)) {
-    errorf(seq[ofs].srcpos(), E_QualifiedLocalSym,
-           "Parameter names must not be qualified.  Ignore namespace");
+    HR_LOG(kError, seq[ofs].srcpos(), E_QualifiedLocalSym)
+        << "Parameter names must not be qualified.  Ignore namespace";
     sym = baseName(sym);
   }
   ofs++;
@@ -1587,8 +1585,8 @@ std::shared_ptr<AstNode> SecondPass::parseParameter(const Token& expr)
       ofs += 2;
 
       if (paramType == kNamedArg)
-        errorf(expr.srcpos(), E_SpecNamedParam,
-               "Specialized named parameters are not allowed");
+        HR_LOG(kError, expr.srcpos(), E_SpecNamedParam)
+            << "Specialized named parameters are not allowed";
       else
         paramType = kSpecArg;
     }
@@ -1715,8 +1713,8 @@ std::shared_ptr<AstNode> SecondPass::generateArrayAlloc(const Token& expr,
   NodeList args = parseFunCallArgs(expr[1].children());
 
   if (args.empty()) {
-    errorf(expr[1].srcpos(), E_BadArgNumber,
-           "Bad number of arguments for array allocation");
+    HR_LOG(kError, expr[1].srcpos(), E_BadArgNumber)
+        << "Bad number of arguments for array allocation";
     return nullptr;
   }
 
@@ -1728,17 +1726,19 @@ std::shared_ptr<AstNode> SecondPass::generateArrayAlloc(const Token& expr,
       argc--;
     }
     else {
-      error(keyarg->srcpos(), E_BadArgKind,
-            String("Unexpected key argument: ") + keyarg->key() + " in array allocation");
+      HR_LOG(kError, keyarg->srcpos(), E_BadArgKind)
+          << "Unexpected key argument: " << keyarg->key() << " in array allocation";
     }
   }
 
   if (argc > 1) {
-    errorf(expr[1].srcpos(), E_BadArgNumber, "Too many arguments for array allocation");
+    HR_LOG(kError, expr[1].srcpos(), E_BadArgNumber)
+        << "Too many arguments for array allocation";
     return nullptr;
   }
   else if (argc < 1) {
-    errorf(expr[1].srcpos(), E_BadArgNumber, "Not enough arguments for array allocation");
+    HR_LOG(kError, expr[1].srcpos(), E_BadArgNumber)
+        << "Not enough arguments for array allocation";
     return nullptr;
   }
 
@@ -1838,7 +1838,8 @@ std::shared_ptr<AstNode> SecondPass::parseFunCall(const Token& expr)
     return generateArrayAlloc(expr, first);
   }
   else if (dynamic_cast<TypeNode*>(first.get())) {
-    return generateAlloc(expr, dynamic_cast<TypeNode*>(first.get())->type().classTypeOfType());
+    return generateAlloc(expr,
+                         dynamic_cast<TypeNode*>(first.get())->type().classTypeOfType());
   }
   else {
     auto symNode = dynamic_cast<SymbolNode*>(first.get());
@@ -2302,7 +2303,7 @@ std::shared_ptr<AstNode> SecondPass::parseWhile(const Token& expr)
 
   NodeList testExprs = parseTokenVector(expr[1].children());
   if (testExprs.size() != 1) {
-    errorf(expr[1].srcpos(), E_BadParameterList, "broken if-test");
+    HR_LOG(kError, expr[1].srcpos(), E_BadParameterList) << "broken if-test";
     return nullptr;
   }
 
@@ -2451,10 +2452,10 @@ static std::shared_ptr<AstNode> transformMatchNode(std::shared_ptr<Scope> scope,
   for (size_t i = 0; i < node->mappingCount(); i++) {
     if (node->mappingAt(i).fMatchType.isAny()) {
       if (elseAlternate) {
-        errorf(node->mappingAt(i).fSrcPos, E_MatchAmbiguousType,
-               "redefinition of catch-all lang|Any branch in match");
-        errorf(elseAlternate->srcpos(), E_MatchAmbiguousType,
-               "previous Any branch was here");
+        HR_LOG(kError, node->mappingAt(i).fSrcPos, E_MatchAmbiguousType)
+            << "redefinition of catch-all lang|Any branch in match";
+        HR_LOG(kError, elseAlternate->srcpos(), E_MatchAmbiguousType)
+            << "previous Any branch was here";
       }
       else
         elseAlternate = node->mappingAt(i).fConsequent;
@@ -2595,8 +2596,8 @@ std::shared_ptr<AstNode> SecondPass::parseTypeExpr(const Token& expr, bool inArr
     }
     else if (expr[1].leftToken() == kBracketOpen) {
       if (inArrayType) {
-        errorf(expr.srcpos(), E_MultiDimenArray,
-               "Multi-dimensional array types are not supported");
+        HR_LOG(kError, expr.srcpos(), E_MultiDimenArray)
+            << "Multi-dimensional array types are not supported";
         Type ty = genericTypeRef(symbol, K(isValue));
         return makeTypeNode(fScope, expr.srcpos(), ty);
       }
@@ -2608,8 +2609,8 @@ std::shared_ptr<AstNode> SecondPass::parseTypeExpr(const Token& expr, bool inArr
       return parseFunCall(expr);
     }
     // else {
-    //   error(expr[1].srcpos(), E_UnexpectedToken,
-    //         String("unexpected token: ") + expr[1].toString());
+    //   HR_LOG(kError, expr[1].srcpos(), E_UnexpectedToken) <<
+    //         String("unexpected token: ") + expr[1].toString();
     //   return nullptr;
     // }
   }
@@ -2632,27 +2633,27 @@ std::shared_ptr<AstNode> SecondPass::parseTypeExpr(const Token& expr, bool inArr
       if (dynamic_cast<SymbolNode*>(typeNode.get()) ||
           dynamic_cast<TypeNode*>(typeNode.get())) {
         if (inArrayType) {
-          errorf(expr.srcpos(), E_MultiDimenArray,
-                 "Multi-dimensional array types are not supported");
+          HR_LOG(kError, expr.srcpos(), E_MultiDimenArray)
+              << "Multi-dimensional array types are not supported";
           return typeNode;
         }
         return makeArrayTypeNode(fScope, expr.srcpos(), typeNode);
       }
       else if (typeNode) {
-        error(expr[1].srcpos(), E_BadType,
-              String("bad base type in array type: ") + expr.toString());
+        HR_LOG(kError, expr[1].srcpos(), E_BadType)
+            << "bad base type in array type: " << expr.toString();
         return nullptr;
       }
       return nullptr;
     }
     // else {
-    //   error(expr[1].srcpos(), E_UnexpectedToken,
-    //         String("unexpected token: ") + expr[1].toString());
+    //   HR_LOG(kError, expr[1].srcpos(), E_UnexpectedToken) <<
+    //         "unexpected token: " << expr[1].toString();
     //   return nullptr;
     // }
   }
   else if (expr[0] == kQuote && expr[1] == kSymbol) {
-    //error(expr.srcpos(), E_BadGenericType, String("Generic type is not allowed here ") + expr[1].toString());
+    //HR_LOG(kError, expr.srcpos(), E_BadGenericType) << "Generic type is not allowed here " << expr[1].toString();
     //return nullptr;
     Type ty = genericTypeRef(expr[1].idValue(), K(isValue));
     return makeTypeNode(fScope, expr.srcpos(), ty);
@@ -3036,8 +3037,8 @@ NodeList SecondPass::parseExpr(const Token& expr)
 
   case kPunct:
     // printf("{1} ---> %s\n", (zstring)StrHelper(expr.toString()));
-    error(expr.srcpos(), E_UnexpectedToken,
-          String("Unexpected token: ") + expr.toString());
+    HR_LOG(kError, expr.srcpos(), E_UnexpectedToken)
+        << "Unexpected token: " << expr.toString();
     return NodeList();
   }
 

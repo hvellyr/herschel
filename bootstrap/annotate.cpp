@@ -83,21 +83,22 @@ static void annotateFuncdefNode(Annotator* ann, std::shared_ptr<FuncDefNode> nod
     auto var = node->scope()->lookupVarOrFunc(node->srcpos(), node->name(),
                                               K(showAmbiguousSymDef));
     if (!var) {
-      errorf(node->srcpos(), E_NoGenericFunction,
-             "No generic function definition found for method");
+      HR_LOG(kError, node->srcpos(), E_NoGenericFunction)
+          << "No generic function definition found for method";
     }
     else if (auto funcdef = dynamic_cast<const FuncDefNode*>(var)) {
       if (!funcdef->isGeneric()) {
-        errorf(node->srcpos(), E_BadGenericReferrer,
-               "Bad method binding type (referred symbol is not a generic function).");
-        errorf(var->srcpos(), E_BadGenericReferrer,
-               "Referred function definition was here");
+        HR_LOG(kError, node->srcpos(), E_BadGenericReferrer)
+            << "Bad method binding type (referred symbol is not a generic function).";
+        HR_LOG(kError, var->srcpos(), E_BadGenericReferrer)
+            << "Referred function definition was here";
       }
     }
     else {
-      errorf(node->srcpos(), E_BadGenericReferrer,
-             "Bad method binding type (referred symbol is not a generic function).");
-      errorf(var->srcpos(), E_BadGenericReferrer, "Referred symbol definition was here");
+      HR_LOG(kError, node->srcpos(), E_BadGenericReferrer)
+          << "Bad method binding type (referred symbol is not a generic function).";
+      HR_LOG(kError, var->srcpos(), E_BadGenericReferrer)
+          << "Referred symbol definition was here";
     }
   }
 

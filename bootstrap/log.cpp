@@ -13,8 +13,10 @@
 #include "srcpos.hpp"
 #include "str.hpp"
 
-#include <stdarg.h>
 #include <stdio.h>
+
+#include <iomanip>
+#include <string>
 
 
 namespace herschel {
@@ -46,104 +48,70 @@ bool isSilent()
 static zstring levelStr[] = { "debug", "info", "warning", "error" };
 
 
-static void logImpl(const SrcPos& where, LogLevel level, int errorCode, FILE* stream,
-                    zstring msg)
+LineLogger::LineLogger(LogLevel level, const SrcPos& where, int errorCode)
 {
   if (sBeSilent)
     return;
 
   if (where.isValid()) {
     if (errorCode == 0)
-      fprintf(stream, "%s:%d: %s: %s\n", (zstring)StrHelper(where.file()),
-              where.lineNumber(), levelStr[level], msg);
+      fMsgBuffer << where.file().to_string() << ":" << where.lineNumber() << ": "
+                 << levelStr[level] << ": ";
     else
-      fprintf(stream, "%s:%d: %s: (%04x) %s\n", (zstring)StrHelper(where.file()),
-              where.lineNumber(), levelStr[level], errorCode, msg);
+      fMsgBuffer << where.file().to_string() << ":" << where.lineNumber() << ": "
+                 << levelStr[level] << ": (" << std::setw(4) << std::right << std::hex
+                 << std::setfill('0') << errorCode << ") ";
   }
   else {
     if (errorCode == 0)
-      fprintf(stream, "%s: %s\n", levelStr[level], msg);
+      fMsgBuffer << levelStr[level] << ": ";
     else
-      fprintf(stream, "%s: (%04x) %s\n", levelStr[level], errorCode, msg);
+      fMsgBuffer << levelStr[level] << ": (" << std::setw(4) << std::right << std::hex
+                 << std::setfill('0') << errorCode << ") ";
   }
 }
 
 
-void log(const SrcPos& where, LogLevel level, const String& msg)
+LineLogger::LineLogger()
+    : LineLogger(kInfo, SrcPos(), 0)
 {
-  logImpl(where, level, 0, stderr, (zstring)StrHelper(msg));
 }
 
 
-void logf(const SrcPos& where, LogLevel level, zstring format, ...)
+LineLogger::LineLogger(LogLevel level, const SrcPos& where)
+    : LineLogger(level, where, 0)
 {
-  char buffer[2048];
-
-  va_list args;
-  va_start(args, format);
-  vsnprintf(buffer, 2048, format, args);
-  va_end(args);
-
-  logImpl(where, level, 0, stderr, buffer);
 }
 
 
-void log(LogLevel level, const String& msg)
+LineLogger::LineLogger(LogLevel level)
+    : LineLogger(level, SrcPos(), 0)
 {
-  static SrcPos sp;
-  logImpl(sp, level, 0, stderr, (zstring)StrHelper(msg));
 }
 
 
-void logf(LogLevel level, zstring format, ...)
+LineLogger::~LineLogger()
 {
-  static SrcPos sp;
-  char buffer[2048];
-
-  va_list args;
-  va_start(args, format);
-  vsnprintf(buffer, 2048, format, args);
-  va_end(args);
-
-  logImpl(sp, level, 0, stderr, buffer);
+  fprintf(stdout, "%s\n", fMsgBuffer.str().c_str());
+  fMsgBuffer.str("");
 }
 
 
-void error(const SrcPos& where, int errorCode, const String& msg)
+LineLogger& operator<<(LineLogger& ll, const Numf& numf)
 {
-  logImpl(where, kError, errorCode, stderr, (zstring)StrHelper(msg));
-}
+  if (numf.fWidth > 0)
+    ll.fMsgBuffer << std::setw(numf.fWidth) << std::right;
 
+  if (numf.fBase == 16)
+    ll.fMsgBuffer << std::hex;
+  else if (numf.fBase == 8)
+    ll.fMsgBuffer << std::oct;
 
-void errorf(const SrcPos& where, int errorCode, zstring format, ...)
-{
-  char buffer[2048];
+  if (numf.fC != '\0')
+    ll.fMsgBuffer << std::setfill(numf.fC);
 
-  va_list args;
-  va_start(args, format);
-  vsnprintf(buffer, 2048, format, args);
-  va_end(args);
-
-  logImpl(where, kError, errorCode, stderr, buffer);
-}
-
-
-void warning(const SrcPos& where, int errorCode, const String& msg)
-{
-  logImpl(where, kWarn, errorCode, stderr, (zstring)StrHelper(msg));
-}
-
-
-void warningf(const SrcPos& where, int errorCode, zstring format, ...)
-{
-  char buffer[2048];
-
-  va_list args;
-  va_start(args, format);
-  vsnprintf(buffer, 2048, format, args);
-  va_end(args);
-
-  logImpl(where, kWarn, errorCode, stderr, buffer);
+  ll.fMsgBuffer << numf.fVal;
+  return ll;
 }
 
 }  // namespace herschel

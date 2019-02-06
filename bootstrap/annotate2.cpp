@@ -36,7 +36,8 @@ namespace {
                                       std::shared_ptr<AstNode> valExpr)
   {
     if (!valExpr->isTempValue()) {
-      auto symNd = makeSymbolNode(valExpr->scope(), valExpr->srcpos(), Names::kOnCopyFuncName);
+      auto symNd =
+          makeSymbolNode(valExpr->scope(), valExpr->srcpos(), Names::kOnCopyFuncName);
       symNd->setRefersTo(kFunction, !K(isShared));
 
       auto copyExpr = makeApplyNode(valExpr->scope(), valExpr->srcpos(), symNd);
@@ -85,7 +86,7 @@ static void takeFullNameFromNode(SymbolNode* node, const AstNode* otherNode)
   }
 
   // TODO: unexpected type here.
-  logf(kError, "Unexpected type here: %s", typeid(*otherNode).name());
+  HR_LOG(kError, node->srcpos()) << "Unexpected type here: " << typeid(*otherNode).name();
   hr_invalid("Unexpected type");
 }
 
@@ -156,8 +157,8 @@ struct NodeAnnotator2<std::shared_ptr<SymbolNode>> {
 
 #if defined(UNITTESTS)
     if (!node->isRemoveable() && Properties::test_passLevel() > 2) {
-      errorf(node->srcpos(), E_UndefinedVar, "Unknown symbol '%s'",
-             (zstring)StrHelper(node->name()));
+      HR_LOG(kError, node->srcpos(), E_UndefinedVar)
+          << "Unknown symbol '" << node->name() << "'";
     }
 #endif
   }

@@ -234,7 +234,7 @@ void Properties::setConfigVar(const String& keyValuePair)
                                       Token(SrcPos("<commandline>", 0), kString, value));
   }
   else
-    logf(kError, "bad key-value pair for config key.  Ignored\n");
+    HR_LOG(kError) << "bad key-value pair for config key.  Ignored";
 }
 
 

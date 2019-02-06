@@ -144,10 +144,10 @@ struct NodeTypifier<std::shared_ptr<FuncDefNode>> {
     if (node->name() == Names::kAppMain) {
       if (!node->retType().isAny()) {
         if (node->retType().typeId() != Names::kInt32TypeName) {
-          errorf(node->srcpos(), E_TypeMismatch,
-                 "return type of " MID_app_main "() must be " MID_Int32TypeName);
-          error(node->srcpos(), E_TypeMismatch,
-                String("found to be: ") + node->retType().typeId());
+          HR_LOG(kError, node->srcpos(), E_TypeMismatch)
+              << "return type of " MID_app_main "() must be " MID_Int32TypeName;
+          HR_LOG(kError, node->srcpos(), E_TypeMismatch)
+              << "found to be: " << node->retType();
         }
       }
 
@@ -280,7 +280,8 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
           if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
                   node->simpleCallName(), typesForArgs(node->children()), node->srcpos(),
                   K(showAmbiguousSymDef))) {
-            auto newBase = makeSymbolNode(node->scope(), node->srcpos(), bestFuncNode.fName);
+            auto newBase =
+                makeSymbolNode(node->scope(), node->srcpos(), bestFuncNode.fName);
             newBase->setRefersTo(kFunction, !K(isShared));
             typf->typifyNode(newBase);
             node->setBase(newBase);
@@ -305,8 +306,8 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             node->setIsObsolete(true);
           }
           else {
-            error(node->srcpos(), E_NoMatchingFunction,
-                  String("no matching function: ") + node->simpleCallName());
+            HR_LOG(kError, node->srcpos(), E_NoMatchingFunction)
+                << "no matching function: " << node->simpleCallName();
           }
         }
       }
@@ -358,15 +359,16 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             node->setType(createNode->type());
           }
           else {
-            errorf(node->srcpos(), E_NoCallable, "Non callable in function call context");
+            HR_LOG(kError, node->srcpos(), E_NoCallable)
+                << "Non callable in function call context";
           }
         }
         else if (node->isRemoveable()) {
           node->setIsObsolete(true);
         }
         else {
-          error(node->srcpos(), E_UnknownSymbol,
-                String("unknown symbol: ") + node->simpleCallName());
+          HR_LOG(kError, node->srcpos(), E_UnknownSymbol)
+              << "unknown symbol: " << node->simpleCallName();
         }
       }
     }
@@ -467,14 +469,13 @@ struct NodeTypifier<std::shared_ptr<AssignNode>> {
       node->lvalue()->setType(node->rvalue()->type());
     }
     else if (!rtype.isDef()) {
-      errorf(node->rvalue()->srcpos(), E_TypeMismatch,
-             "Undefined type in assignment right hand value");
+      HR_LOG(kError, node->rvalue()->srcpos(), E_TypeMismatch)
+          << "Undefined type in assignment right hand value";
     }
     else if (!isCovariant(ltype, rtype, *node->scope(), node->srcpos()) &&
              !containsAny(rtype, node->srcpos())) {
-      error(node->rvalue()->srcpos(), E_TypeMismatch,
-            String("type mismatch in assignment: ") + ltype.typeId() + " <- " +
-                rtype.typeId());
+      HR_LOG(kError, node->rvalue()->srcpos(), E_TypeMismatch)
+          << "type mismatch in assignment: " << ltype.typeId() << " <- " << rtype;
     }
     else if (!ltype.isDef()) {
       // infer the vardef type from rvalue expression
@@ -577,9 +578,9 @@ struct NodeTypifier<std::shared_ptr<BinaryNode>> {
                                         node->left(), node->right()))
         return;
 
-      error(node->srcpos(), E_BinaryTypeMismatch,
-            String("incompatible types in binary operation (") + leftty.typeId() +
-                " and " + rightty.typeId() + ")");
+      HR_LOG(kError, node->srcpos(), E_BinaryTypeMismatch)
+          << "incompatible types in binary operation (" << leftty << " and " << rightty
+          << ")";
       node->setType(Type::makeAny());
       typf->annotateTypeConv(node, node->type());
       break;
@@ -608,10 +609,10 @@ struct NodeTypifier<std::shared_ptr<BinaryNode>> {
       }
 
       // TODO: check that left and right type are comparable
-      tyerror(leftty, "compare left");
-      tyerror(rightty, "compare right");
-      errorf(node->srcpos(), E_BinaryTypeMismatch,
-             "incompatible types in binary comparison");
+      HR_LOG(kError) << "compare left: " << leftty;
+      HR_LOG(kError) << "compare right" << rightty;
+      HR_LOG(kError, node->srcpos(), E_BinaryTypeMismatch)
+          << "incompatible types in binary comparison";
       node->setType(Type::makeAny());
       typf->annotateTypeConv(node, node->type());
       break;
@@ -632,8 +633,8 @@ struct NodeTypifier<std::shared_ptr<BinaryNode>> {
         return;
       }
 
-      errorf(node->srcpos(), E_BinaryTypeMismatch,
-             "incompatible types in binary comparison (compare)");
+      HR_LOG(kError, node->srcpos(), E_BinaryTypeMismatch)
+          << "incompatible types in binary comparison (compare)";
       node->setType(Type::makeAny());
       typf->annotateTypeConv(node, node->type());
       break;
@@ -648,8 +649,8 @@ struct NodeTypifier<std::shared_ptr<BinaryNode>> {
       }
       // TODO: try to lookup a method which enables isa(leftty, rightty) and
       // use it's returntype
-      errorf(node->srcpos(), E_BinaryTypeMismatch,
-             "incompatible right side type in isa operation");
+      HR_LOG(kError, node->srcpos(), E_BinaryTypeMismatch)
+          << "incompatible right side type in isa operation";
       node->setType(Type::makeAny());
       typf->annotateTypeConv(node, node->type());
       break;
@@ -666,8 +667,8 @@ struct NodeTypifier<std::shared_ptr<BinaryNode>> {
       }
       // TODO: try to lookup a method which enables append(leftty, rightty)
       // and use it's returntype
-      errorf(node->srcpos(), E_BinaryTypeMismatch,
-             "incompatible types in append() operation");
+      HR_LOG(kError, node->srcpos(), E_BinaryTypeMismatch)
+          << "incompatible types in append() operation";
       node->setType(Type::makeAny());
       typf->annotateTypeConv(node, node->type());
       break;
@@ -683,8 +684,8 @@ struct NodeTypifier<std::shared_ptr<BinaryNode>> {
       }
       // TODO: try to lookup a method which enables fold(leftty, rightty) and
       // use it's returntype
-      errorf(node->srcpos(), E_BinaryTypeMismatch,
-             "incompatible types in fold() operation");
+      HR_LOG(kError, node->srcpos(), E_BinaryTypeMismatch)
+          << "incompatible types in fold() operation";
       node->setType(Type::makeAny());
       typf->annotateTypeConv(node, node->type());
       break;
@@ -698,8 +699,8 @@ struct NodeTypifier<std::shared_ptr<BinaryNode>> {
         typf->annotateTypeConv(node, node->type());
         return;
       }
-      errorf(node->srcpos(), E_BinaryTypeMismatch,
-             "bool types required in logical 'and'/'or' operations");
+      HR_LOG(kError, node->srcpos(), E_BinaryTypeMismatch)
+          << "bool types required in logical 'and'/'or' operations";
       node->setType(Type::makeAny());
       typf->annotateTypeConv(node, node->type());
       break;
@@ -714,8 +715,8 @@ struct NodeTypifier<std::shared_ptr<BinaryNode>> {
         typf->annotateTypeConv(node->right(), leftty);
       }
       else {
-        errorf(node->srcpos(), E_BinaryTypeMismatch,
-               "AND, OR, XOR operations require unsigned integer types on both sides");
+        HR_LOG(kError, node->srcpos(), E_BinaryTypeMismatch)
+            << "AND, OR, XOR operations require unsigned integer types on both sides";
         node->setType(Type::makeAny());
       }
       typf->annotateTypeConv(node, node->type());
@@ -730,14 +731,14 @@ struct NodeTypifier<std::shared_ptr<BinaryNode>> {
           typf->annotateTypeConv(node->right(), leftty);
         }
         else {
-          errorf(node->srcpos(), E_BinaryTypeMismatch,
-                 "bit operations require integer types on right side");
+          HR_LOG(kError, node->srcpos(), E_BinaryTypeMismatch)
+              << "bit operations require integer types on right side";
           node->setType(Type::makeAny());
         }
       }
       else {
-        errorf(node->srcpos(), E_BinaryTypeMismatch,
-               "bit operations require unsigned integer types on left side");
+        HR_LOG(kError, node->srcpos(), E_BinaryTypeMismatch)
+            << "bit operations require unsigned integer types on left side";
         node->setType(Type::makeAny());
       }
       typf->annotateTypeConv(node, node->type());
@@ -767,8 +768,8 @@ struct NodeTypifier<std::shared_ptr<SlotRefNode>> {
     if (!basety.isDef()) {
       String typenm = (node->base()->type().isDef() ? node->base()->type().typeId()
                                                     : Names::kAnyTypeName);
-      errorf(node->srcpos(), E_UndefinedType, "undefined type '%s'",
-             (zstring)StrHelper(typenm));
+      HR_LOG(kError, node->srcpos(), E_UndefinedType)
+          << "undefined type '" << typenm << "'";
 
       node->setType(Type::makeAny());
       node->setDstType(Type::makeAny());
@@ -783,16 +784,17 @@ struct NodeTypifier<std::shared_ptr<SlotRefNode>> {
           typf->annotateTypeConv(node, node->type());
         }
         else {
-          error(node->srcpos(), E_UnknownSlot,
-                String("reference to unknown slot '") + node->slotName() +
-                    "' in type: " + basety.typeId());
+          HR_LOG(kError, node->srcpos(), E_UnknownSlot)
+              << "reference to unknown slot '" << node->slotName()
+              << "' in type: " << basety;
           node->setType(Type::makeAny());
           node->setDstType(Type::makeAny());
           typf->annotateTypeConv(node, node->type());
         }
       }
       else {
-        errorf(node->srcpos(), E_SlotRefToNonClass, "slot reference to non-record type");
+        HR_LOG(kError, node->srcpos(), E_SlotRefToNonClass)
+            << "slot reference to non-record type";
         node->setType(Type::makeAny());
         node->setDstType(Type::makeAny());
         typf->annotateTypeConv(node, node->type());
@@ -813,7 +815,8 @@ struct NodeTypifier<std::shared_ptr<UnaryNode>> {
 
     case kUnaryOpNot:
       if (!node->base()->type().isDef()) {
-        errorf(node->srcpos(), E_BoolTypeExpected, "bool expected for not operator");
+        HR_LOG(kError, node->srcpos(), E_BoolTypeExpected)
+            << "bool expected for not operator";
         node->setType(Type::makeAny());
       }
       else if (node->base()->type().isBool()) {
@@ -823,7 +826,8 @@ struct NodeTypifier<std::shared_ptr<UnaryNode>> {
         node->setType(Type::makeBool());
       }
       else {
-        errorf(node->srcpos(), E_BoolTypeExpected, "bool expected for not operator");
+        HR_LOG(kError, node->srcpos(), E_BoolTypeExpected)
+            << "bool expected for not operator";
         node->setType(Type::makeAny());
       }
       typf->annotateTypeConv(node->base(), Type::makeBool());
@@ -866,8 +870,8 @@ struct NodeTypifier<std::shared_ptr<IfNode>> {
         // if the if expression is not in tail position, the branch type
         // mismatch doesn't matter.
         if (node->isInTailPos() || node->isSingleTypeRequired()) {
-          errorf(node->srcpos(), E_IfConsqTypeMismatch,
-                 "types for if consequent and alternate branch do not match");
+          HR_LOG(kError, node->srcpos(), E_IfConsqTypeMismatch)
+              << "types for if consequent and alternate branch do not match";
         }
         node->setType(Type::makeAny(K(isValue)));
         typf->annotateTypeConv(node->consequent(), Type::makeAny());
@@ -879,8 +883,8 @@ struct NodeTypifier<std::shared_ptr<IfNode>> {
       if (node->isInTailPos() || node->isSingleTypeRequired()) {
         // if the if expression is in tail position we should definitely have
         // have an alternate branch.
-        errorf(node->srcpos(), E_IfAltTypeMismatch,
-               "unspecified alternate branch do not match type with consequent");
+        HR_LOG(kError, node->srcpos(), E_IfAltTypeMismatch)
+            << "unspecified alternate branch do not match type with consequent";
         node->setType(Type::makeAny(K(isValue)));
       }
       else {
@@ -942,14 +946,14 @@ struct NodeTypifier<std::shared_ptr<RangeNode>> {
     bool toIsOpen = toType.isOpen();
 
     if ((fromIsOpen || toIsOpen) && (fromIsOpen != toIsOpen)) {
-      errorf(node->srcpos(), E_RangeTypeMismatch,
-             "partial open types in range declaration defeats generics usage");
+      HR_LOG(kError, node->srcpos(), E_RangeTypeMismatch)
+          << "partial open types in range declaration defeats generics usage";
       node->setType(makeRangeType(Type::makeAny(K(isValue))));
       return;
     }
 
     if (!isSameType(fromType, toType, *node->scope(), node->srcpos())) {
-      errorf(node->srcpos(), E_RangeTypeMismatch, "type of range is ambiguous");
+      HR_LOG(kError, node->srcpos(), E_RangeTypeMismatch) << "type of range is ambiguous";
       node->setType(makeRangeType(Type::makeAny(K(isValue))));
       return;
     }
@@ -959,15 +963,15 @@ struct NodeTypifier<std::shared_ptr<RangeNode>> {
       bool byIsOpen = byType.isOpen();
 
       if (byIsOpen && byIsOpen != fromIsOpen) {
-        errorf(node->srcpos(), E_RangeTypeMismatch,
-               "partial open types in range declaration defeats generics usage");
+        HR_LOG(kError, node->srcpos(), E_RangeTypeMismatch)
+            << "partial open types in range declaration defeats generics usage";
         node->setType(makeRangeType(Type::makeAny(K(isValue))));
         return;
       }
 
       if (!isSameType(fromType, byType, *node->scope(), node->by()->srcpos())) {
-        errorf(node->srcpos(), E_RangeTypeMismatch,
-               "step type does not match range type");
+        HR_LOG(kError, node->srcpos(), E_RangeTypeMismatch)
+            << "step type does not match range type";
         node->setType(makeRangeType(Type::makeAny(K(isValue))));
         return;
       }
@@ -989,8 +993,8 @@ struct NodeTypifier<std::shared_ptr<WhileNode>> {
 
     if (node->isInTailPos() || node->isSingleTypeRequired()) {
       // the while expression should never be in tail position
-      warningf(node->srcpos(), E_WhileTypeMismatch,
-               "while in tail position enforces Any type");
+      HR_LOG(kWarn, node->srcpos(), E_WhileTypeMismatch)
+          << "while in tail position enforces Any type";
       node->setType(Type::makeAny(K(isValue)));
     }
     else
@@ -1115,13 +1119,13 @@ struct NodeTypifier<std::shared_ptr<CastNode>> {
     if (!node->type().isOpen()) {
       Type type = node->scope()->lookupType(node->type());
       if (!type.isDef()) {
-        errorf(node->srcpos(), E_UndefinedType, "undefined type '%s'",
-               (zstring)StrHelper(node->type().toString()));
+        HR_LOG(kError, node->srcpos(), E_UndefinedType)
+            << "undefined type '" << node->type() << "'";
         node->setType(Type::makeAny(K(isValue)));
       }
       else {
         if (isInvariant(node->base()->type(), type, *node->scope(), node->srcpos())) {
-          errorf(node->srcpos(), E_InvariantType, "Cast to invariant type");
+          HR_LOG(kError, node->srcpos(), E_InvariantType) << "Cast to invariant type";
           node->setType(Type::makeAny(K(isValue)));
         }
         else
@@ -1142,8 +1146,8 @@ static void typifyNodeType(std::shared_ptr<AstNode> node, const Type& type,
                     : node->scope()->lookupType(defaultTypeName, K(showAmbiguousSymDef)));
 
   if (!ty.isDef()) {
-    errorf(node->srcpos(), E_UndefinedType, "undefined type '%s'",
-           (zstring)StrHelper(defaultTypeName));
+    HR_LOG(kError, node->srcpos(), E_UndefinedType)
+        << "undefined type '" << defaultTypeName << "'";
     node->setType(Type::makeAny(K(isValue)));
   }
   else {
@@ -1387,8 +1391,8 @@ void Typifier::setupBindingNodeType(std::shared_ptr<BindingNode> node, zstring e
            ? node->scope()->lookupType(node->type())
            : node->scope()->lookupType(Names::kAnyTypeName, K(showAmbiguousSymDef)));
   if (!bindty.isDef()) {
-    errorf(node->srcpos(), E_UndefinedType, "undefined type '%s' in %s",
-           (zstring)StrHelper(typenm), errdesc);
+    HR_LOG(kError, node->srcpos(), E_UndefinedType)
+        << "undefined type '" << typenm << "' in " << errdesc;
     node->setType(Type::makeAny());
     if (node->initExpr()) {
       node->initExpr()->setDstType(Type::makeAny());
@@ -1411,14 +1415,14 @@ void Typifier::setupBindingNodeType(std::shared_ptr<BindingNode> node, zstring e
         annotateTypeConv(node->initExpr(), node->type());
       }
       else if (!node->initExpr()->type().isDef()) {
-        errorf(node->initExpr()->srcpos(), E_TypeMismatch,
-               "Undefined type in %s initialization", errdesc);
+        HR_LOG(kError, node->initExpr()->srcpos(), E_TypeMismatch)
+            << "Undefined type in %s initialization " << errdesc;
         node->initExpr()->setDstType(Type::makeAny());
       }
       else if (!isContravariant(bindty, node->initExpr()->type(), *node->scope(),
                                 node->srcpos())) {
-        errorf(node->initExpr()->srcpos(), E_TypeMismatch,
-               "type mismatch in %s initialization", errdesc);
+        HR_LOG(kError, node->initExpr()->srcpos(), E_TypeMismatch)
+            << "type mismatch in %s initialization" << errdesc;
         node->initExpr()->setDstType(Type::makeAny());
       }
       else {
@@ -1464,8 +1468,8 @@ void Typifier::setupFunctionNodeType(std::shared_ptr<FunctionNode> node)
     }
     else {
       // TODO: make warnings like this optional
-      // warningf(node->srcpos(), E_UndefinedType,
-      //          "undefined return type on function defaults to lang|Any");
+      // HR_LOG(kWarning, node->srcpos(), E_UndefinedType)
+      //          << "undefined return type on function defaults to lang|Any";
       node->setRetType(Type::makeAny());
     }
   }
@@ -1477,8 +1481,8 @@ void Typifier::setupFunctionNodeType(std::shared_ptr<FunctionNode> node)
              ? node->scope()->lookupType(node->retType())
              : node->scope()->lookupType(Names::kAnyTypeName, K(showAmbiguousSymDef)));
     if (!retty.isDef()) {
-      errorf(node->srcpos(), E_UndefinedType, "undefined return type '%s'",
-             (zstring)StrHelper(typenm));
+      HR_LOG(kError, node->srcpos(), E_UndefinedType)
+          << "undefined return type '" << typenm << "'";
       node->setRetType(Type::makeAny());
     }
     else {
@@ -1517,8 +1521,8 @@ void Typifier::checkFunctionReturnType(std::shared_ptr<FunctionNode> node)
     if (!isContravariant(node->retType(), node->body()->type(), *node->scope(),
                          node->srcpos()) &&
         !containsAny(node->body()->type(), node->srcpos())) {
-      errorf(node->srcpos(), E_TypeMismatch,
-             "function's body type does not match its return type");
+      HR_LOG(kError, node->srcpos(), E_TypeMismatch)
+          << "function's body type does not match its return type";
     }
 
 
@@ -1527,8 +1531,8 @@ void Typifier::checkFunctionReturnType(std::shared_ptr<FunctionNode> node)
 
     for (auto ret : delegate.fReturns) {
       if (!isContravariant(node->retType(), ret->type(), *ret->scope(), ret->srcpos())) {
-        errorf(ret->srcpos(), E_TypeMismatch,
-               "return's type does not match outer block type");
+        HR_LOG(kError, ret->srcpos(), E_TypeMismatch)
+            << "return's type does not match outer block type";
       }
     }
   }
@@ -1543,20 +1547,20 @@ void Typifier::checkArgParamType(TypeCtx& localCtx,
   if (param->type().isOpen()) {
     if (!param->type().matchGenerics(localCtx, arg->type(), *arg->scope(),
                                      arg->srcpos())) {
-      tyerror(param->type(), "param");
-      tyerror(arg->type(), "arg");
-      error(arg->srcpos(), E_TypeMismatch,
-            String("type mismatch for argument ") + idx + " in call to function '" +
-                funcName + "'");
+      HR_LOG(kError) << "param: " << param->type();
+      HR_LOG(kError) << "arg: " << arg->type();
+      HR_LOG(kError, arg->srcpos(), E_TypeMismatch)
+          << "type mismatch for argument " << idx << " in call to function '" << funcName
+          << "'";
       return;
     }
   }
   else {
     if (!isContravariant(param->type(), arg->type(), *arg->scope(), arg->srcpos()) &&
         !containsAny(arg->type(), arg->srcpos())) {
-      error(arg->srcpos(), E_TypeMismatch,
-            String("type mismatch for argument ") + idx + " in call to function '" +
-                funcName + "'");
+      HR_LOG(kError, arg->srcpos(), E_TypeMismatch)
+          << "type mismatch for argument " << idx << " in call to function '" << funcName
+          << "'";
       return;
     }
   }
@@ -1684,7 +1688,7 @@ Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeLis
         auto arg = args[argidx];
 
         if (i >= args.size()) {
-          errorf(srcpos, E_BadArgNumber, "not enough arguments");
+          HR_LOG(kError, srcpos, E_BadArgNumber) << "not enough arguments";
           return Type();
         }
         checkArgParamType(localCtx, param, arg, i, funcName);
@@ -1703,9 +1707,9 @@ Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeLis
               if (iety.isDef())
                 param->initExpr()->setType(iety);
               else
-                error(srcpos, E_TypeMismatch,
-                      String("init value to argument ") + (int)i + " of function " +
-                          funcName + " has unmatched generic type");
+                HR_LOG(kError, srcpos, E_TypeMismatch)
+                    << "init value to argument " << (int)i << " of function " << funcName
+                    << " has unmatched generic type";
             }
 
             checkArgParamType(localCtx, param, param->initExpr(), i, funcName);
@@ -1726,9 +1730,9 @@ Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeLis
             if (keyvalty.isDef())
               keyval.fKeyarg->value()->setType(keyvalty);
             else
-              error(srcpos, E_TypeMismatch,
-                    String("init value to argument ") + (int)i + " of function " +
-                        funcName + " has unmatched generic type");
+              HR_LOG(kError, srcpos, E_TypeMismatch)
+                  << "init value to argument " << (int)i << " of function " << funcName
+                  << " has unmatched generic type";
           }
 
           checkArgParamType(localCtx, param, keyval.fKeyarg->value(), keyval.fIdx,
@@ -1755,7 +1759,7 @@ Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeLis
   }
 
   // if (argidx < args.size()) {
-  //   errorf(srcpos, E_BadArgNumber, "Too much arguments");
+  //   HR_LOG(kError, srcpos, E_BadArgNumber) << "Too much arguments";
   // }
 
   if (funcNode->retType().isOpen()) {
@@ -1764,15 +1768,16 @@ Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeLis
     if (retty.isDef())
       return retty;
     else
-      errorf(srcpos, E_TypeMismatch, "function has unmatched generic return type.");
+      HR_LOG(kError, srcpos, E_TypeMismatch)
+          << "function has unmatched generic return type.";
 
     // Type retty = funcnode->retType();
     // if (localCtx.hasType(retty.typeName())) {
     //   node.setType(localCtx.lookupType(retty.typeName()));
     // }
     // else {
-    //   errorf(node.srcpos(), E_TypeMismatch,
-    //          "function has unmatched generic return type.");
+    //   HR_LOG(kError, node.srcpos(), E_TypeMismatch) <<
+    //          "function has unmatched generic return type.";
     // }
 
     return Type();
@@ -1794,14 +1799,14 @@ void Typifier::checkAllocateArraySignature(std::shared_ptr<ApplyNode> node)
     }
     else if (arrayBaseType.isRecord()) {
       if (node->type().arrayBaseType().applySignature().hasPositionalParam())
-        errorf(node->srcpos(), E_ArrayReqDefaultCtor,
-               "array allocation requires default constructor");
+        HR_LOG(kError, node->srcpos(), E_ArrayReqDefaultCtor)
+            << "array allocation requires default constructor";
     }
     else if (arrayBaseType.isType()) {
       // TODO: when we distinguish nullable types, this is only allowed if the
       // type is nullable
-      errorf(node->srcpos(), E_ArrayReqDefaultCtor,
-             "Can't create array of Type base type without explicit initializer");
+      HR_LOG(kError, node->srcpos(), E_ArrayReqDefaultCtor)
+          << "Can't create array of Type base type without explicit initializer";
     }
   }
 }
@@ -1861,8 +1866,8 @@ bool Typifier::checkBinaryFunctionCall(std::shared_ptr<BinaryNode> node,
     if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
             funcName, typesForArgs(args), node->srcpos(), K(showAmbiguousSymDef))) {
       if (bestFuncNode.fNode->params().size() > 2) {
-        error(node->srcpos(), E_WrongOperatorFuncSign,
-              String("operator implementation with wrong parameter count"));
+        HR_LOG(kError, node->srcpos(), E_WrongOperatorFuncSign)
+            << "operator implementation with wrong parameter count";
         return false;
       }
 
@@ -1880,8 +1885,8 @@ bool Typifier::checkBinaryFunctionCall(std::shared_ptr<BinaryNode> node,
       }
     }
     else {
-      error(node->srcpos(), E_NoMatchingFunction,
-            String("no matching implementation for operator: ") + funcName);
+      HR_LOG(kError, node->srcpos(), E_NoMatchingFunction)
+          << "no matching implementation for operator: " << funcName;
     }
   }
 
