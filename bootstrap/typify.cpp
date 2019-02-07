@@ -275,6 +275,8 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
           }
 
           typf->flattenArguments(node);
+
+          node->setFunSign(funcNode->type().functionSignature());
         }
         else {
           if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
@@ -286,6 +288,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             typf->typifyNode(newBase);
             node->setBase(newBase);
             node->setRefFunction(bestFuncNode.fNode);
+            node->setFunSign(bestFuncNode.fNode->type().functionSignature());
 
             typf->reorderArguments(node, bestFuncNode.fNode.get());
             typf->typifyNodeList(node->children());
@@ -319,6 +322,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             node->base()->setType(varNode->type());
             node->setType(varNode->type().functionSignature().returnType());
             // TODO: check function signature of the function type
+            node->setFunSign(varNode->type().functionSignature());
           }
           else if (varNode->type().isClassTypeOf()) {
             auto newObjAllocExpr = makeApplyNode(
@@ -357,6 +361,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             // TODO: check function signature of the type constructor
             node->setBase(createNode);
             node->setType(createNode->type());
+            // node->setFunSign(varNode->type().functionSignature());
           }
           else {
             HR_LOG(kError, node->srcpos(), E_NoCallable)

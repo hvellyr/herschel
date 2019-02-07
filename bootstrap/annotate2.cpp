@@ -180,10 +180,14 @@ struct NodeAnnotator2<std::shared_ptr<ApplyNode>> {
     // on-copy(x) calls into on-copy(on-copy(x)), etc.
     ann->annotateNodeList(node->child_nodes());
 
+    const FunctionParamVector& params = node->funSign().parameters();
+
     // rewrite arguments to copy/move where necessary
     auto& args = node->children();
     for (auto i = 0; i < args.size(); ++i) {
-      args[i] = wrapAsCopy(ann->fCompiler, args[i]);
+      if (params[i].type().isValueType()) {
+        args[i] = wrapAsCopy(ann->fCompiler, args[i]);
+      }
     }
 
     if (std::shared_ptr<FunctionNode> refFuncNd = node->refFunction().lock()) {
@@ -198,7 +202,9 @@ struct NodeAnnotator2<std::shared_ptr<AssignNode>> {
   static void annotate(Annotator2* ann, std::shared_ptr<AssignNode> node)
   {
     ann->annotateNodeList(node->child_nodes());
-    node->setRvalue(wrapAsCopy(ann->fCompiler, node->rvalue()));
+    if (node->lvalue()->type().isValueType()) {
+      node->setRvalue(wrapAsCopy(ann->fCompiler, node->rvalue()));
+    }
   }
 };
 
@@ -208,7 +214,7 @@ struct NodeAnnotator2<std::shared_ptr<VardefNode>> {
   static void annotate(Annotator2* ann, std::shared_ptr<VardefNode> node)
   {
     ann->annotateNodeList(node->child_nodes());
-    if (node->initExpr()) {
+    if (node->initExpr() && node->type().isValueType()) {
       node->setInitExpr(wrapAsCopy(ann->fCompiler, node->initExpr()));
     }
   }

@@ -1664,6 +1664,9 @@ public:
     return result;
   }
 
+  FunctionSignature funSign() const { return fFunSign; }
+  void setFunSign(const FunctionSignature& funSign) { fFunSign = funSign; }
+
   std::weak_ptr<FunctionNode> refFunction() const { return fRefFunction; }
   void setRefFunction(std::shared_ptr<FunctionNode> refFunction)
   {
@@ -1673,6 +1676,7 @@ public:
 private:
   std::shared_ptr<AstNode> fBase;
   std::weak_ptr<FunctionNode> fRefFunction;
+  FunctionSignature fFunSign;
 };
 
 inline std::shared_ptr<ApplyNode> makeApplyNode(std::shared_ptr<Scope> scope,

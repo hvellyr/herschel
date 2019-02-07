@@ -5,8 +5,7 @@
 --
 -- This source code is released under the BSD License.
 
-
-def realloc(array @ 'T[],
+def realloc(array @ ^'T[],
             new-size : Int,
             init-value : 'T = 'T.null-value()) -> 'T[]
 {
