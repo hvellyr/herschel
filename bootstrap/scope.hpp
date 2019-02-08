@@ -210,7 +210,7 @@ public:
   void attachSymbolForExport(ScopeDomain domain, const String& sym,
                              const String& attachedSym);
 
-  void exportSymbols(std::shared_ptr<Scope> dstScope, bool propagateOuter) const;
+  void exportSymbols(std::shared_ptr<Scope> dstScope, bool propagateIntern) const;
   void propagateImportedScopes(std::shared_ptr<Scope> dstScope) const;
 
 
@@ -287,7 +287,7 @@ private:
 
   void dumpDebugImpl(int level) const;
 
-  void exportAllSymbols(std::shared_ptr<Scope> dstScope, bool propagateOuter) const;
+  void exportAllSymbols(std::shared_ptr<Scope> dstScope, bool propagateIntern) const;
   void exportAttachedSymbols(std::shared_ptr<Scope> dstScope, const ScopeName& fullKey,
                              VizType vizType, bool isFinal) const;
 
@@ -355,32 +355,32 @@ public:
 class ScopeHelper {
 public:
   ScopeHelper(std::shared_ptr<Scope>& scope, bool doExport, bool isInnerScope,
-              bool doPropagateOuter, ScopeLevel level)
+              bool doPropagateIntern, ScopeLevel level)
       : fScopeLoc(scope)
       , fPrevScope(scope)
       , fDoExport(doExport)
       , fIsInnerScope(isInnerScope)
-      , fDoPropagateOuter(doPropagateOuter)
+      , fDoPropagateIntern(doPropagateIntern)
   {
     fScopeLoc = makeScope(level, fScopeLoc);
   }
 
   ~ScopeHelper()
   {
-    unrollScopes(fScopeLoc, fPrevScope, fDoExport, fIsInnerScope, fDoPropagateOuter);
+    unrollScopes(fScopeLoc, fPrevScope, fDoExport, fIsInnerScope, fDoPropagateIntern);
   }
 
 
   static void unrollScopes(std::shared_ptr<Scope>& scopeLoc,
                            std::shared_ptr<Scope> prevScope, bool doExport,
-                           bool isInnerScope, bool doPropagateOuter)
+                           bool isInnerScope, bool doPropagateIntern)
   {
     std::shared_ptr<Scope> scope = scopeLoc;
     while (scope && scope != prevScope) {
       auto parent = scope->parent();
 
       if (parent && doExport) {
-        scope->exportSymbols(parent, doPropagateOuter);
+        scope->exportSymbols(parent, doPropagateIntern);
 
         if (!isInnerScope && parent == prevScope) {
           scope->propagateImportedScopes(parent);
@@ -398,6 +398,6 @@ private:
   std::shared_ptr<Scope> fPrevScope;
   bool fDoExport;
   bool fIsInnerScope;
-  bool fDoPropagateOuter;
+  bool fDoPropagateIntern;
 };
 };  // namespace herschel

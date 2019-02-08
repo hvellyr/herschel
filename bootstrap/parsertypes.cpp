@@ -114,4 +114,17 @@ bool ConfigVarRegistry::lookup(const String& name, Token* out) const
   return Registry<Token>::lookup(name, out);
 }
 
+
+std::ostream& operator<<(std::ostream& os, VizType v)
+{
+  switch (v) {
+  case kUnset: break;
+  case kPrivate: os << "prv"; break;
+  case kIntern: os << "intern"; break;
+  case kPublic: os << "pub"; break;
+  }
+
+  return os;
+}
+
 }  // namespace herschel

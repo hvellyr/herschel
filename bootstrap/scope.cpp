@@ -1047,7 +1047,7 @@ VizType Scope::reduceVizType(VizType in) const
   switch (in) {
   case kUnset:
   case kPrivate: return kPrivate;
-  case kOuter: return kOuter;
+  case kIntern: return kIntern;
   case kPublic: return kPublic;
   }
   hr_invalid("");
@@ -1066,10 +1066,10 @@ void Scope::exportAttachedSymbols(std::shared_ptr<Scope> dstScope,
 }
 
 
-void Scope::exportAllSymbols(std::shared_ptr<Scope> dstScope, bool propagateOuter) const
+void Scope::exportAllSymbols(std::shared_ptr<Scope> dstScope, bool propagateIntern) const
 {
   VizType vizAllType = exportSymbolVisibility(ScopeName(kNormal, String("*")));
-  if (vizAllType != kPrivate && (propagateOuter || vizAllType != kOuter)) {
+  if (vizAllType != kPrivate && (propagateIntern || vizAllType != kIntern)) {
     VizType reducedVizType = reduceVizType(vizAllType);
     bool isFinal = exportSymbolIsFinal(ScopeName(kNormal, String("*")));
 
@@ -1095,10 +1095,10 @@ void Scope::exportAllSymbols(std::shared_ptr<Scope> dstScope, bool propagateOute
 }
 
 
-void Scope::exportSymbols(std::shared_ptr<Scope> dstScope, bool propagateOuter) const
+void Scope::exportSymbols(std::shared_ptr<Scope> dstScope, bool propagateIntern) const
 {
   if (shouldExportSymbol(ScopeName(kNormal, String("*")))) {
-    exportAllSymbols(dstScope, propagateOuter);
+    exportAllSymbols(dstScope, propagateIntern);
   }
   else {
     // selective export
@@ -1109,7 +1109,7 @@ void Scope::exportSymbols(std::shared_ptr<Scope> dstScope, bool propagateOuter) 
 
         VizType vizType = exportSymbolVisibility(fullKey);
         //HR_LOG(kInfo) << "export sym " << qualifyId(baseScopep.first, mapp.first.fName) << " " << vizType;
-        if (vizType != kPrivate && (propagateOuter || vizType != kOuter)) {
+        if (vizType != kPrivate && (propagateIntern || vizType != kIntern)) {
           VizType reducedVizType = reduceVizType(vizType);
           bool isFinal = exportSymbolIsFinal(fullKey);
 

@@ -52,6 +52,7 @@ const Token Compiler::finalToken = Token(SrcPos(), kSymbol, "final");
 const Token Compiler::genericToken = Token(SrcPos(), kSymbol, "generic");
 const Token Compiler::ignoreToken = Token(SrcPos(), kSymbol, "ignore");
 const Token Compiler::includeToken = Token(SrcPos(), kSymbol, "include");
+const Token Compiler::internToken = Token(SrcPos(), kSymbol, "intern");
 const Token Compiler::macroToken = Token(SrcPos(), kSymbol, "macro");
 const Token Compiler::pubToken = Token(SrcPos(), kSymbol, "pub");
 const Token Compiler::publicToken = Token(SrcPos(), kSymbol, "public");
@@ -160,7 +161,7 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
     // let all following passes run beneath the same root-scope.
     {
       ScopeHelper scopeHelper(fState.fScope, K(doExport), !K(isInnerScope),
-                              !K(doPropOuter), kScopeL_CompileUnit);
+                              !K(doPropIntern), kScopeL_CompileUnit);
 
       NodifyPass nodifyPass{ 2, *this, fState.fScope };
       ast = nodifyPass.apply(parsedExprs, doTrace);

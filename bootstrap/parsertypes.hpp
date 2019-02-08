@@ -16,6 +16,7 @@
 #include "token.hpp"
 
 #include <memory>
+#include <ostream>
 
 
 namespace herschel {
@@ -25,10 +26,11 @@ class String;
 enum VizType {
   kUnset,
   kPrivate,
-  kOuter,
+  kIntern,
   kPublic,
 };
 
+std::ostream& operator<<(std::ostream& os, VizType v);
 
 class ConfigVarRegistry : public Registry<Token> {
 public:

@@ -338,7 +338,7 @@ Token FirstPass::parseLibrary()
     Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
 
     {
-      ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), !K(doPropOuter),
+      ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), !K(doPropIntern),
                               kScopeL_Library);
       ModuleHelper moduleScope(this, libName.idValue());
 
@@ -398,7 +398,7 @@ Token FirstPass::parseModule()
     Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
 
     {
-      ScopeHelper scopeHelper(fScope, K(doExport), K(isInnerScope), K(doPropOuter),
+      ScopeHelper scopeHelper(fScope, K(doExport), K(isInnerScope), K(doPropIntern),
                               kScopeL_Module);
 
       ModuleHelper moduleScope(this, modName.idValue());
@@ -468,7 +468,7 @@ Token FirstPass::parseExport()
 
   nextToken();
 
-  VizType vizType = kOuter;
+  VizType vizType = kIntern;
   if (fToken == kSymbol) {
     if (fToken == Compiler::publicToken || fToken == Compiler::pubToken) {
       vizType = kPublic;
@@ -3734,7 +3734,7 @@ Token FirstPass::parse()
   {
     // let the complete parse run in its own scope to force an explicit export
     // run
-    ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), !K(doPropOuter),
+    ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), !K(doPropIntern),
                             kScopeL_CompileUnit);
 
     nextToken();
