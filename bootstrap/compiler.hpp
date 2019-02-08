@@ -88,6 +88,7 @@ public:
   static const Token ignoreToken;
   static const Token includeToken;
   static const Token macroToken;
+  static const Token pubToken;
   static const Token publicToken;
   static const Token readonlyToken;
   static const Token recordToken;

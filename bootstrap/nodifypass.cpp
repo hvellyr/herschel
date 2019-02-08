@@ -125,7 +125,7 @@ std::shared_ptr<AstNode> SecondPass::parseExport(const Token& expr)
   size_t symbolOfs = 1;
   VizType vizType = kOuter;
   if (expr[1].isSymbol()) {
-    if (expr[1] == Compiler::publicToken)
+    if (expr[1] == Compiler::publicToken || expr[1] == Compiler::pubToken)
       vizType = kPublic;
     else {
       HR_LOG(kError, expr[1].srcpos(), E_UnknownVisibility)

@@ -470,7 +470,7 @@ Token FirstPass::parseExport()
 
   VizType vizType = kOuter;
   if (fToken == kSymbol) {
-    if (fToken == Compiler::publicToken) {
+    if (fToken == Compiler::publicToken || fToken == Compiler::pubToken) {
       vizType = kPublic;
       expr << fToken;
     }
@@ -569,7 +569,7 @@ TokenVector FirstPass::parseInclude()
 
   bool isPublic = false;
   if (fToken == kSymbol) {
-    if (fToken == Compiler::publicToken) {
+    if (fToken == Compiler::publicToken || fToken == Compiler::pubToken)
       isPublic = true;
     }
     else
