@@ -171,9 +171,8 @@
 ;; generic comment for the inline documentation
 (modify-syntax-entry ?\~ "!"    herschel-mode-syntax-table)
 
-;; 'real' line comments start with ;;
+;; 'real' line comments start with --
 (modify-syntax-entry ?\- ". 12" herschel-mode-syntax-table)
-;;(modify-syntax-entry ?\; ". 12" herschel-mode-syntax-table)
 (modify-syntax-entry ?\n ">"    herschel-mode-syntax-table)
 
 
@@ -242,7 +241,7 @@ Key bindings:
   (set (make-local-variable 'comment-column) 40)
   (set (make-local-variable 'comment-indent-function) 'c-comment-indent) ;; TODO
   (set (make-local-variable 'end-comment-column) 79)
-  (set (make-local-variable 'paragraph-start) "^\s*~\\|def\\|module\\|export\\|import\\|when\\|where")
+  (set (make-local-variable 'paragraph-start) "^\s*~\\|def\\|library\\|module\\|export\\|import\\|include\\|when\\|where")
   (set (make-local-variable 'paragraph-separate) "[ \t\f]*$\\|^\s*{\\|^\s*}")
   (set (make-local-variable 'require-final-newline) t)
   (set (make-local-variable 'indent-tabs-mode) nil)
@@ -287,16 +286,10 @@ Key bindings:
 ;; ---------------------------------------------------------------------------
 (defconst herschel-keywords
   '(
-    "module" "import" "export" "extend" "when"
-    "def" "let"
-    "type" "class" "macro" "alias" "const" "generic" "enum" "char"
-    "measure" "unit"
-    "slot" "slot!"
-    "if" "else" "on"
-    "public" "private" "protected" "final"
-    "reify" "where" "prime"
-    "function"
-    "init" "delete" "signal" "exit" "sync"
+    "alias" "char" "config" "const" "def" "else" "enum" "export" "extern"
+    "final" "function" "generic" "if" "ignore" "import" "include" "intern"
+    "let" "library" "macro" "module" "namespace" "ns" "private" "pub"
+    "public" "record" "type" "with"
     )
   "List of Herschel keywords.")
 
@@ -319,10 +312,9 @@ Key bindings:
 
 (defconst herschel-builtin
   '(
-    "for" "while" "then"
+    "for" "while"
     "select" "match"
     "nil" "eof" "true" "false" "unspecified"
-    "return" "break" "continue"
     )
   "List of herschel special forms.")
 
@@ -397,55 +389,43 @@ Key bindings:
 
 (defvar herschel-font-lock-keywords
   (list
+   '("\\(when\\)\\s-+\\(ignore\\|[a-zA-Z-_$?!&%*.]+[a-zA-Z0-9-_$?!&%*+/.]*\\)"
+     (1 font-lock-preprocessor-face)
+     (2 font-lock-preprocessor-face))
+
    ;; highlight keywords
    (list herschel-keywords-regexp 1 'font-lock-keyword-face)
 
    ;; highlight generics parameter (begining with ')
    '("\\('[a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)"
-     (1 herschel-font-lock-type-def-face))
+     (1 font-lock-type-face))
 
    ;; highlight keywords (begining with #)
    '("\\(#[a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)"
      (1 font-lock-constant-face))
 
+   ;; highlight type and class declarations.
+   '("def\\s-+\\(\\(public\\|pub\\|intern\\|private\\)\\s-+\\)?\\(type\\|record\\|alias\\|enum\\|char\\)\\s-+\\([a-zA-Z-_$?!&%.*]+[a-zA-Z0-9-_$?!&%*+/.]*\\)\\s-*"
+     (4 font-lock-type-face))
+
    ;; highlight parameters and types
-   '("\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)\\s-+\\(:\\|@\\)\\s-*\\('\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)"
+   '("\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)\\s-+\\(:\\|@\\)\\s-*\\('\\)?\\([a-zA-Z-_$?!&%*]+[a-zA-Z0-9-_$?!&%*+/]*\\)"
      (1 font-lock-variable-name-face)
      (4 font-lock-type-face))
-   ;; highlight generics
-   '("`\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)"
-     (1 font-lock-type-face))
-
-   ;; highlight parameter names (ending with ':')
-   '("\\<\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)\\>:"
-     (1 herschel-font-lock-param-name-face))
-
-   ;; highlight function, method, hook declarations.
-   '("on\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/|]*\\)\\s-*("
-     (2 font-lock-function-name-face))
-
-   '("def\\s-+\\(\\(final\\|abstract\\)\\s-+\\)?\\(\\(generic\\)\\s-+\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/|]*\\)\\s-*("
-     (5 font-lock-function-name-face))
-
-   '("module\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/|]*\\)"
-     (2 font-lock-function-name-face))
-
-   ;; highlight type and class declarations.
-   '("def\\s-+\\(\\(final\\|abstract\\|singleton\\)\\s-+\\)?\\(type\\|class\\|alias\\|enum\\)\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/|]*\\)"
-     (4 herschel-font-lock-type-def-face))
-
-   ;; highlight local declarations.
-   '("let\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/|]*\\)\\s-*("
-     (1 font-lock-function-name-face))
-
 
    ;; highlight variable declarations.
-   '("\\(def\\|let\\)\\s-+\\(const\\s-+\\)?\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/|]*\\)\\s-*\\(:\\|=\\)"
-     (4 font-lock-variable-name-face))
+   '("\\(def\\|let\\)\\s-+\\(\\(public\\|pub\\|intern\\|private\\)\\s-+\\)?\\(\\(const\\|config\\)\\s-+\\)?\\([a-zA-Z-_$?!&%.*]+[a-zA-Z0-9-_$?!&%*+/.]*\\)\\s-*\\(:\\|=\\)"
+     (5 font-lock-variable-name-face))
 
-   '("slot\\s-+\\([a-zA-Z-_$?!&%]+[a-zA-Z0-9-_$?!&%*+/]*\\)\\s-*"
-     (1 font-lock-variable-name-face))
+   '("\\(def\\|let\\)\\s-+\\(\\(public\\|pub\\|intern\\|private\\)\\s-+\\)?\\(\\(generic\\)\\s-+\\)?\\([a-zA-Z-_$?!&%.*]+[a-zA-Z0-9-_$?!&%*+/.]*\\)\\s-*("
+     (6 font-lock-function-name-face))
 
+   '("\\(module\\|library\\)\\s-+\\([a-zA-Z-_$?!&%.*]+[a-zA-Z0-9-_$?!&%*+/.]*\\)"
+     (2 font-lock-preprocessor-face))
+
+   ;; highlight local declarations.
+   '("let\\s-+\\([a-zA-Z-_$?!&%.*]+[a-zA-Z0-9-_$?!&%*+/.]*\\)\\s-*("
+     (1 font-lock-function-name-face))
 
    ;; highlight types
    (list herschel-types-regexp 1 'font-lock-type-face)
@@ -454,7 +434,7 @@ Key bindings:
    ;; highlight predefined functions, tasks and methods
    (list herschel-builtin-regexp 1 'font-lock-builtin-face)
    ;; highlight predefined operators
-   (list herschel-builtin-operator 1 'herschel-font-lock-operator-face)
+   (list herschel-builtin-operator 1 'font-lock-keyword-face)
 
 
    ;; highlight functions.  FIXME:
@@ -464,50 +444,8 @@ Key bindings:
    )
   "Regular expressions to highlight in Herschel Mode.")
 
-(defvar herschel-font-lock-operator-face 'herschel-font-lock-operator-face
-  "Face name to use for operators.")
-
-(defvar herschel-font-lock-function-face 'herschel-font-lock-function-face
-  "Face name to use for predefined functions and tasks.")
-
-(defvar herschel-font-lock-param-name-face 'herschel-font-lock-param-name-face
-  "Face name to use for parameter names.")
-
-(defvar herschel-font-lock-type-def-face 'herschel-font-lock-type-def-face
-  "Face name for type definition names.")
-
 (defvar herschel-docstring-face 'herschel-docstring-face
   "Face name for documentation strings.")
-
-(defface herschel-font-lock-operator-face
-  '((((class color) (background light)) (:foreground "Gold4"))
-    (((class color) (background dark)) (:foreground "BurlyWood1"))
-;   '((((class color) (background light)) (:foreground "SaddleBrown"))
-;     (((class color) (background dark)) (:foreground "BurlyWood"))
-    (t (:weight bold)))
-  "Font lock mode face used to highlight @ definitions."
-  :group 'font-lock-highlighting-faces)
-
-(defface herschel-font-lock-function-face
-  '((((class color) (background light)) (:foreground "DarkCyan"))
-    (((class color) (background dark)) (:foreground "Orchid1"))
-    (t (:weight bold)))
-  "Font lock mode face used to highlight predefined functions and tasks."
-  :group 'font-lock-highlighting-faces)
-
-(defface herschel-font-lock-param-name-face
-  '((((class color) (background light)) (:foreground "DarkBlue"))
-    (((class color) (background dark)) (:foreground "White"))
-    (t (:weight bold)))
-  "Font lock mode face used for parameter names."
-  :group 'font-lock-highlighting-faces)
-
-(defface herschel-font-lock-type-def-face
-  '((((class color) (background light)) (:foreground "DarkGreen"))
-    (((class color) (background dark)) (:foreground "Green"))
-    (t (:weight bold)))
-  "Face name for type definition names."
-  :group 'font-lock-highlighting-faces)
 
 (defface herschel-docstring-face
   '((((class color) (background light)) (:foreground "MediumOrchid4"))
