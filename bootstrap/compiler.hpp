@@ -76,13 +76,10 @@ public:
 
   // predefined symbol tokens to speed up parsing
   static const Token aliasToken;
-  static const Token autoToken;
   static const Token charToken;
   static const Token configToken;
   static const Token constToken;
-  static const Token deleteToken;
   static const Token enumToken;
-  static const Token exitToken;
   static const Token finalToken;
   static const Token genericToken;
   static const Token ignoreToken;
@@ -92,11 +89,7 @@ public:
   static const Token privateToken;
   static const Token pubToken;
   static const Token publicToken;
-  static const Token readonlyToken;
   static const Token recordToken;
-  static const Token signalToken;
-  static const Token syncToken;
-  static const Token transientToken;
   static const Token typeToken;
 
   class PortStackHelper {
