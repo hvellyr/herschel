@@ -234,6 +234,19 @@ protected:
 };
 
 
+//! Mixin class to support for marking bindings in moveable positions.
+class MoveableReferrer {
+public:
+  virtual ~MoveableReferrer() {}
+
+  bool isInMovePos() const { return fInMovePos; }
+  void setIsInMovePos(bool val) { fInMovePos = val; }
+
+protected:
+  bool fInMovePos = false;
+};
+
+
 //! Base APT class which adds children functionality to \c AstNode.
 class ListNode : public AstNode {
 public:
@@ -378,11 +391,12 @@ enum SymReferType {
   kType,       //!< A type
 };
 
+
 //! Represents a symbol.
 //!
 //! Symbols can be variable names, function names, language keywords, and
 //! alike.  Check \c refersTo() to get the kind of symbol.
-class SymbolNode : public AstNode, public LinkableSymbol {
+class SymbolNode : public AstNode, public LinkableSymbol, public MoveableReferrer {
 public:
   SymbolNode(const SrcPos& srcpos, const String& value)
       : AstNode(srcpos)
@@ -768,6 +782,18 @@ inline std::shared_ptr<DefNode> makeDefNode(std::shared_ptr<Scope> scope,
 }
 
 
+class MoveableBinding {
+public:
+  virtual ~MoveableBinding() {}
+
+  void setLastUser(std::shared_ptr<AstNode> user) { fLastUser = user; }
+  std::weak_ptr<AstNode> lastUser() { return fLastUser; }
+
+protected:
+  std::weak_ptr<AstNode> fLastUser;
+};
+
+
 enum BindingAllocType {
   kAlloc_Local,
   kAlloc_Shared  // variable is taken by closure
@@ -811,7 +837,8 @@ enum VardefFlags { kNormalVar, kConstVar, kConfigVar, kEnumVar };
 
 class VardefNode : public BindingNode,
                    public DelayTypeAnnotatable,
-                   public LinkableSymbol {
+                   public LinkableSymbol,
+                   public MoveableBinding {
 public:
   VardefNode(const SrcPos& srcpos, const String& symbolName, VardefFlags flags,
              bool isLocal, const Type& type, std::shared_ptr<AstNode> init)
@@ -867,7 +894,7 @@ enum ParamFlags {
 };
 
 
-class ParamNode : public BindingNode {
+class ParamNode : public BindingNode, public MoveableBinding {
 public:
   ParamNode(const SrcPos& srcpos, const String& keyName, const String& symbolName,
             ParamFlags flags, const Type& type, std::shared_ptr<AstNode> init)

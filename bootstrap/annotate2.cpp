@@ -32,10 +32,18 @@ namespace herschel {
 
 
 namespace {
+  bool isMoveable(std::shared_ptr<AstNode> valExpr)
+  {
+    if (auto symbnd = std::dynamic_pointer_cast<SymbolNode>(valExpr)) {
+      return symbnd->isInMovePos();
+    }
+    return false;
+  }
+
   std::shared_ptr<AstNode> wrapAsCopy(Compiler& compiler,
                                       std::shared_ptr<AstNode> valExpr)
   {
-    if (!valExpr->isTempValue()) {
+    if (!valExpr->isTempValue() && !isMoveable(valExpr)) {
       auto symNd =
           makeSymbolNode(valExpr->scope(), valExpr->srcpos(), Names::kOnCopyFuncName);
       symNd->setRefersTo(kFunction, !K(isShared));
@@ -45,6 +53,7 @@ namespace {
       copyExpr->setType(valExpr->type());
 
       std::shared_ptr<AstNode> nd = copyExpr;
+
       {
         auto an = Annotator{ compiler };
         nd = an.annotateNode(nd);

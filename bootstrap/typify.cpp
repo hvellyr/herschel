@@ -32,6 +32,20 @@
 
 namespace herschel {
 
+namespace {
+  void trackMoveablePositions(std::shared_ptr<AstNode> node)
+  {
+    if (auto binding = std::dynamic_pointer_cast<MoveableBinding>(node)) {
+      if (auto luser = binding->lastUser().lock()) {
+        if (auto moveablend = std::dynamic_pointer_cast<MoveableReferrer>(luser)) {
+          moveablend->setIsInMovePos(true);
+        }
+      }
+    }
+  }
+}  // namespace
+
+
 template <typename T>
 struct NodeTypifier {
   static void typify(Typifier* typf, T node)
@@ -48,7 +62,10 @@ struct NodeTypifier<std::shared_ptr<SymbolNode>> {
     auto var = node->scope()->lookupVarOrFunc(node->srcpos(), node->name(),
                                               K(showAmbiguousSymDef));
     if (var) {
-      if (auto fdn = dynamic_cast<const FuncDefNode*>(var))
+      if (auto bindnd = dynamic_cast<const MoveableBinding*>(var)) {
+        const_cast<MoveableBinding*>(bindnd)->setLastUser(node);
+      }
+      else if (auto fdn = dynamic_cast<const FuncDefNode*>(var))
         node->setLinkage(fdn->linkage());
 
       node->setType(var->type());
@@ -161,6 +178,10 @@ struct NodeTypifier<std::shared_ptr<FuncDefNode>> {
         typf->annotateTypeConv(node->body(), node->retType());
       typf->setBodyLastDstType(node->body(), node->retType());
     }
+
+    for (auto c : node->params()) {
+      trackMoveablePositions(c);
+    }
   }
 };
 
@@ -180,6 +201,10 @@ struct NodeTypifier<std::shared_ptr<FunctionNode>> {
     typf->setupFunctionNodeType(node);
     if (node->body())
       typf->annotateTypeConv(node->body(), node->retType());
+
+    for (auto c : node->params()) {
+      trackMoveablePositions(c);
+    }
   }
 };
 
@@ -202,6 +227,12 @@ struct NodeTypifier<std::shared_ptr<BlockNode>> {
     typf->typifyNodeList(node->children());
 
     node->setType(node->children().back()->type());
+
+    for (auto c : node->children()) {
+      if (auto letnd = std::dynamic_pointer_cast<LetNode>(c)) {
+        trackMoveablePositions(letnd->defNode());
+      }
+    }
   }
 };
 

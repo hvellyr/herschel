@@ -13,4 +13,8 @@ def bar() {
   let h3 = Hero(name: h.name)
 
   let h4 = h3
+  {
+    let h5 = h3
+  }
+  let h6 = h4
 }

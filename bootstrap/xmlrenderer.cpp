@@ -607,9 +607,16 @@ struct NodeRenderer<std::shared_ptr<SymbolNode>> {
       gap = " ";
     }
 
+    if (node.isInMovePos()) {
+      attrs << gap << "moveable='t'";
+      gap = " ";
+    }
+
     if (node.generics().empty()) {
-      if (node.isShared())
+      if (node.isShared()) {
         attrs << gap << "acc='shared'";
+        gap = " ";
+      }
       renderer->displayTagAttr("symbol", StrHelper(attrs.toString()), node.name());
     }
     else {
