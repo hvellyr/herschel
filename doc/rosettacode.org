@@ -28,25 +28,25 @@ Design goals                           Compilability, Correctness,
                                        Efficiency, Expressiveness,
                                        Uniformity, Lexical Scoping
 Execution method                       Compiled (machine code)
-Lang tags                              andle
+Lang tags                              herschel
 
 
 Language properties
 -------------------
 
-exec	                                 machine
-site	                                 http://www.eyestep.org/heather
-gc	                                   yes
-parampass	                             both
+exec	                               machine
+site	                               http://www.eyestep.org/heather
+gc	                               yes
+parampass	                       both
 safety	                               safe
-strength	                             strong
+strength	                       strong
 compat                                 both
 express                                explicit
 checking                               both
 untyped
-tags                                   andle
+tags                                   herschel
 LCT                                    no
-bnf                                    http://www.eyestep.org/heather-spec.pdf
+bnf                                    http://www.eyestep.org/herschel-spec.pdf
 
 
 Description
@@ -162,12 +162,4 @@ Dependecies:
                      - function/type separation
 
   from dylan:        - multi-dispatch
-
-  from alice (?):    - spawn functions
-                     - futures/promisses
-
-  from modula-3:     - ?
-
-  from D:            - ?
-
-  from Go            - ?
+                     - function/type separation

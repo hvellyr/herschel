@@ -72,7 +72,7 @@ state herschel extends HighlightEntry
     reference_face (false);
   }
 
-  /(def[ \t](generic|slot)[ \t])([!\$%&\*\/=\?_^a-zA-Z0-9.+\-|]+)/ {
+  /(def[ \t](generic)[ \t])([!\$%&\*\/=\?_^a-zA-Z0-9.+\-|]+)/ {
     /* Keywords */
     keyword_face (true);
     language_print ($1);
@@ -104,7 +104,7 @@ state herschel extends HighlightEntry
   }
 
 
-  /(module[ \t])([!\$%&\*\/=\?_^a-zA-Z0-9.+\-|]+)/ {
+  /((module|library)[ \t])([!\$%&\*\/=\?_^a-zA-Z0-9.+\-|]+)/ {
     /* Keywords */
     keyword_face (true);
     language_print ($1);
@@ -116,7 +116,7 @@ state herschel extends HighlightEntry
     function_name_face (false);
   }
 
-  /(def[ \t](alias|type|class)[ \t])([!\$%&\*\/=\?_^a-zA-Z0-9.+\-|]+)/ {
+  /(def[ \t](alias|type|record)[ \t])([!\$%&\*\/=\?_^a-zA-Z0-9.+\-|]+)/ {
     /* Keywords */
     keyword_face (true);
     language_print ($1);
@@ -137,7 +137,7 @@ state herschel extends HighlightEntry
   }
 
 
-  /(def[ \t](var|const)[ \t])([!\$%&\*\/=\?_^a-zA-Z0-9.+\-|]+)/ {
+  /(def[ \t](const|config)[ \t])([!\$%&\*\/=\?_^a-zA-Z0-9.+\-|]+)/ {
     /* Keywords */
     keyword_face (true);
     language_print ($1);
@@ -163,22 +163,12 @@ state herschel extends HighlightEntry
     language_print ($3);
   }
 
-  /* Keywords.
-     (build-re '(abort abs abstract accept access aliased
-     all and array at begin body case constant declare
-     delay delta digits do else elsif end entry
-     exception exit for function generic goto if in
-     is limited loop mod new not null of or others
-     out package pragma private procedure protected raise
-     range record rem renames requeue return reverse
-     select separate subtype tagged task terminate then type
-     until use when while with xor))
-   */
-  /\b(AND|Function|OR|XOR|a(lias|nd|s)|by|c(har|lass|on(fig|st))|def\
-|e(lse|num|of|x(it|port|tend))|f(alse|inal|luid|or|unction)|generic\
-|i(f|gnore|mport|n(|clude|it|ner)|sa)|let\
-|m(a(cro|tch)|easure|od(|ule))|n(il|ot)|o(n|r|uter)|p(rivate|ublic)\
-|reify|s(elect|ignal|lot|ync)|t(hen|rue|ype)|unit|wh(e(n|re)|ile))\b/ {
+  /* Keywords. */
+  /\b(AND|Function|OR|XOR|a(lias|nd|s)|by|c(har|on(fig|st))|def\
+|e(lse|num|of|xport)|f(alse|inal|or|unction)|generic\
+|i(f|gnore|mport|n(|clude|ntern)|sa)|let\
+|m(a(cro|tch)|od(|ule))|n(il|ot)|or|p(rivate|ublic)\
+|select|t(rue|ype)|wh(e(n|re)|ile)|with)\b/ {
     keyword_face (true);
     language_print ($0);
     keyword_face (false);

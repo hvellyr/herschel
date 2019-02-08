@@ -29,23 +29,6 @@ Expressions:
                                       }
 
 
-Events:
-
-  on kind(a : Type)                   on signal(a : Io) outln(a)
-    expr                              on exit(r) r
-                                      on init(self) ...
-                                      on delete(v) ...
-
-                                      -- wait for thread 1-3 to finish
-                                      on sync(thread1, thread2, thread3) {
-                                        ...
-                                      }
-
-                                      -- wait for single resource access
-                                      on mutex(resource) {
-                                      }
-
-
 Definitions:
 
   def modifier name(params) : Type    def type Point(Object) : Copyable {
