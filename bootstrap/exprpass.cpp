@@ -474,6 +474,10 @@ Token FirstPass::parseExport()
       vizType = kPublic;
       expr << fToken;
     }
+    else if (fToken == Compiler::internToken) {
+      vizType = kIntern;
+      expr << fToken;
+    }
     else
       HR_LOG(kError, fToken.srcpos(), E_ExportVisibility)
           << "unknown visibility type '" << fToken << "'";
@@ -571,7 +575,8 @@ TokenVector FirstPass::parseInclude()
   if (fToken == kSymbol) {
     if (fToken == Compiler::publicToken || fToken == Compiler::pubToken)
       isPublic = true;
-    }
+    else if (fToken == Compiler::internToken)
+      isPublic = false;
     else
       HR_LOG(kError, fToken.srcpos(), E_UnknownIncludeScope)
           << "unknown include scope '" << fToken << "'";

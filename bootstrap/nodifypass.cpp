@@ -127,6 +127,8 @@ std::shared_ptr<AstNode> SecondPass::parseExport(const Token& expr)
   if (expr[1].isSymbol()) {
     if (expr[1] == Compiler::publicToken || expr[1] == Compiler::pubToken)
       vizType = kPublic;
+    else if (expr[1] == Compiler::internToken)
+      vizType = kIntern;
     else {
       HR_LOG(kError, expr[1].srcpos(), E_UnknownVisibility)
           << "unknown visibility level: " << expr[1];
