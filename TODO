@@ -3,11 +3,12 @@
 Herschel 2
 
 
-  - reference types, ref-counted types,
-  - modifiers "mut", "pub", "prv"
   - generate finalizer() calls for variables going out of scope (RAII)
+  - reference types, ref-counted types,
+  - "mut" modifier
   - rewrite operators +=, *=, ++=, ... to set!( ....) etc.
 
+x - modifiers "pub", "intern", "private"
 x - remodel import/export/module system
 x - add "include" /import
 x - finish slot syntax compilation

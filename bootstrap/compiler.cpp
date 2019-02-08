@@ -54,6 +54,7 @@ const Token Compiler::ignoreToken = Token(SrcPos(), kSymbol, "ignore");
 const Token Compiler::includeToken = Token(SrcPos(), kSymbol, "include");
 const Token Compiler::internToken = Token(SrcPos(), kSymbol, "intern");
 const Token Compiler::macroToken = Token(SrcPos(), kSymbol, "macro");
+const Token Compiler::privateToken = Token(SrcPos(), kSymbol, "private");
 const Token Compiler::pubToken = Token(SrcPos(), kSymbol, "pub");
 const Token Compiler::publicToken = Token(SrcPos(), kSymbol, "public");
 const Token Compiler::readonlyToken = Token(SrcPos(), kSymbol, "readonly");

@@ -1100,25 +1100,25 @@ void Scope::exportSymbols(std::shared_ptr<Scope> dstScope, bool propagateIntern)
   if (shouldExportSymbol(ScopeName(kNormal, String("*")))) {
     exportAllSymbols(dstScope, propagateIntern);
   }
-  else {
-    // selective export
-    for (const auto& mapp : fMap) {
-      for (const auto& baseScopep : mapp.second) {
-        ScopeName fullKey(mapp.first.fDomain,
-                          qualifyId(baseScopep.first, mapp.first.fName));
 
-        VizType vizType = exportSymbolVisibility(fullKey);
-        //HR_LOG(kInfo) << "export sym " << qualifyId(baseScopep.first, mapp.first.fName) << " " << vizType;
-        if (vizType != kPrivate && (propagateIntern || vizType != kIntern)) {
-          VizType reducedVizType = reduceVizType(vizType);
-          bool isFinal = exportSymbolIsFinal(fullKey);
+  // run the selective exports in addition.  This allows to override
+  // an "export *" for selected symbols
+  for (const auto& mapp : fMap) {
+    for (const auto& baseScopep : mapp.second) {
+      ScopeName fullKey(mapp.first.fDomain,
+                        qualifyId(baseScopep.first, mapp.first.fName));
 
-          dstScope->registerScopeItem(fullKey, baseScopep.second);
-          if (reducedVizType != kPrivate) {
-            dstScope->registerSymbolForExport(fullKey.fDomain, fullKey.fName,
-                                              reducedVizType, isFinal);
-            exportAttachedSymbols(dstScope, fullKey, reducedVizType, isFinal);
-          }
+      VizType vizType = exportSymbolVisibility(fullKey);
+      //HR_LOG(kInfo) << "export sym " << qualifyId(baseScopep.first, mapp.first.fName) << " " << vizType;
+      if (vizType != kPrivate && (propagateIntern || vizType != kIntern)) {
+        VizType reducedVizType = reduceVizType(vizType);
+        bool isFinal = exportSymbolIsFinal(fullKey);
+
+        dstScope->registerScopeItem(fullKey, baseScopep.second);
+        if (reducedVizType != kPrivate) {
+          dstScope->registerSymbolForExport(fullKey.fDomain, fullKey.fName,
+                                            reducedVizType, isFinal);
+          exportAttachedSymbols(dstScope, fullKey, reducedVizType, isFinal);
         }
       }
     }

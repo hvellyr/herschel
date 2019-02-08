@@ -11,8 +11,6 @@ export public (
     type-of,
     isa?,
     null-value,
-    allocate,
-    allocate*,
     on-copy,
     Range)
 
@@ -52,14 +50,14 @@ def generic max-value(ty @ Type<'T>) -> 'T ...
 -- allocation
 ------------------------------------------------------------------------------
 
-def generic allocate(ty @ Type<'T>) -> 'T ...
+def pub generic allocate(ty @ Type<'T>) -> 'T ...
     ~ Allocate a new instance of type @var{ty}.  Note that the allocated
     object is not initialized! ~
 
 
-def generic allocate*(ty @ Type<'X>,
-                      value : 'X = 'X.null-value(),
-                      sizes ...) -> 'X[] ...
+def pub generic allocate*(ty @ Type<'X>,
+                          value : 'X = 'X.null-value(),
+                          sizes ...) -> 'X[] ...
     ~ Allocate an array of @var{ty} with @var{sizes} slots.  Each slot is
     initialized to @var{value}.  The size is computed from all the product of
     all values in @var{sizes}, i.e. three value @code{3, 7, 11} would result

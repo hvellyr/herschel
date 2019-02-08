@@ -92,14 +92,17 @@ private:
   TokenVector parseImport();
   TokenVector parseInclude();
   TokenVector parseDef(bool isLocal);
-  Token parseCharDef(const Token& defToken);
-  TokenVector parseVarDef(const Token& defToken, const Token& tagToken, bool isLocal);
-  TokenVector parseVarDef2(const Token& defToken, const Token& tagToken,
-                           const Token& symbolToken, bool isLocal, const Token& linkage);
-  Token parseFunctionDef(const Token& defToken, const Token& tagToken,
-                         const Token& symToken, const Token& linkage);
-  TokenVector parseFunctionOrVarDef(const Token& defToken, bool isLocal,
-                                    const Token& linkage);
+  Token parseCharDef(const Token& defToken, const Token& vizToken, VizType vizType);
+  TokenVector parseVarDef(const Token& defToken, const Token& vizToken,
+                          const Token& tagToken, bool isLocal, VizType vizType);
+  TokenVector parseVarDef2(const Token& defToken, const Token& vizToken,
+                           const Token& tagToken, const Token& symbolToken, bool isLocal,
+                           const Token& linkage);
+  Token parseFunctionDef(const Token& defToken, const Token& vizToken,
+                         const Token& tagToken, const Token& symToken,
+                         const Token& linkage);
+  TokenVector parseFunctionOrVarDef(const Token& defToken, const Token& vizToken,
+                                    bool isLocal, const Token& linkage, VizType vizType);
   Token parseSelect();
   Token parseMatch();
   Token parseFor();
@@ -175,7 +178,8 @@ private:
 
   Token parseWhereClause();
 
-  Token parseEnumDef(const Token& defToken, bool isLocal);
+  Token parseEnumDef(const Token& defToken, const Token& vizToken, bool isLocal,
+                     VizType vizType);
 
 
   //@{ resume functions after (syntax) error
@@ -186,12 +190,15 @@ private:
   //@}
 
 
-  Token parseGenericFunctionDef(const Token& defToken, bool isLocal);
+  Token parseGenericFunctionDef(const Token& defToken, const Token& vizToken,
+                                bool isLocal, VizType vizType);
 
   Token parseUnaryOp(const Token& inOpToken);
 
-  Token parseAliasDef(const Token& defToken, bool isLocal);
-  Token parseTypeDef(const Token& defToken, bool isClass, bool isLocal);
+  Token parseAliasDef(const Token& defToken, const Token& vizToken, bool isLocal,
+                      VizType vizType);
+  Token parseTypeDef(const Token& defToken, const Token& vizToken, bool isRecord,
+                     bool isLocal, VizType vizType);
 
   template <typename ParseFunctor>
   void parseSequence(ParseFunctor functor, TokenType startToken, TokenType endToken,
@@ -206,7 +213,7 @@ private:
 
   Token parseOptDocString();
 
-  Token parseMacroDef(const Token& defToken);
+  Token parseMacroDef(const Token& defToken, VizType vizType);
   bool parseMacroPatterns(MacroPatternVector* patterns);
   bool parseMacroComponent(TokenVector* component, TokenType beginTokenType,
                            TokenType endTokenType);
@@ -245,6 +252,9 @@ private:
 
 
   Token parseLinkageType();
+
+  void registerSymbolForExport(const String& sym, VizType vizType,
+                               Scope::ScopeDomain domain = Scope::kNormal);
 
   //-------- data members
 

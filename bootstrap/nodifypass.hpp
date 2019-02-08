@@ -78,7 +78,8 @@ private:
 
   std::shared_ptr<AstNode> parseParameter(const Token& expr);
 
-  NodeList parseTypeDef(const Token& expr, size_t ofs, bool isType, bool isLocal);
+  NodeList parseTypeDef(const Token& expr, size_t ofs, bool isType, bool isLocal,
+                        VizType vizType);
   std::shared_ptr<AstNode>
   generateConstructor(std::shared_ptr<Scope> recScope, const Token& typeExpr,
                       const String& fullTypeName, const Type& defType,
@@ -86,15 +87,18 @@ private:
   void generatePrimeInits(const SrcPos& srcpos, std::shared_ptr<ListNode> body,
                           const Type& defType, const String& selfParamSym);
 
-  std::shared_ptr<AstNode> parseAliasDef(const Token& expr, size_t ofs, bool isLocal);
-  std::shared_ptr<AstNode> parseEnumDef(const Token& expr, size_t ofs, bool isLocal);
+  std::shared_ptr<AstNode> parseAliasDef(const Token& expr, size_t ofs, bool isLocal,
+                                         VizType vizType);
+  std::shared_ptr<AstNode> parseEnumDef(const Token& expr, size_t ofs, bool isLocal,
+                                        VizType vizType);
   std::shared_ptr<AstNode> nextEnumInitValue(const SrcPos& srcpos,
                                              const Token& enumItemSym,
                                              const Type& baseType, Token& lastInitToken);
   std::shared_ptr<AstNode> parseVarDef(const Token& expr, VardefFlags flags, size_t ofs,
-                                       bool isLocal, const String& linkage);
+                                       bool isLocal, const String& linkage,
+                                       VizType vizType);
   NodeList parseFunctionDef(const Token& expr, size_t ofs, bool isLocal,
-                            const String& linkage);
+                            const String& linkage, VizType vizType);
 
   std::shared_ptr<AstNode> parseLiteralArray(const Token& expr);
   std::shared_ptr<AstNode> parseLiteralVector(const Token& expr);
@@ -223,6 +227,9 @@ private:
     TSharedGenericTable fOldTable;
     TSharedGenericTable& fOldLoc;
   };
+
+  void registerSymbolForExport(const String& sym, VizType vizType,
+                               Scope::ScopeDomain domain = Scope::kNormal);
 
   std::set<String> fCurrentGenericTypes;
   TSharedGenericTable fSharedGenericTable;

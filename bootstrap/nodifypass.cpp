@@ -205,6 +205,16 @@ std::shared_ptr<AstNode> SecondPass::parseImport(const Token& expr)
 }
 
 
+void SecondPass::registerSymbolForExport(const String& sym, VizType vizType,
+                                         Scope::ScopeDomain domain)
+{
+  if (vizType != kUnset) {
+    String fullId = (isQualified(sym) ? sym : qualifyId(currentModuleName(), sym));
+    fScope->registerSymbolForExport(domain, fullId, vizType, !K(isFinal));
+  }
+}
+
+
 //------------------------------------------------------------------------------
 
 void SecondPass::parseWithNamespaceImpl(NodeList* functions, const Token& expr)
@@ -699,7 +709,7 @@ void SecondPass::paramsNodeListToSlotList(TypeSlotList* slotTypes,
 
 
 NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
-                                  bool isLocal)
+                                  bool isLocal, VizType vizType)
 {
   hr_assert(fCurrentGenericTypes.empty());
   TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
@@ -793,6 +803,9 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
     return NodeList();
 
   fScope->registerType(expr.srcpos(), fullTypeName, defType);
+
+  if (!isLocal)
+    registerSymbolForExport(fullTypeName, vizType);
 
   NodeList result;
   result.push_back(newDefNode(
@@ -959,7 +972,7 @@ void SecondPass::generatePrimeInits(const SrcPos& srcpos, std::shared_ptr<ListNo
 
 
 std::shared_ptr<AstNode> SecondPass::parseAliasDef(const Token& expr, size_t ofs,
-                                                   bool isLocal)
+                                                   bool isLocal, VizType vizType)
 {
   hr_assert(fCurrentGenericTypes.empty());
   TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
@@ -1017,6 +1030,9 @@ std::shared_ptr<AstNode> SecondPass::parseAliasDef(const Token& expr, size_t ofs
 
   fScope->registerType(expr.srcpos(), fullAliasName, aliasType);
 
+  if (!isLocal)
+    registerSymbolForExport(fullAliasName, vizType);
+
   fCurrentGenericTypes.clear();
 
   return nullptr;
@@ -1046,7 +1062,7 @@ std::shared_ptr<AstNode> SecondPass::nextEnumInitValue(const SrcPos& srcpos,
 
 
 std::shared_ptr<AstNode> SecondPass::parseEnumDef(const Token& expr, size_t ofs,
-                                                  bool isLocal)
+                                                  bool isLocal, VizType vizType)
 {
   hr_assert(fCurrentGenericTypes.empty());
 
@@ -1087,6 +1103,9 @@ std::shared_ptr<AstNode> SecondPass::parseEnumDef(const Token& expr, size_t ofs,
   hr_assert(expr[ofs].leftToken() == kParanOpen);
 
   fCurrentGenericTypes.clear();
+
+  if (!isLocal)
+    registerSymbolForExport(fullEnumName, vizType);
 
   //-------- define the items as def const x = y
 
@@ -1155,7 +1174,7 @@ std::shared_ptr<AstNode> SecondPass::parseEnumDef(const Token& expr, size_t ofs,
 
 std::shared_ptr<AstNode> SecondPass::parseVarDef(const Token& expr, VardefFlags flags,
                                                  size_t ofs, bool isLocal,
-                                                 const String& linkage)
+                                                 const String& linkage, VizType vizType)
 {
   hr_assert(ofs >= 1);
   hr_assert(ofs < expr.count());
@@ -1193,6 +1212,9 @@ std::shared_ptr<AstNode> SecondPass::parseVarDef(const Token& expr, VardefFlags 
       makeVardefNode(fScope, expr.srcpos(), fullSymName, flags, isLocal, type, initExpr);
   var->setLinkage(linkage);
   fScope->registerVar(expr.srcpos(), fullSymName, var);
+
+  if (!isLocal)
+    registerSymbolForExport(fullSymName, vizType);
 
   return var;
 }
@@ -1381,6 +1403,9 @@ NodeList SecondPass::parseFunctionDef(const Token& expr, size_t ofs, bool isLoca
     retval.push_back(makeNormalFunction(expr.srcpos(), sym, data, isLocal, linkage));
   }
 
+  if (!isLocal)
+    registerSymbolForExport(sym, vizType);
+
   return retval;
 }
 
@@ -1420,18 +1445,32 @@ NodeList SecondPass::parseDef(const Token& expr, bool isLocal)
   hr_assert(expr.count() >= 2);
   hr_assert(expr[0] == kLetId || expr[0] == kDefId);
 
-  String linkage;
-
   size_t ofs = 1;
-  if (expr[1].isSeq() && expr[1].count() == 2 && expr[1][0] == kExternId) {
-    const TokenVector& seq = expr[1].children();
-    hr_assert(seq[1].isNested());
-    hr_assert(seq[1].leftToken() == kParanOpen);
-    hr_assert(seq[1].rightToken() == kParanClose);
-    hr_assert(seq[1].count() == 1);
-    hr_assert(seq[1][0] == kString);
 
-    linkage = seq[1][0].stringValue();
+  VizType vizType = kUnset;
+  if (expr[ofs] == Compiler::publicToken || expr[ofs] == Compiler::pubToken) {
+    vizType = kPublic;
+    ofs++;
+  }
+  else if (expr[ofs] == Compiler::internToken) {
+    vizType = kIntern;
+    ofs++;
+  }
+  else if (expr[ofs] == Compiler::privateToken) {
+    vizType = kPrivate;
+    ofs++;
+  }
+
+  String linkage;
+  if (expr[ofs].isSeq() && expr[ofs].count() == 2 && expr[ofs][0] == kExternId) {
+    const TokenVector& seq = expr[ofs].children();
+    hr_assert(seq[ofs].isNested());
+    hr_assert(seq[ofs].leftToken() == kParanOpen);
+    hr_assert(seq[ofs].rightToken() == kParanClose);
+    hr_assert(seq[ofs].count() == 1);
+    hr_assert(seq[ofs][0] == kString);
+
+    linkage = seq[ofs][0].stringValue();
 
     ofs++;
   }
@@ -1444,7 +1483,7 @@ NodeList SecondPass::parseDef(const Token& expr, bool isLocal)
           << "Local type definitions are not supported";
       return NodeList();
     }
-    return parseTypeDef(expr, ofs, !K(isRecord), isLocal);
+    return parseTypeDef(expr, ofs, !K(isRecord), isLocal, vizType);
   }
 
   else if (expr[ofs] == Compiler::recordToken) {
@@ -1454,33 +1493,34 @@ NodeList SecondPass::parseDef(const Token& expr, bool isLocal)
           << "Local type definitions are not supported";
       return NodeList();
     }
-    return parseTypeDef(expr, ofs, K(isRecord), isLocal);
+    return parseTypeDef(expr, ofs, K(isRecord), isLocal, vizType);
   }
 
   else if (expr[ofs] == Compiler::aliasToken) {
     hr_assert(linkage.isEmpty());
-    return rewriteDefNode(parseAliasDef(expr, ofs, isLocal), isLocal);
+    return rewriteDefNode(parseAliasDef(expr, ofs, isLocal, vizType), isLocal);
   }
 
   else if (expr[ofs] == Compiler::enumToken) {
     hr_assert(linkage.isEmpty());
-    return rewriteDefNode(parseEnumDef(expr, ofs, isLocal), isLocal);
+    return rewriteDefNode(parseEnumDef(expr, ofs, isLocal, vizType), isLocal);
   }
 
   else if (expr[ofs] == Compiler::constToken) {
     hr_assert(linkage.isEmpty());
-    return rewriteDefNode(parseVarDef(expr, kConstVar, ofs + 1, isLocal, String()),
-                          isLocal);
+    return rewriteDefNode(
+        parseVarDef(expr, kConstVar, ofs + 1, isLocal, String(), vizType), isLocal);
   }
   else if (expr[ofs] == Compiler::configToken) {
     hr_assert(linkage.isEmpty());
-    return rewriteDefNode(parseVarDef(expr, kConfigVar, ofs + 1, isLocal, String()),
-                          isLocal);
+    return rewriteDefNode(
+        parseVarDef(expr, kConfigVar, ofs + 1, isLocal, String(), vizType), isLocal);
   }
 
   else if (expr[ofs] == Compiler::genericToken) {
     hr_assert(linkage.isEmpty());
-    return rewriteDefNodes(parseFunctionDef(expr, ofs, isLocal, String()), isLocal);
+    return rewriteDefNodes(parseFunctionDef(expr, ofs, isLocal, String(), vizType),
+                           isLocal);
   }
 
   else if (expr[ofs] == Compiler::charToken) {
@@ -1498,14 +1538,16 @@ NodeList SecondPass::parseDef(const Token& expr, bool isLocal)
   else if (expr[ofs] == kSymbol) {
     if (expr.count() >= ofs + 2) {
       if (expr[ofs + 1].isNested())
-        return rewriteDefNodes(parseFunctionDef(expr, ofs, isLocal, linkage), isLocal);
+        return rewriteDefNodes(parseFunctionDef(expr, ofs, isLocal, linkage, vizType),
+                               isLocal);
 
       hr_assert(expr[ofs + 1] == kAssign || expr[ofs + 1] == kColon);
-      return rewriteDefNode(parseVarDef(expr, kNormalVar, ofs, isLocal, linkage),
+      return rewriteDefNode(parseVarDef(expr, kNormalVar, ofs, isLocal, linkage, vizType),
                             isLocal);
     }
 
-    return rewriteDefNode(parseVarDef(expr, kNormalVar, ofs, isLocal, linkage), isLocal);
+    return rewriteDefNode(parseVarDef(expr, kNormalVar, ofs, isLocal, linkage, vizType),
+                          isLocal);
   }
 
   HR_LOG(kError, expr[ofs].srcpos()) << "Unexpected token: " << expr[ofs];

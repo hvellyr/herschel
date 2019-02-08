@@ -2627,8 +2627,8 @@ TokenVector FirstPass::parseExtern()
 }
 
 
-TokenVector FirstPass::parseVarDef(const Token& defToken, const Token& tagToken,
-                                   bool isLocal)
+TokenVector FirstPass::parseVarDef(const Token& defToken, const Token& vizToken,
+                                   const Token& tagToken, bool isLocal, VizType vizType)
 {
   Token keepTagToken = tagToken;
 
@@ -2641,7 +2641,10 @@ TokenVector FirstPass::parseVarDef(const Token& defToken, const Token& tagToken,
   }
   Token symbolToken = qualifyIdToken(qSymbol);
 
-  return parseVarDef2(defToken, keepTagToken, symbolToken, isLocal, Token());
+  if (!isLocal)
+    registerSymbolForExport(symbolToken.idValue(), vizType);
+
+  return parseVarDef2(defToken, vizToken, keepTagToken, symbolToken, isLocal, Token());
 }
 
 
@@ -2652,9 +2655,9 @@ Token FirstPass::evaluateConfigExpr(const Token& initExpr)
 }
 
 
-TokenVector FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken,
-                                    const Token& symbolToken, bool isLocal,
-                                    const Token& linkage)
+TokenVector FirstPass::parseVarDef2(const Token& defToken, const Token& vizToken,
+                                    const Token& tagToken, const Token& symbolToken,
+                                    bool isLocal, const Token& linkage)
 {
   Token assignToken;
   Token sym = symbolToken;
@@ -2690,6 +2693,8 @@ TokenVector FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken
 
     Token vardefExpr;
     vardefExpr << defToken;
+    if (vizToken.isSet())
+      vardefExpr << vizToken;
     if (linkage.isSet())
       vardefExpr << linkage;
     if (tagToken.isSet())
@@ -2748,6 +2753,8 @@ TokenVector FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken
 
       Token multiInitValueToken;
       multiInitValueToken << defToken;
+      if (vizToken.isSet())
+        multiInitValueToken << vizToken;
       if (tagToken.isSet())
         multiInitValueToken << tagToken;
 
@@ -2805,7 +2812,8 @@ TokenVector FirstPass::parseVarDef2(const Token& defToken, const Token& tagToken
 }
 
 
-Token FirstPass::parseCharDef(const Token& defToken)
+Token FirstPass::parseCharDef(const Token& defToken, const Token& vizToken,
+                              VizType vizType)
 {
   Token tagToken = fToken;
 
@@ -2853,7 +2861,12 @@ Token FirstPass::parseCharDef(const Token& defToken)
     return Token();
   }
   else {
-    Token result = Token() << defToken << tagToken << charNameToken;
+    registerSymbolForExport(charNameToken.idValue(), vizType, Scope::kChar);
+
+    Token result = Token() << defToken;
+    if (vizToken.isSet())
+      result << vizToken;
+    result << tagToken << charNameToken;
     if (docString.isSet())
       result << docString;
 
@@ -2935,14 +2948,17 @@ Token FirstPass::parseWhereClause()
 }
 
 
-Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
-                                  const Token& symToken, const Token& linkage)
+Token FirstPass::parseFunctionDef(const Token& defToken, const Token& vizToken,
+                                  const Token& tagToken, const Token& symToken,
+                                  const Token& linkage)
 {
   hr_assert(fToken == kParanOpen);
   Token paranOpenToken = fToken;
 
   Token result;
   result << defToken;
+  if (vizToken.isSet())
+    result << vizToken;
   if (linkage.isSet())
     result << linkage;
   if (tagToken.isSet())
@@ -3012,8 +3028,19 @@ Token FirstPass::parseFunctionDef(const Token& defToken, const Token& tagToken,
 }
 
 
-TokenVector FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal,
-                                             const Token& linkage)
+void FirstPass::registerSymbolForExport(const String& sym, VizType vizType,
+                                        Scope::ScopeDomain domain)
+{
+  if (vizType != kUnset) {
+    String fullId = (isQualified(sym) ? sym : qualifyId(currentModuleName(), sym));
+    fScope->registerSymbolForExport(domain, fullId, vizType, !K(isFinal));
+  }
+}
+
+
+TokenVector FirstPass::parseFunctionOrVarDef(const Token& defToken, const Token& vizToken,
+                                             bool isLocal, const Token& linkage,
+                                             VizType vizType)
 {
   hr_assert(fToken == kSymbol || fToken == kDot);
 
@@ -3044,14 +3071,19 @@ TokenVector FirstPass::parseFunctionOrVarDef(const Token& defToken, bool isLocal
     // the macro is silently ignored here
   }
 
-  if (fToken == kParanOpen)
-    return parseFunctionDef(defToken, Token(), symToken, linkage).toTokenVector();
+  if (!isLocal)
+    registerSymbolForExport(symToken.idValue(), vizType);
 
-  return parseVarDef2(defToken, Token(), symToken, isLocal, linkage);
+  if (fToken == kParanOpen)
+    return parseFunctionDef(defToken, vizToken, Token(), symToken, linkage)
+        .toTokenVector();
+
+  return parseVarDef2(defToken, vizToken, Token(), symToken, isLocal, linkage);
 }
 
 
-Token FirstPass::parseGenericFunctionDef(const Token& defToken, bool isLocal)
+Token FirstPass::parseGenericFunctionDef(const Token& defToken, const Token& vizToken,
+                                         bool isLocal, VizType vizType)
 {
   Token tagToken;
   if (isLocal) {
@@ -3075,11 +3107,14 @@ Token FirstPass::parseGenericFunctionDef(const Token& defToken, bool isLocal)
     return scanUntilTopExprAndResume();
   }
 
-  return parseFunctionDef(defToken, tagToken, symToken, Token());
+  registerSymbolForExport(symToken.idValue(), vizType);
+
+  return parseFunctionDef(defToken, vizToken, tagToken, symToken, Token());
 }
 
 
-Token FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
+Token FirstPass::parseAliasDef(const Token& defToken, const Token& vizToken, bool isLocal,
+                               VizType vizType)
 {
   hr_assert(fToken == Compiler::aliasToken);
 
@@ -3120,7 +3155,14 @@ Token FirstPass::parseAliasDef(const Token& defToken, bool isLocal)
     return scanUntilTopExprAndResume();
   }
 
-  Token result = Token() << defToken << tagToken << symToken;
+  if (!isLocal)
+    registerSymbolForExport(symToken.idValue(), vizType);
+
+  Token result = Token() << defToken;
+  if (vizToken.isSet())
+    result << vizToken;
+  result << tagToken << symToken;
+
   if (generics.isSet())
     result << generics;
 
@@ -3148,7 +3190,8 @@ Token FirstPass::parseOptDocString()
 }
 
 
-Token FirstPass::parseTypeDef(const Token& defToken, bool isRecord, bool isLocal)
+Token FirstPass::parseTypeDef(const Token& defToken, const Token& vizToken, bool isRecord,
+                              bool isLocal, VizType vizType)
 {
   hr_assert((isRecord && fToken == Compiler::recordToken) ||
             (!isRecord && fToken == Compiler::typeToken));
@@ -3215,7 +3258,11 @@ Token FirstPass::parseTypeDef(const Token& defToken, bool isRecord, bool isLocal
   }
 
 
-  Token result = Token() << defToken << tagToken << symToken;
+  Token result = Token() << defToken;
+  if (vizToken.isSet())
+    result << vizToken;
+  result << tagToken << symToken;
+
   if (generics.isSet())
     result << generics;
 
@@ -3230,6 +3277,8 @@ Token FirstPass::parseTypeDef(const Token& defToken, bool isRecord, bool isLocal
 
   if (slotParams.isSet())
     result << slotParams;
+
+  registerSymbolForExport(symToken.idValue(), vizType);
 
   return result;
 }
@@ -3276,7 +3325,8 @@ struct EnumItemParser {
 };
 
 
-Token FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
+Token FirstPass::parseEnumDef(const Token& defToken, const Token& vizToken, bool isLocal,
+                              VizType vizType)
 {
   hr_assert(fToken == Compiler::enumToken);
   Token tagToken = fToken;
@@ -3313,7 +3363,13 @@ Token FirstPass::parseEnumDef(const Token& defToken, bool isLocal)
   parseSequence(EnumItemParser(), kParanOpen, kParanClose, K(hasSeparator),
                 E_BadEnumItemList, items, "enum-items");
 
-  Token enumDefToken = Token() << defToken << tagToken << enumToken;
+  if (!isLocal)
+    registerSymbolForExport(enumToken.idValue(), vizType);
+
+  Token enumDefToken = Token() << defToken;
+  if (vizToken.isSet())
+    enumDefToken << vizToken;
+  enumDefToken << tagToken << enumToken;
   if (colonToken.isSet() && isaType.isSet())
     enumDefToken << colonToken << isaType;
   if (docString.isSet())
@@ -3530,7 +3586,7 @@ bool FirstPass::parseMacroPatterns(MacroPatternVector* patterns)
 }
 
 
-Token FirstPass::parseMacroDef(const Token& defToken)
+Token FirstPass::parseMacroDef(const Token& defToken, VizType vizType)
 {
   hr_assert(fToken == Compiler::macroToken);
   Token tagToken = fToken;
@@ -3566,9 +3622,10 @@ Token FirstPass::parseMacroDef(const Token& defToken)
       fScope->registerMacro(defToken.srcpos(), fullMacroName,
                             std::make_shared<Macro>(synTable, mType));
 
-      if (Properties::isTraceMacro()) {
-        fprintf(stderr, "%s\n", (zstring)StrHelper(synTable->toString()));
-      }
+      registerSymbolForExport(macroNameToken.idValue(), vizType);
+
+      if (Properties::isTraceMacro())
+        HR_LOG(kInfo) << synTable->toString();
     }
   }
 
@@ -3615,6 +3672,24 @@ TokenVector FirstPass::parseDef(bool isLocal)
   Token defToken = fToken;
   nextToken();
 
+  Token vizToken;
+  VizType vizType = kUnset;
+  if (fToken == Compiler::publicToken || fToken == Compiler::pubToken) {
+    vizToken = fToken;
+    vizType = kPublic;
+    nextToken();
+  }
+  else if (fToken == Compiler::internToken) {
+    vizToken = fToken;
+    vizType = kIntern;
+    nextToken();
+  }
+  else if (fToken == Compiler::privateToken) {
+    vizToken = fToken;
+    vizType = kPrivate;
+    nextToken();
+  }
+
   Token linkage;
   if (fToken == kExternId) {
     linkage = parseLinkageType();
@@ -3624,52 +3699,54 @@ TokenVector FirstPass::parseDef(bool isLocal)
     if (linkage.isSet())
       HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
           << "Unsupported linkage for type definition ignored";
-    return parseTypeDef(defToken, !K(isClass), isLocal).toTokenVector();
+    return parseTypeDef(defToken, vizToken, !K(isClass), isLocal, vizType)
+        .toTokenVector();
   }
   else if (fToken == Compiler::recordToken) {
     if (linkage.isSet())
       HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
           << "Unsupported linkage for class definition ignored";
-    return parseTypeDef(defToken, K(isRecord), isLocal).toTokenVector();
+    return parseTypeDef(defToken, vizToken, K(isRecord), isLocal, vizType)
+        .toTokenVector();
   }
   else if (fToken == Compiler::aliasToken) {
     if (linkage.isSet())
       HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
           << "Unsupported linkage for alias definition ignored";
-    return parseAliasDef(defToken, isLocal).toTokenVector();
+    return parseAliasDef(defToken, vizToken, isLocal, vizType).toTokenVector();
   }
   else if (fToken == Compiler::enumToken) {
     if (linkage.isSet())
       HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
           << "Unsupported linkage for enum definition ignored";
-    return parseEnumDef(defToken, isLocal).toTokenVector();
+    return parseEnumDef(defToken, vizToken, isLocal, vizType).toTokenVector();
   }
   else if (fToken == Compiler::constToken || fToken == Compiler::configToken) {
     if (linkage.isSet())
       HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
           << "Unsupported linkage for special variable definition ignored";
-    return parseVarDef(defToken, fToken, isLocal);
+    return parseVarDef(defToken, vizToken, fToken, isLocal, vizType);
   }
   else if (fToken == Compiler::genericToken) {
     if (linkage.isSet())
       HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
           << "Unsupported linkage for generic method ignored";
-    return parseGenericFunctionDef(defToken, isLocal).toTokenVector();
+    return parseGenericFunctionDef(defToken, vizToken, isLocal, vizType).toTokenVector();
   }
   else if (fToken == Compiler::charToken) {
     if (linkage.isSet())
       HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
           << "Unsupported linkage for char definition ignored";
-    return parseCharDef(defToken).toTokenVector();
+    return parseCharDef(defToken, vizToken, vizType).toTokenVector();
   }
   else if (fToken == Compiler::macroToken) {
     if (linkage.isSet())
       HR_LOG(kError, linkage.srcpos(), E_UnexpLinkage)
           << "Unsupported linkage for macro definition ignored";
-    return parseMacroDef(defToken).toTokenVector();
+    return parseMacroDef(defToken, vizType).toTokenVector();
   }
   else if (fToken == kSymbol || fToken == kDot) {
-    return parseFunctionOrVarDef(defToken, isLocal, linkage);
+    return parseFunctionOrVarDef(defToken, vizToken, isLocal, linkage, vizType);
   }
   else {
     HR_LOG(kError, fToken.srcpos(), E_DefInitUnexpToken) << "Bad init value: " << fToken;
