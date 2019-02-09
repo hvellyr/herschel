@@ -319,6 +319,11 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             typf->typifyNode(newBase);
             node->setBase(newBase);
             node->setRefFunction(bestFuncNode.fNode);
+
+            // it could be that the function is only defined later ...
+            if (!bestFuncNode.fNode->type().isFunction()) {
+              typf->typifyNode(bestFuncNode.fNode);
+            }
             node->setFunSign(bestFuncNode.fNode->type().functionSignature());
 
             typf->reorderArguments(node, bestFuncNode.fNode.get());
