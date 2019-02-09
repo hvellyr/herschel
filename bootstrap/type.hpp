@@ -742,4 +742,11 @@ inline LineLogger& operator<<(LineLogger& ll, const Type& type)
   return ll;
 }
 
+
+inline LineLogger& operator<<(LineLogger& ll, const FunctionSignature& fsign)
+{
+  ll.fMsgBuffer << fsign.typeId();
+  return ll;
+}
+
 }  // namespace herschel

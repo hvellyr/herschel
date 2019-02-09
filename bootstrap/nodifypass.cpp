@@ -835,9 +835,12 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
 
 std::shared_ptr<AstNode> SecondPass::generateConstructor(
     std::shared_ptr<Scope> recScope, const Token& typeExpr, const String& fullTypeName,
-    const Type& defType, const NodeList& defaultApplyParams, const NodeList& slotDefs)
+    const Type& defTypeIn, const NodeList& defaultApplyParams, const NodeList& slotDefs)
 {
   hr_assert(defaultApplyParams.size() == slotDefs.size());
+
+  auto defType = defTypeIn;
+  defType.setIsValueType(false);
 
   const SrcPos& srcpos = typeExpr.srcpos();
 

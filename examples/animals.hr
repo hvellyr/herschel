@@ -7,6 +7,7 @@ def record Animal
 
 def record Mamal : Animal
 (
+  fur? : Bool
 )
 
 def record Dog : Mamal, SoundMaking
@@ -19,8 +20,8 @@ def record Cat : Mamal
   size : String
 )
 
-def on-alloc(self : Cat)
+def on-alloc(self : ^Cat)
   self
 
-def on-alloc(self : Dog)
+def on-alloc(self : ^Dog)
   self

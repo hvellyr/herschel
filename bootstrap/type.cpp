@@ -497,6 +497,7 @@ public:
   {
     StringBuffer buf;
     buf << "<ty:type nm='" << fName << "'" << (fIsInstantiatable ? " inst='t'" : "")
+        << (!isValue ? " ref='t'" : "")
         << ">\n";
     if (fInherit.isDef())
       buf << "<ty:isa>\n" << fInherit.toString() << "</ty:isa>\n";
@@ -602,7 +603,9 @@ public:
   String toString(bool isValue) const override
   {
     StringBuffer buf;
-    buf << "<ty:alias nm='" << fName << "'>\n";
+    buf << "<ty:alias nm='" << fName
+        << (!isValue ? " ref='t'" : "")
+        << "'>\n";
 
     if (!fGenerics.empty()) {
       buf << "<ty:gen>\n";
@@ -1456,6 +1459,9 @@ String Type::typeId() const
 {
   StringBuffer buffer;
 
+  if (!isValueType())
+    buffer << "^";
+
   switch (fKind) {
   case kType_Undefined: return String("<undefined>");
 
@@ -1485,7 +1491,8 @@ String Type::typeId() const
     return buffer.toString();
   }
 
-  case kType_Array: buffer << arrayBaseType().typeId() << "[]"; return buffer.toString();
+  case kType_Array:
+    buffer << arrayBaseType().typeId() << "[]"; return buffer.toString();
 
   case kType_Class:
   case kType_Type: {
@@ -1500,7 +1507,9 @@ String Type::typeId() const
     return buffer.toString();
   }
 
-  case kType_Alias: return std::dynamic_pointer_cast<AliasTypeImpl>(fImpl)->name();
+  case kType_Alias:
+    buffer << std::dynamic_pointer_cast<AliasTypeImpl>(fImpl)->name();
+    return buffer.toString();
 
   case kType_Union:
     buffer << "(" << *std::dynamic_pointer_cast<UnionTypeImpl>(fImpl) << ")";
