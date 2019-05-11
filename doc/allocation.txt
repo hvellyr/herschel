@@ -35,10 +35,10 @@ If you pass an object (either base or complex) to a function, say:
   def foo(p)
     p.outln
 
-then 'p' is *always* passed as a contant value into the function, i.e. p is
-immutable from inside 'foo'.  Technically complex objects will be passed as
-refcounted objects for efficiency reasons.  To the user however this feels
-like a value only.
+then 'p' is *always* passed as a constant value into the function,
+i.e. p is immutable from inside 'foo'.  Technically complex objects
+will be passed as refcounted objects for efficiency reasons.  To the
+user however this feels like a value only.
 
 If you need to modify 'p' clone and return it.  You clone it by putting and
 '&' in front of the name.  'p' is cloned in the scope once only, i.e. every
@@ -337,7 +337,7 @@ notated order and assigned to those slots.  Than, if defined, the class'
 
 Are there constructors than?  No, at least no User specified.  Construction
 of objects is really only about constructing.  The following ways of
-defining values for an object exit however:
+defining values for an object exist however:
 
 a) No parameter at construction at all:
 
