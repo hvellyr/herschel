@@ -1,0 +1,147 @@
+Memory model
+
+
+- defining function
+
+    def foo(a : String, b : Int) : Bool
+      <body>
+
+  signature only:
+
+    def foo(a : String, b : Int) : Bool ...
+
+
+  generic; dispatches on the first parameter.
+
+    def generic foo(a : String, b : Int) : Bool ...
+
+
+- calling functions
+
+  Dot notation for chaining calls:
+
+    foo("hello world").split(" ").first().empty?()
+
+  is the same as
+
+    empty?(first(split(foo("hello world"), " ")))
+
+
+- defining types
+
+  strong type alias (Octet is a different type than UInt8):
+
+    def type Octet : UInt8
+
+  aliasing (MyLocalOctet is a different name for UInt8):
+
+    def alias MyLocalOctet : UInt8
+
+
+- defining enumerations:
+
+    def enum FileReadMode : UInt8 (
+      read = 1,
+      write = 2,
+      append = 4
+    )
+
+    def enum Subject (
+      computer-science,
+      art-history,
+      philosophy
+    )
+
+  accessing values from the enums:
+
+    FileReadMode.write
+    Subject.art-history
+
+
+- defining records (classes):
+
+    def record Student (
+      name : String,
+      main-subject : Subject,
+      birthday : Date
+    )
+
+
+- instantiating records
+
+  let john = make(Student,
+                  "John Smith",
+                  Subject.computer-science,
+                  make(Date, 11, 2, 1991))
+
+
+
+- accessing record slots
+
+  Using dot-notation:
+
+    let nm = john.name
+    john.main-subject = Subject.philosophy
+
+
+- variables are immutable by definition
+
+    let s = make(Student)
+    s.name = "Maria"       -- ERROR!
+
+    let mut s = make(Student)
+    s.name = "Maria"
+
+
+- everything is passed/assign by value
+
+  ... even if complex, or mutable
+
+    let mut a = make(Student, "John")
+    let b = a
+
+    a.name = "Akiko"                  -| a.name => "Akiko
+                                      -| b.name => "John"
+
+  Use references for this:
+
+    let b^ = a
+    a.name = "Akiko"                  -| a.name => "Akiko
+                                      -| b.name => "Akiko"
+
+
+  this is esp. true for functions:
+
+    def foo(x)
+       x.name = "Malou"
+
+    let mut a = make(Student, "John")
+    foo(a)                            -| a.name => "John"
+
+  pass by reference:
+
+    def foo(x^)
+      x.name = "Malour"
+
+    let mut a = make(Student, "John")
+    foo(a)                            -| a.name => "Malou"
+
+
+  References can be reset of course:
+
+    let a  = "world"
+    let b  = "hello"
+    let p^ = a
+    let q^ = p                        -| p = "world"
+                                      -| q = "world"
+
+    p = b                             -| p = "hello"
+                                      -| q = "world"
+
+    let a^ = "hello world"            ERROR: a^ needs to refer to a memory location!
+
+
+  Shared ownership of resources:
+
+    let a@ = "world"                  -- "world" is heap allocated in this way!
+    
