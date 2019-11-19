@@ -824,13 +824,25 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
       }
     }
 
-    auto ctor = generateConstructor(recScope, expr, fullTypeName, defType,
-                                    defaultApplyParams, slotParams);
-    result.push_back(ctor);
+    result.push_back(generateConstructor(recScope, expr, fullTypeName, defType,
+                                         defaultApplyParams, slotParams));
+    // result.push_back(generateCopyFunction(recScope, expr, fullTypeName, defType,
+    //                                       defaultApplyParams, slotParams));
   }
 
   return result;
 }
+
+
+// std::shared_ptr<AstNode> SecondPass::generateCopyFunction(
+//     std::shared_ptr<Scope> recScope, const Token& typeExpr, const String& fullTypeName,
+//     const Type& defType, const NodeList& defaultApplyParams, const NodeList& slotDefs)
+// {
+//   /*
+//     def on-alloc(o : ^T) -> T {
+      
+//    */
+// }
 
 
 std::shared_ptr<AstNode> SecondPass::generateConstructor(

@@ -43,6 +43,31 @@ namespace {
       }
     }
   }
+
+  void generateFinalizers(Typifier* typf, std::shared_ptr<BlockNode> parent,
+                          std::shared_ptr<AstNode> node)
+  {
+    HR_LOG() << "~~~~1";
+    if (auto binding = std::dynamic_pointer_cast<MoveableBinding>(node)) {
+      HR_LOG() << "~~~~2 " << node->type();
+      if (node->type().isValueType()) {
+        auto deallocExpr = makeApplyNode(
+            node->scope(), node->srcpos(),
+            makeSymbolNode(node->scope(), node->srcpos(), String("deallocate")));
+        deallocExpr->appendNode(node);
+
+        std::shared_ptr<AstNode> expr;
+        {
+          Annotator an{ typf->fCompiler };
+          expr = an.annotateNode(deallocExpr);
+        }
+
+        typf->typifyNode(expr);
+
+        parent->appendNode(expr);
+      }
+    }
+  }
 }  // namespace
 
 
@@ -233,6 +258,12 @@ struct NodeTypifier<std::shared_ptr<BlockNode>> {
         trackMoveablePositions(letnd->defNode());
       }
     }
+
+    for (auto c : node->children()) {
+      if (auto letnd = std::dynamic_pointer_cast<LetNode>(c)) {
+        generateFinalizers(typf, node, letnd->defNode());
+      }
+    }
   }
 };
 
@@ -387,6 +418,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             initExpr->appendNode(newObjAllocExpr);
 
             std::shared_ptr<AstNode> createNode;
+
             {
               Annotator an{ typf->fCompiler };
               createNode = an.annotateNode(initExpr);
