@@ -1,0 +1,8 @@
+def app.main() {
+  let x : String
+  x ++= "hello world"
+
+  let h : Int
+  h += 42
+  0
+}

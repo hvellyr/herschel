@@ -1,0 +1,8 @@
+module rc
+
+def factorial(n : Int) -> Int {
+  let acc = 1
+  for (i in 1 .. n)
+    acc = acc + i
+  acc
+}

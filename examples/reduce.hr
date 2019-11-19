@@ -1,0 +1,9 @@
+def reduce-left(proc : 'F, initial : 'K, range : 'R) -> 'K
+{
+  let t mut = initial
+  while (not empty?(range)) {
+    t = proc(t, first(range))
+    range = subrange(1, size(range))
+  }
+  t
+}

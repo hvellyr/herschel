@@ -1,0 +1,48 @@
+module lang
+export public(*)
+
+
+def macro forx
+  | « forx(?x:name in ?re:expr) ?body:expr »
+    -> « {
+      let _rng = ?re
+      let _it = iterator(_rng)
+      while (more?(_it)) {
+        let ?x = next(_it)
+        ?body
+      }
+    } »
+  | « forx(?x:name in ?re:expr) ?body:expr else ?alternative:expr »
+    -> « {
+      let _rng = ?re
+      let _it = iterator(_rng)
+      while (more?(_it)) {
+        let ?x = next(_it)
+        ?body
+      }
+      else {
+        ?alternative
+      }
+    } »
+
+
+def type Coll<T>
+
+def make-int-coll() -> Coll<Int> ...
+def make-string-coll() -> Coll<String> ...
+
+def type Iterator<T>
+def generic iterator(c @ Coll<'T>) -> Iterator<'T> ...
+def generic next(c @ Iterator<'T>) -> 'T ...
+def generic more?(c @ Iterator<'T>) -> Bool ...
+
+def do-it(x : Int) -> Bool ...
+def do-it(x : String) -> String ...
+
+def app.main() {
+  forx(a in make-int-coll())
+    do-it(a)
+  else
+    false
+  0
+}

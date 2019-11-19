@@ -1,0 +1,8 @@
+def record Foo ( a : Int, b : String)
+
+def on-alloc(o : Foo, a -> _a : Int = 0, b -> _b : String = "")
+{
+  o.a = _a
+  o.b = _b
+  o
+}
