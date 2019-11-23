@@ -539,7 +539,7 @@ void SecondPass::paramsNodeListToType(FunctionParamVector* funcParams,
                                       const NodeList& nl) const
 {
   for (size_t i = 0; i < nl.size(); i++) {
-    auto pnd = dynamic_cast<ParamNode*>(nl[i].get());
+    auto pnd = std::dynamic_pointer_cast<ParamNode>(nl[i]);
     if (pnd) {
       switch (pnd->flags()) {
       case kPosArg:
@@ -871,10 +871,10 @@ std::shared_ptr<AstNode> SecondPass::generateConstructor(
 
   // initialize slots
   for (auto i = 0u; i < slotDefs.size(); ++i) {
-    auto slot = dynamic_cast<SlotdefNode*>(slotDefs[i].get());
+    auto slot = std::dynamic_pointer_cast<SlotdefNode>(slotDefs[i]);
     hr_assert(slot);
 
-    auto slotParam = dynamic_cast<ParamNode*>(defaultApplyParams[i].get());
+    auto slotParam = std::dynamic_pointer_cast<ParamNode>(defaultApplyParams[i]);
     hr_assert(slotParam);
 
     auto slotInit = makeAssignNode(
@@ -1279,7 +1279,7 @@ void SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
 bool SecondPass::hasSpecParameters(const NodeList& params) const
 {
   for (auto& nd : params) {
-    auto param = dynamic_cast<ParamNode*>(nd.get());
+    auto param = std::dynamic_pointer_cast<ParamNode>(nd);
     if (param->isSpecArg())
       return true;
   }
@@ -1765,9 +1765,9 @@ std::shared_ptr<AstNode> SecondPass::parseBinary(const Token& expr)
 std::shared_ptr<AstNode> SecondPass::generateArrayAlloc(const Token& expr,
                                                         std::shared_ptr<AstNode> typeNode)
 {
-  auto n = dynamic_cast<ArrayTypeNode*>(typeNode.get());
+  auto n = std::dynamic_pointer_cast<ArrayTypeNode>(typeNode);
   std::shared_ptr<AstNode> rootType = n->typeNode();
-  hr_assert(!dynamic_cast<ArrayTypeNode*>(rootType.get()));
+  hr_assert(!std::dynamic_pointer_cast<ArrayTypeNode>(rootType));
 
   NodeList args = parseFunCallArgs(expr[1].children());
 
@@ -1893,15 +1893,15 @@ std::shared_ptr<AstNode> SecondPass::parseFunCall(const Token& expr)
   if (!first)
     return nullptr;
 
-  if (dynamic_cast<ArrayTypeNode*>(first.get())) {
+  if (std::dynamic_pointer_cast<ArrayTypeNode>(first)) {
     return generateArrayAlloc(expr, first);
   }
-  else if (dynamic_cast<TypeNode*>(first.get())) {
+  else if (std::dynamic_pointer_cast<TypeNode>(first)) {
     return generateAlloc(expr,
-                         dynamic_cast<TypeNode*>(first.get())->type().classTypeOfType());
+                         std::dynamic_pointer_cast<TypeNode>(first)->type().classTypeOfType());
   }
   else {
-    auto symNode = dynamic_cast<SymbolNode*>(first.get());
+    auto symNode = std::dynamic_pointer_cast<SymbolNode>(first);
     if (symNode) {
       Type referedType = fScope->lookupType(symNode->name(), K(showAmbiguousSymDef));
       if (referedType.isDef())
@@ -2178,7 +2178,7 @@ std::shared_ptr<AstNode> SecondPass::constructWhileTestNode(const Token& expr,
   int nodeCount = 0;
   for (auto& tstExpr : testExprs) {
     if (nodeCount > 1) {
-      auto prevBin = dynamic_cast<BinaryNode*>(testNode.get());
+      auto prevBin = std::dynamic_pointer_cast<BinaryNode>(testNode);
       hr_assert(prevBin);
       auto binNode =
           makeBinaryNode(fScope, expr.srcpos(), prevBin->right(), kOpLogicalAnd, tstExpr);
@@ -2689,8 +2689,8 @@ std::shared_ptr<AstNode> SecondPass::parseTypeExpr(const Token& expr, bool inArr
         typeNode = parseTypeExpr(expr[0], K(inArrayType));
       }
 
-      if (dynamic_cast<SymbolNode*>(typeNode.get()) ||
-          dynamic_cast<TypeNode*>(typeNode.get())) {
+      if (std::dynamic_pointer_cast<SymbolNode>(typeNode) ||
+          std::dynamic_pointer_cast<TypeNode>(typeNode)) {
         if (inArrayType) {
           HR_LOG(kError, expr.srcpos(), E_MultiDimenArray)
               << "Multi-dimensional array types are not supported";
