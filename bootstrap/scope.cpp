@@ -34,9 +34,10 @@ static Type sInvalidType;
 
 class TypeScopeItem : public Scope::ScopeItem {
 public:
-  TypeScopeItem(const SrcPos& srcpos, const Type& type)
+  TypeScopeItem(const SrcPos& srcpos, const Type& type, const NodeList& slotParams)
       : ScopeItem(srcpos)
       , fType(type)
+      , fSlotParams(slotParams)
   {
   }
 
@@ -45,9 +46,12 @@ public:
 
   const Type& type() const { return fType; }
 
+  const NodeList& slotParams() const { return fSlotParams; }
+
   //-------- data members
 
   Type fType;
+  NodeList fSlotParams;
 };
 
 
@@ -358,13 +362,14 @@ void Scope::addImportedScope(const String& absPath, std::shared_ptr<Scope> scope
 
 //..........................................................................
 
-void Scope::registerType(const SrcPos& srcpos, const String& name, const Type& type)
+void Scope::registerType(const SrcPos& srcpos, const String& name, const Type& type,
+                         const NodeList& slotDefs)
 {
   hr_assert(!type.isArray());
   hr_assert(type.isDef());
 
   registerScopeItem(ScopeName(kNormal, name),
-                    std::make_shared<TypeScopeItem>(srcpos, type));
+                    std::make_shared<TypeScopeItem>(srcpos, type, slotDefs));
 }
 
 

@@ -496,8 +496,8 @@ public:
   String toString(bool isValue) const override
   {
     StringBuffer buf;
-    buf << "<ty:type nm='" << fName << "'" << (fIsInstantiatable ? " inst='t'" : "")
-        << (!isValue ? " ref='t'" : "")
+    buf << "<ty:type nm='" << (!isValue ? "^" : "") << fName << "'"
+        << (fIsInstantiatable ? " inst='t'" : "")
         << ">\n";
     if (fInherit.isDef())
       buf << "<ty:isa>\n" << fInherit.toString() << "</ty:isa>\n";
@@ -603,9 +603,7 @@ public:
   String toString(bool isValue) const override
   {
     StringBuffer buf;
-    buf << "<ty:alias nm='" << fName
-        << (!isValue ? " ref='t'" : "")
-        << "'>\n";
+    buf << "<ty:alias nm='" << (!isValue ? "^" : "") << fName << "'>\n";
 
     if (!fGenerics.empty()) {
       buf << "<ty:gen>\n";
@@ -684,8 +682,8 @@ public:
   String toString(bool isValue) const override
   {
     StringBuffer buf;
-    buf << "<ty:ref" << (fIsOpen ? " gen='t'" : "") << (!isValue ? " ref='t'" : "")
-        << " nm='" << fName << "'>";
+    buf << "<ty:ref" << (fIsOpen ? " gen='t'" : "")
+        << " nm='" << (!isValue ? "^" : "") << fName << "'>";
     if (!fGenerics.empty()) {
       buf << "\n<ty:gen>\n";
       for (const auto& g : fGenerics)
