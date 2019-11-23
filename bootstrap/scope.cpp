@@ -477,7 +477,7 @@ Type Scope::lookupType(const Type& type) const
     if (resolvedType.isDef()) {
       if (resolvedType.isOpen())
         return normalizeType(resolvedType, type);
-      return resolvedType;
+      return resolvedType.setIsValueType(type.isValueType());
     }
   }
   else if (type.isFunction()) {
