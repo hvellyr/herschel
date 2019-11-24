@@ -112,4 +112,3 @@ TEST_CASE("InternalTokenPort", "[port][data-port][token-port]")
 }
 
 }  // namespace herschel
-

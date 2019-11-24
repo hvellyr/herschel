@@ -45,7 +45,7 @@ bool isSilent()
 
 //------------------------------------------------------------------------------
 
-static zstring levelStr[] = { "debug", "info", "warning", "error" };
+static zstring levelStr[] = {"debug", "info", "warning", "error"};
 
 
 LineLogger::LineLogger(LogLevel level, const SrcPos& where, int errorCode)

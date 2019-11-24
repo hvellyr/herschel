@@ -497,8 +497,7 @@ public:
   {
     StringBuffer buf;
     buf << "<ty:type nm='" << (!isValue ? "^" : "") << fName << "'"
-        << (fIsInstantiatable ? " inst='t'" : "")
-        << ">\n";
+        << (fIsInstantiatable ? " inst='t'" : "") << ">\n";
     if (fInherit.isDef())
       buf << "<ty:isa>\n" << fInherit.toString() << "</ty:isa>\n";
 
@@ -682,8 +681,8 @@ public:
   String toString(bool isValue) const override
   {
     StringBuffer buf;
-    buf << "<ty:ref" << (fIsOpen ? " gen='t'" : "")
-        << " nm='" << (!isValue ? "^" : "") << fName << "'>";
+    buf << "<ty:ref" << (fIsOpen ? " gen='t'" : "") << " nm='" << (!isValue ? "^" : "")
+        << fName << "'>";
     if (!fGenerics.empty()) {
       buf << "\n<ty:gen>\n";
       for (const auto& g : fGenerics)
@@ -1489,8 +1488,7 @@ String Type::typeId() const
     return buffer.toString();
   }
 
-  case kType_Array:
-    buffer << arrayBaseType().typeId() << "[]"; return buffer.toString();
+  case kType_Array: buffer << arrayBaseType().typeId() << "[]"; return buffer.toString();
 
   case kType_Class:
   case kType_Type: {
@@ -2964,12 +2962,12 @@ namespace {
 
     if (inheritance.isType() || inheritance.isRecord()) {
       if (isSameType(inheritance, right, scope, srcpos, reportErrors))
-        return { level };
+        return {level};
 
       if (right.isOpen()) {
         TypeCtx localCtx;
         if (inheritance.matchGenerics(localCtx, right, scope, srcpos))
-          return { level };
+          return {level};
       }
       return inheritanceDiffImpl(inheritance, right, scope, srcpos, reportErrors,
                                  level - 1);
@@ -2978,7 +2976,7 @@ namespace {
     if (inheritance.isIntersection()) {
       for (const auto& inhType : inheritance.intersectionTypes()) {
         if (isSameType(inhType, right, scope, srcpos, reportErrors))
-          return { level };
+          return {level};
         if (auto var = inheritanceDiffImpl(inhType, right, scope, srcpos, reportErrors,
                                            level - 1))
           return var;
@@ -3390,7 +3388,7 @@ namespace {
     if (left0.isOpen() && right0.isOpen())
       // TODO: handle complex generic types like 'T[]
       return isSameType(left0, right0, scope, srcpos, reportErrors)
-                 ? estd::optional<int>{ 0 }
+                 ? estd::optional<int>{0}
                  : estd::optional<int>{};
 
     Type right;
@@ -3435,7 +3433,7 @@ namespace {
 
     if (right.isAny() || right.isClangAtom()) {
       // everything is covariant to lang|Any
-      return { 9999 };
+      return {9999};
     }
 
 #if 0
@@ -3460,28 +3458,27 @@ namespace {
                      reportErrors) &&
           isSameType(left.arrayBaseType(), right.generics()[1], scope, srcpos,
                      reportErrors)) {
-        return { 0 };
+        return {0};
       }
       else if (right.isArray() && right.arrayBaseType().isOpenSelf()) {
         // a generic open type is covariant to Any.  This needs special treatment
         // in the compiler though
         return isCovariant(left.arrayBaseType(), Type::makeAny(), scope, srcpos,
                            reportErrors)
-                   ? estd::optional<int>{ 9999 }
+                   ? estd::optional<int>{9999}
                    : estd::optional<int>{};
       }
-      return isSameType(left, right, scope, srcpos, reportErrors)
-                 ? estd::optional<int>{ 0 }
-                 : estd::optional<int>{};
+      return isSameType(left, right, scope, srcpos, reportErrors) ? estd::optional<int>{0}
+                                                                  : estd::optional<int>{};
     }
     else if (left.isUnion()) {
       if (right.isUnion()) {
         if (isSameType(left, right, scope, srcpos, reportErrors))
-          return { 0 };
+          return {0};
 
         return isCovariantForAllTypesInUnion(left.unionTypes(), right.unionTypes(), scope,
                                              srcpos, reportErrors)
-                   ? estd::optional<int>{ -1 }
+                   ? estd::optional<int>{-1}
                    : estd::optional<int>{};
       }
       return {};
@@ -3489,21 +3486,21 @@ namespace {
     else if (left.isIntersection()) {
       if (right.isIntersection()) {
         if (isSameType(left, right, scope, srcpos, reportErrors))
-          return { 0 };
+          return {0};
         return isCovariant(left.intersectionTypes(), right.intersectionTypes(), scope,
                            srcpos, reportErrors)
-                   ? estd::optional<int>{ -1 }
+                   ? estd::optional<int>{-1}
                    : estd::optional<int>{};
       }
       return {};
     }
     else if (left.isFunction()) {
       if (isSameType(left, right, scope, srcpos, reportErrors))
-        return { 0 };
+        return {0};
       if (right.isFunction())
         return isCovariant(left.functionSignature(), right.functionSignature(), scope,
                            srcpos, reportErrors)
-                   ? estd::optional<int>{ -1 }
+                   ? estd::optional<int>{-1}
                    : estd::optional<int>{};
       else
         return {};
@@ -3512,15 +3509,15 @@ namespace {
       if (left.isOpen()) {
         TypeCtx localCtx;
         if (left.matchGenerics(localCtx, right, scope, srcpos))
-          return { 0 };
+          return {0};
       }
       if (right.isOpen()) {
         TypeCtx localCtx;
         if (right.matchGenerics(localCtx, left, scope, srcpos))
-          return { 0 };
+          return {0};
       }
       if (isSameType(left, right, scope, srcpos, reportErrors))
-        return { 0 };
+        return {0};
 
       if (right.isType() || right.isRecord()) {
         // TODO
@@ -3530,20 +3527,20 @@ namespace {
         if (left.hasGenerics() && right.hasGenerics())
           return isSameType(left.generics(), right.generics(), scope, srcpos,
                             reportErrors)
-                     ? estd::optional<int>{ 0 }
+                     ? estd::optional<int>{0}
                      : estd::optional<int>{};
         return var;
       }
       else if (right.isIntersection()) {
         return isCovariantToEveryTypeInInters(left, right.intersectionTypes(), scope,
                                               srcpos, reportErrors)
-                   ? estd::optional<int>{ 0 }
+                   ? estd::optional<int>{0}
                    : estd::optional<int>{};
       }
       else if (right.isUnion()) {
         return isCoOrInvariantToEveryTypeInUnion(left, right.unionTypes(), scope, srcpos,
                                                  reportErrors)
-                   ? estd::optional<int>{ 0 }
+                   ? estd::optional<int>{0}
                    : estd::optional<int>{};
       }
 
@@ -3567,18 +3564,18 @@ estd::optional<int> varianceDistance(const Type& left, const Type& right,
                                      bool reportErrors)
 {
   if (isSameType(left, right, scope, srcpos, reportErrors))
-    return { 0 };
+    return {0};
   else if (isCovariant(left, right, scope, srcpos, reportErrors)) {
     return covarianceDistance(left, right, scope, srcpos, reportErrors);
   }
   else if (isContravariant(left, right, scope, srcpos, reportErrors)) {
     auto var = covarianceDistance(right, left, scope, srcpos, reportErrors);
-    return var ? estd::optional<int>{ -(*var) } : estd::optional<int>{};
+    return var ? estd::optional<int>{-(*var)} : estd::optional<int>{};
   }
   else if (containsAny(right, srcpos, reportErrors))
-    return { 9999 };
+    return {9999};
   else if (containsAny(left, srcpos, reportErrors))
-    return { -9999 };
+    return {-9999};
   else
     return {};
 }

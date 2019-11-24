@@ -876,9 +876,9 @@ Scope::lookupBestFunctionOverloadLocalImpl(const SrcPos& srcpos, const ScopeName
     if (!candidates.empty()) {
       std::sort(begin(candidates), end(candidates),
                 [](const auto& lhs, const auto& rhs) { return lhs.fDist < rhs.fDist; });
-      return FunctionLookup{ candidates.front().fName,
-                             std::dynamic_pointer_cast<FunctionNode>(
-                                 candidates.front().fNode) };
+      return FunctionLookup{
+          candidates.front().fName,
+          std::dynamic_pointer_cast<FunctionNode>(candidates.front().fNode)};
     }
   }
 

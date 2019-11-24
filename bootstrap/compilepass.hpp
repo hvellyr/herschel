@@ -93,7 +93,7 @@ class AstNodeCompilePass
 public:
   AstNodeCompilePass(int level, bool showNodeType = false)
       : fLevel(level)
-   // , fShowNodeType(showNodeType)
+  // , fShowNodeType(showNodeType)
   {
   }
 

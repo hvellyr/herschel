@@ -22,11 +22,9 @@ namespace herschel {
 TEST_CASE("Scope lookup type", "[scope]")
 {
   SrcPos sp;
-  Type t0 = Type::makeTypeRef(String("Foo"),
-                             std::vector<Type>{Type::makeTypeRef(String("Char"),
-                                                                K(isValue))},
-                             TypeConstVector(),
-                             K(isValue));
+  Type t0 = Type::makeTypeRef(
+      String("Foo"), std::vector<Type>{Type::makeTypeRef(String("Char"), K(isValue))},
+      TypeConstVector(), K(isValue));
 
   auto s0 = makeScope(kScopeL_CompileUnit);
   Type t1 = s0->lookupType_unused(t0);
@@ -34,4 +32,4 @@ TEST_CASE("Scope lookup type", "[scope]")
   REQUIRE(t1.isDef());
 }
 
-}
+}  // namespace herschel

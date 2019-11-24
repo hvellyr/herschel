@@ -445,7 +445,7 @@ AnnotatePass::AnnotatePass(int level, Compiler& compiler)
 
 std::shared_ptr<AstNode> AnnotatePass::doApply(std::shared_ptr<AstNode> src)
 {
-  Annotator an{ fCompiler };
+  Annotator an{fCompiler};
   src = an.annotateNode(src);
   return src;
 }

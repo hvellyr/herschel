@@ -95,13 +95,13 @@ public:
 
 inline Numf hex(int val, int width = 0, char c = '\0')
 {
-  return Numf{ val, 16, width, c };
+  return Numf{val, 16, width, c};
 }
 
 
 inline Numf oct(int val, int width = 0, char c = '\0')
 {
-  return Numf{ val, 8, width, c };
+  return Numf{val, 8, width, c};
 }
 
 

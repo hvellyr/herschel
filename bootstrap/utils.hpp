@@ -18,14 +18,14 @@ namespace herschel {
 template <typename T>
 std::vector<T> makeVector(T first)
 {
-  return std::vector<T>{ first };
+  return std::vector<T>{first};
 }
 
 
 template <typename T, typename... Args>
 std::vector<T> makeVector(T first, Args... args)
 {
-  return std::vector<T>{ first, args... };
+  return std::vector<T>{first, args...};
 }
 
 }  // namespace herschel

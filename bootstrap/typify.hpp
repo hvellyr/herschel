@@ -12,8 +12,8 @@
 
 #include "common.hpp"
 
-#include "compiler.hpp"
 #include "compilepass.hpp"
+#include "compiler.hpp"
 #include "token.hpp"
 
 #include <vector>

@@ -52,13 +52,7 @@ public:
 using MacroPatternVector = std::vector<MacroPattern>;
 
 
-enum MacroType {
-  kMacro_Invalid,
-  kMacro_Any,
-  kMacro_Def,
-  kMacro_Stmt,
-  kMacro_Function
-};
+enum MacroType { kMacro_Invalid, kMacro_Any, kMacro_Def, kMacro_Stmt, kMacro_Function };
 
 String toString(MacroType type);
 

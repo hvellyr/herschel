@@ -34,8 +34,8 @@ bool SetupUnix::exeFromDevpath(zstring /*exeName*/, const String& exedir,
                                Paths& paths) const
 {
   static std::vector<String> possible_paths = {
-    String("/temp/debug/"),
-    String("/temp/release/"),
+      String("/temp/debug/"),
+      String("/temp/release/"),
   };
 
   for (const auto& subpath : possible_paths) {
@@ -61,8 +61,8 @@ bool SetupUnix::exeFromRuntimeInstallation(zstring exeName, const String& exedir
                                            Paths& paths) const
 {
   static std::vector<String> possible_paths = {
-    String("/bin/"),
-    String("/sbin/"),
+      String("/bin/"),
+      String("/sbin/"),
   };
   for (const auto& subpath : possible_paths) {
     if (exedir.endsWith(subpath)) {

@@ -40,8 +40,8 @@ static bool exeFromDevpath(zstring exeName, const String& exedir, String& syspat
                            String& binpath)
 {
   static std::vector<String> possible_paths = {
-    String("/temp/debug/"),
-    String("/temp/release/"),
+      String("/temp/debug/"),
+      String("/temp/release/"),
   };
   for (const auto& p : possible_paths) {
     String fullpath = p + exeName + ".exe";

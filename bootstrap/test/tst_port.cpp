@@ -34,7 +34,7 @@ TEST_CASE("DataPort block init constructor", "[port][data-port]")
   for (int i = 0; i < BUFSIZE; i++)
     tmp[i] = i % 256;
 
-  DataPort dp{ tmp, BUFSIZE };
+  DataPort dp{tmp, BUFSIZE};
   for (int i = 0; i < BUFSIZE; i++) {
     REQUIRE(dp.read() == (i % 256));
   }
@@ -81,8 +81,8 @@ TEST_CASE("DataPort block write", "[port][data-port]")
 
 TEST_CASE("DataPort failing read", "[port][data-port]")
 {
-  Octet tmp[] = { 'a', '\0' };
-  DataPort dp{ tmp, strlen((char*)tmp) };
+  Octet tmp[] = {'a', '\0'};
+  DataPort dp{tmp, strlen((char*)tmp)};
 
   REQUIRE(dp.read() == 'a');
 
@@ -100,20 +100,20 @@ TEST_CASE("DataPort failing read", "[port][data-port]")
 
 TEST_CASE("CharPort basic read and write", "[port][char-port]")
 {
-  Char src[] = { 'a',       // 61
-                 0x424,     // d0 a4
-                 0xc548,    // ec 95 88
-                 0xfb00,    // ef ac 80
-                 0xac00,    // ea b0 80
-                 0x4e57 };  // e4 b9 97
+  Char src[] = {'a',      // 61
+                0x424,    // d0 a4
+                0xc548,   // ec 95 88
+                0xfb00,   // ef ac 80
+                0xac00,   // ea b0 80
+                0x4e57};  // e4 b9 97
   auto dp = std::make_shared<DataPort>();
   auto cp = std::make_shared<CharPort>(dp);
 
   for (int i = 0; i < 6; i++)
     cp->write(src[i]);
 
-  Octet expected[] = { 'a',  0xd0, 0xa4, 0xec, 0x95, 0x88, 0xef, 0xac,
-                       0x80, 0xea, 0xb0, 0x80, 0xe4, 0xb9, 0x97, 0x00 };
+  Octet expected[] = {'a',  0xd0, 0xa4, 0xec, 0x95, 0x88, 0xef, 0xac,
+                      0x80, 0xea, 0xb0, 0x80, 0xe4, 0xb9, 0x97, 0x00};
 
   REQUIRE(dp->length() == (size_t)15);
   REQUIRE(::memcmp(dp->data(), expected, 15) == 0);
@@ -131,8 +131,8 @@ TEST_CASE("CharPort basic read and write", "[port][char-port]")
 
 TEST_CASE("CharPort block read", "[port][char-port]")
 {
-  Octet tmp[] = { 'h', 'e', 'l', 'l', 'o', 0xd0, 0xa4, '-', '-', 0xec, 0x95, 0x88, 0x00 };
-  Char cs[] = { 'h', 'e', 'l', 'l', 'o', 0x424, '-', '-', 0xc548 };
+  Octet tmp[] = {'h', 'e', 'l', 'l', 'o', 0xd0, 0xa4, '-', '-', 0xec, 0x95, 0x88, 0x00};
+  Char cs[] = {'h', 'e', 'l', 'l', 'o', 0x424, '-', '-', 0xc548};
   auto cp =
       std::make_shared<CharPort>(std::make_shared<DataPort>(tmp, strlen((char*)tmp)));
   for (int i = 0; i < 9; i++) {
@@ -151,7 +151,7 @@ TEST_CASE("CharPort block read", "[port][char-port]")
 
 TEST_CASE("CharPort illegal read", "[port][char-port]")
 {
-  Octet tmp[] = { 'a', '\0' };
+  Octet tmp[] = {'a', '\0'};
   auto cp =
       std::make_shared<CharPort>(std::make_shared<DataPort>(tmp, strlen((char*)tmp)));
 

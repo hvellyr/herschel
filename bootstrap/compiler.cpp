@@ -149,7 +149,7 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
     std::shared_ptr<AstNode> ast;
     Token parsedExprs;
 
-    ExprPass tokenPass{ 1, *this, fState.fToken, fState.fScope };
+    ExprPass tokenPass{1, *this, fState.fToken, fState.fScope};
     parsedExprs = tokenPass.apply(Token(), doTrace);
 
     // let all following passes run beneath the same root-scope.
@@ -157,7 +157,7 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
       ScopeHelper scopeHelper(fState.fScope, K(doExport), !K(isInnerScope),
                               !K(doPropIntern), kScopeL_CompileUnit);
 
-      NodifyPass nodifyPass{ 2, *this, fState.fScope };
+      NodifyPass nodifyPass{2, *this, fState.fScope};
       ast = nodifyPass.apply(parsedExprs, doTrace);
 
       // if the compileunit contains open-ended module declarations
@@ -167,16 +167,16 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
       // the symbols may not be exportable at all).
       fState.fScope = nodifyPass.currentScope();
 
-      AnnotatePass nodePass2{ 3, *this };
+      AnnotatePass nodePass2{3, *this};
       ast = nodePass2.apply(ast, doTrace);
 
-      TypifyPass nodePass3{ 4, *this };
+      TypifyPass nodePass3{4, *this};
       ast = nodePass3.apply(ast, doTrace);
 
-      Annotate2Pass nodePass4{ 5, *this };
+      Annotate2Pass nodePass4{5, *this};
       ast = nodePass4.apply(ast, doTrace);
 
-      TypeCheckPass nodePass5{ 6 };
+      TypeCheckPass nodePass5{6};
       ast = nodePass5.apply(ast, doTrace);
 
       //fState.fScope->dumpDebug(true);
@@ -195,7 +195,7 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
 TokenVector Compiler::includeFile(const SrcPos& srcpos, const String& srcName,
                                   const std::function<TokenVector()>& functor)
 {
-  String absPath = lookupFile({ srcName });
+  String absPath = lookupFile({srcName});
   return includeFileImpl(srcpos, srcName, absPath, functor);
 }
 
@@ -349,7 +349,7 @@ bool Compiler::importFileImpl(const SrcPos& srcpos, const String& libName,
     HR_LOG(kDebug) << "Import: " << libName << " (from: " << absPath << ")";
 
   try {
-    auto compiler = Compiler{ K(isParsingInterface) };
+    auto compiler = Compiler{K(isParsingInterface)};
     if (preload)
       compiler.importSystemHeaders();
 
@@ -376,7 +376,7 @@ bool Compiler::importFileImpl(const SrcPos& srcpos, const String& libName,
 
 String Compiler::lookupLibrary(const String& libName)
 {
-  return lookupFile({ libName + ".hr", libName + "/" + libName + ".hr" });
+  return lookupFile({libName + ".hr", libName + "/" + libName + ".hr"});
 }
 
 
@@ -386,7 +386,7 @@ String Compiler::lookupFile(const std::vector<String>& srcNames)
 
   String path;
   if (!sCurrentFilePath.isEmpty())
-    path = file::lookupInPath(srcNames, { sCurrentFilePath }, exts);
+    path = file::lookupInPath(srcNames, {sCurrentFilePath}, exts);
 
   if (path.isEmpty()) {
     path = file::lookupInPath(srcNames, Properties::systemDirSearchPath(), exts);
@@ -478,7 +478,7 @@ void compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
       }
 
       if (doCompile) {
-        XmlRenderer out{ std::make_shared<FilePort>(stderr), true };
+        XmlRenderer out{std::make_shared<FilePort>(stderr), true};
         out.render(ast);
 
         hr_assert(ast);

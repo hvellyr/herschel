@@ -55,11 +55,11 @@ namespace {
       std::shared_ptr<AstNode> nd = copyExpr;
 
       {
-        auto an = Annotator{ compiler };
+        auto an = Annotator{compiler};
         nd = an.annotateNode(nd);
       }
       {
-        auto ty = Typifier{ compiler };
+        auto ty = Typifier{compiler};
         ty.typifyNode(nd);
       }
 
@@ -244,7 +244,7 @@ Annotate2Pass::Annotate2Pass(int level, Compiler& compiler)
 
 std::shared_ptr<AstNode> Annotate2Pass::doApply(std::shared_ptr<AstNode> src)
 {
-  Annotator2 an{ fCompiler };
+  Annotator2 an{fCompiler};
   an.annotateNode(src);
   return src;
 }

@@ -38,7 +38,7 @@ public:
     char path2[PATH_MAX];
     char *line, *result, *abspath;
     size_t buf_size;
-    FILE *stream = nullptr;
+    FILE* stream = nullptr;
     int loop_level = 0;
     String retv;
 
@@ -81,7 +81,7 @@ public:
        * running in Valgrind 2.2. Read from /proc/self/maps as fallback. */
 
     buf_size = PATH_MAX + 128;
-    line = (char *)malloc(buf_size);
+    line = (char*)malloc(buf_size);
     strcpy(line, path);
 
     if (!(stream = fopen("/proc/self/maps", "r")))
@@ -118,7 +118,7 @@ public:
   }
 };
 
-const SetupUnix &getSetupUnixSetup()
+const SetupUnix& getSetupUnixSetup()
 {
   static SetupLinux setup;
   return setup;

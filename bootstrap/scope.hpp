@@ -181,9 +181,10 @@ public:
   struct FunctionLookup {
     FunctionLookup() = default;
     FunctionLookup(String name, std::shared_ptr<FunctionNode> node)
-      : fName(std::move(name))
-      , fNode(std::move(node))
-    {}
+        : fName(std::move(name))
+        , fNode(std::move(node))
+    {
+    }
 
     explicit operator bool() const { return fNode != nullptr; }
 

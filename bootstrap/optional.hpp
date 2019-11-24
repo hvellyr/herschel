@@ -10,8 +10,7 @@
 #include <utility>
 
 
-namespace herschel {
-namespace estd {
+namespace herschel { namespace estd {
 
 #if !defined(HAVE_STD_OPTIONAL)
 
@@ -43,9 +42,7 @@ namespace estd {
     optional(optional<T>&&) = default;
 #  endif
 
-    ~optional() {
-      reset();
-    }
+    ~optional() { reset(); }
 
     optional<T>& operator=(const optional<T>& rhs) = default;
 
@@ -100,5 +97,4 @@ namespace estd {
 
 #endif
 
-}  // namespace estd
-}  // namespace herschel
+}}  // namespace herschel::estd

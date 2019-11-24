@@ -58,7 +58,7 @@ namespace {
 
         std::shared_ptr<AstNode> expr;
         {
-          Annotator an{ typf->fCompiler };
+          Annotator an{typf->fCompiler};
           expr = an.annotateNode(deallocExpr);
         }
 
@@ -420,7 +420,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             std::shared_ptr<AstNode> createNode;
 
             {
-              Annotator an{ typf->fCompiler };
+              Annotator an{typf->fCompiler};
               createNode = an.annotateNode(initExpr);
             }
 
@@ -1649,7 +1649,7 @@ void Typifier::checkArgParamType(TypeCtx& localCtx,
 Typifier::KeyargReturn Typifier::findKeyedArg(const NodeList& args, size_t argidx,
                                               const String& key)
 {
-  auto retval = KeyargReturn{ nullptr, 0 };
+  auto retval = KeyargReturn{nullptr, 0};
 
   for (size_t i = argidx; i < args.size(); i++) {
     auto keyarg = dynamic_cast<KeyargNode*>(args[i].get());
@@ -1657,7 +1657,7 @@ Typifier::KeyargReturn Typifier::findKeyedArg(const NodeList& args, size_t argid
       return retval;
 
     if (keyarg->key() == key) {
-      return KeyargReturn{ keyarg, i };
+      return KeyargReturn{keyarg, i};
     }
   }
   return retval;
@@ -1934,7 +1934,7 @@ bool Typifier::checkBinaryFunctionCall(std::shared_ptr<BinaryNode> node,
   auto funcNode = node->scope()->lookupFunction(funcName, K(showAmbiguousSymDef));
 
   if (funcNode) {
-    auto args = makeNodeList({ leftArg, rightArg });
+    auto args = makeNodeList({leftArg, rightArg});
 
     if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
             funcName, typesForArgs(args), node->srcpos(), K(showAmbiguousSymDef))) {
@@ -1978,7 +1978,7 @@ TypifyPass::TypifyPass(int level, Compiler& compiler)
 
 std::shared_ptr<AstNode> TypifyPass::doApply(std::shared_ptr<AstNode> src)
 {
-  auto ty = Typifier{ fCompiler };
+  auto ty = Typifier{fCompiler};
   ty.typifyNode(src);
   return src;
 }

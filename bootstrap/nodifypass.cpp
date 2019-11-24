@@ -1897,8 +1897,8 @@ std::shared_ptr<AstNode> SecondPass::parseFunCall(const Token& expr)
     return generateArrayAlloc(expr, first);
   }
   else if (std::dynamic_pointer_cast<TypeNode>(first)) {
-    return generateAlloc(expr,
-                         std::dynamic_pointer_cast<TypeNode>(first)->type().classTypeOfType());
+    return generateAlloc(
+        expr, std::dynamic_pointer_cast<TypeNode>(first)->type().classTypeOfType());
   }
   else {
     auto symNode = std::dynamic_pointer_cast<SymbolNode>(first);

@@ -480,7 +480,7 @@ public:
   {
   }
 
-  NodeList child_nodes() override { return { fTypeNode }; }
+  NodeList child_nodes() override { return {fTypeNode}; }
 
   std::shared_ptr<AstNode> typeNode() const { return fTypeNode; }
   void setTypeNode(std::shared_ptr<AstNode> nd) { fTypeNode = nd; }
@@ -726,7 +726,7 @@ public:
   {
   }
 
-  NodeList child_nodes() override { return { fDefined }; }
+  NodeList child_nodes() override { return {fDefined}; }
 
   std::shared_ptr<AstNode> defNode() const { return fDefined; }
 
@@ -821,10 +821,7 @@ public:
 
   BindingAllocType allocType() const { return fAllocType; }
 
-  NodeList child_nodes() override
-  {
-    return fInitExpr ? NodeList{ fInitExpr } : NodeList{};
-  }
+  NodeList child_nodes() override { return fInitExpr ? NodeList{fInitExpr} : NodeList{}; }
 
 protected:
   String fSymbolName;
@@ -1060,7 +1057,7 @@ public:
                                            details::nodeClone(fRight)));
   }
 
-  NodeList child_nodes() override { return { fLeft, fRight }; }
+  NodeList child_nodes() override { return {fLeft, fRight}; }
 
   std::weak_ptr<FunctionNode> refFunction() const { return fRefFunction; }
   void setRefFunction(std::shared_ptr<FunctionNode> refFunction)
@@ -1116,7 +1113,7 @@ public:
         this, std::make_shared<UnaryNode>(fSrcPos, fOp, details::nodeClone(fBase)));
   }
 
-  NodeList child_nodes() override { return { fBase }; }
+  NodeList child_nodes() override { return {fBase}; }
 
 private:
   std::shared_ptr<AstNode> fBase;
@@ -1166,7 +1163,7 @@ public:
 
   NodeList child_nodes() override
   {
-    return fBy ? NodeList{ fFrom, fTo, fBy } : NodeList{ fFrom, fTo };
+    return fBy ? NodeList{fFrom, fTo, fBy} : NodeList{fFrom, fTo};
   }
 
 private:
@@ -1216,7 +1213,7 @@ public:
                                            details::nodeClone(fRValue)));
   }
 
-  NodeList child_nodes() override { return { fLValue, fRValue }; }
+  NodeList child_nodes() override { return {fLValue, fRValue}; }
 
 private:
   std::shared_ptr<AstNode> fLValue;
@@ -1266,8 +1263,8 @@ public:
 
   NodeList child_nodes() override
   {
-    return fAlternate ? NodeList{ fTest, fConsequent, fAlternate }
-                      : NodeList{ fTest, fConsequent };
+    return fAlternate ? NodeList{fTest, fConsequent, fAlternate}
+                      : NodeList{fTest, fConsequent};
   }
 
 private:
@@ -1340,8 +1337,8 @@ public:
 
   void addMapping(std::shared_ptr<AstNode> mapping, std::shared_ptr<AstNode> consequent)
   {
-    fMappings.push_back(SelectMapping(std::vector<NodeList::value_type>{ mapping },
-                                      std::move(consequent)));
+    fMappings.push_back(
+        SelectMapping(std::vector<NodeList::value_type>{mapping}, std::move(consequent)));
   }
 
   void addElseMapping(std::shared_ptr<AstNode> alternate)
@@ -1733,7 +1730,7 @@ public:
   std::shared_ptr<AstNode> refNode() const { return fRefNode; }
   void setRefNode(std::shared_ptr<AstNode> refNode) { fRefNode = refNode; }
   void reset() { fRefNode = nullptr; }
-  NodeList child_nodes() override { return fRefNode ? NodeList{ fRefNode } : NodeList{}; }
+  NodeList child_nodes() override { return fRefNode ? NodeList{fRefNode} : NodeList{}; }
 
   bool isObsolete() const override { return fRefNode ? fRefNode->isObsolete() : false; }
   bool isRemoveable() const override { return true; }
@@ -1775,7 +1772,7 @@ public:
 
   void setValue(std::shared_ptr<AstNode> node) { fValue = std::move(node); }
 
-  NodeList child_nodes() override { return { fValue }; }
+  NodeList child_nodes() override { return {fValue}; }
 
 private:
   String fKey;
@@ -1818,7 +1815,7 @@ public:
 
   void setTest(std::shared_ptr<AstNode> node) { fTest = std::move(node); }
 
-  NodeList child_nodes() override { return { fTest, fBody }; }
+  NodeList child_nodes() override { return {fTest, fBody}; }
 
 private:
   std::shared_ptr<AstNode> fTest;
@@ -1907,7 +1904,7 @@ public:
 
   void setBase(std::shared_ptr<AstNode> node) { fBase = std::move(node); }
 
-  NodeList child_nodes() override { return { fBase }; }
+  NodeList child_nodes() override { return {fBase}; }
 
 private:
   std::shared_ptr<AstNode> fBase;
@@ -1946,7 +1943,7 @@ public:
 
   String slotName() const { return fSlotName; }
 
-  NodeList child_nodes() override { return { fBase }; }
+  NodeList child_nodes() override { return {fBase}; }
 
 private:
   std::shared_ptr<AstNode> fBase;

@@ -834,7 +834,7 @@ String xml::displayTypeConv(const AstNode& node)
 
 void xml::dump(std::shared_ptr<AstNode> node)
 {
-  XmlRenderer out{ std::make_shared<FilePort>(stderr), true };
+  XmlRenderer out{std::make_shared<FilePort>(stderr), true};
   out.render(node);
 }
 

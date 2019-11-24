@@ -41,7 +41,7 @@ ExprPass::ExprPass(int level, Compiler& compiler, const Token& currentToken,
 
 Token ExprPass::doApply(const Token& src)
 {
-  FirstPass fp{ fCompiler, fCurrentToken, fScope };
+  FirstPass fp{fCompiler, fCurrentToken, fScope};
   return fp.parse();
 }
 
@@ -4133,7 +4133,7 @@ namespace {
   template <class T, class... Args>
   auto makeMatcher(Args&&... args) -> std::unique_ptr<ParameterSyntaxMatcher>
   {
-    return std::unique_ptr<ParameterSyntaxMatcher>{ new T(std::forward<Args>(args)...) };
+    return std::unique_ptr<ParameterSyntaxMatcher>{new T(std::forward<Args>(args)...)};
   }
 }  // namespace
 

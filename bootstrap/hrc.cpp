@@ -79,7 +79,7 @@ int main(int argc, char** argv)
   }
 
   if (options.count("help")) {
-    std::cout << options.help({ "" }) << std::endl;
+    std::cout << options.help({""}) << std::endl;
     return 0;
   }
   if (options.count("version")) {
