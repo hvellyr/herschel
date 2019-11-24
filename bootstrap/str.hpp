@@ -145,8 +145,9 @@ public:
   //! needle is neither part of \p before nor \p after.
   int split(const String& needle, String& before, String& after) const;
 
-  //! Returns a substring from [\p from, \p to).
-  String part(int from, int to) const;
+  //! Returns a substring from [\p from, \p to).  If @p to is below 0
+  //! the entire rest string is used.
+  String part(int from, int to = -1) const;
 
   //! Treats the receiver as a string representation of an integer number
   //! and converts it into the numerical form using the base \p radix.  No

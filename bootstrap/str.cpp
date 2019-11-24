@@ -443,6 +443,9 @@ int String::split(const String& needle, String& before, String& after) const
 
 String String::part(int from, int to) const
 {
+  if (to < 0)
+    to = fImpl->fLength;
+
   if (from == 0 && to >= fImpl->fLength)
     return *this;
 
