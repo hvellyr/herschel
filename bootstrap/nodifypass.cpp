@@ -795,7 +795,20 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
   if (fScope->checkForRedefinition(expr.srcpos(), Scope::kNormal, fullTypeName))
     return NodeList();
 
-  fScope->registerType(expr.srcpos(), fullTypeName, defType);
+  NodeList defaultApplyParams;
+  if (isRecord) {
+    for (size_t i = 0; i < slotParams.size(); i++) {
+      auto sdnd = dynamic_cast<SlotdefNode*>(slotParams[i].get());
+      if (sdnd) {
+        hr_assert(sdnd->initExpr());
+        defaultApplyParams.push_back(makeParamNode(recScope, sdnd->srcpos(), sdnd->name(),
+                                                   uniqueName("prm"), kNamedArg,
+                                                   sdnd->type(), sdnd->initExpr()));
+      }
+    }
+  }
+
+  fScope->registerType(expr.srcpos(), fullTypeName, defType, defaultApplyParams);
 
   if (!isLocal)
     registerSymbolForExport(fullTypeName, vizType);
@@ -806,17 +819,6 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
       isLocal));
 
   if (isRecord) {
-    NodeList defaultApplyParams;
-    for (size_t i = 0; i < slotParams.size(); i++) {
-      auto sdnd = dynamic_cast<SlotdefNode*>(slotParams[i].get());
-      if (sdnd) {
-        hr_assert(sdnd->initExpr());
-        defaultApplyParams.push_back(makeParamNode(recScope, sdnd->srcpos(), sdnd->name(),
-                                                   uniqueName("prm"), kNamedArg,
-                                                   sdnd->type(), sdnd->initExpr()));
-      }
-    }
-
     result.push_back(generateConstructor(recScope, expr, fullTypeName, defType,
                                          defaultApplyParams, slotParams));
     // result.push_back(generateCopyFunction(recScope, expr, fullTypeName, defType,
@@ -833,9 +835,85 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
 // {
 //   /*
 //     def on-alloc(o : ^T) -> T {
-      
+
 //    */
 // }
+
+
+struct ReqTypeInitTuple {
+  Type fType;
+  bool fIsRecord;
+  NodeList fSlotParams;
+};
+
+
+static ReqTypeInitTuple reqTypeInitTupleForType(const Type& type,
+                                                std::shared_ptr<Scope> scope)
+{
+  auto typeTuple =
+      scope->lookupTypeWithSlotParams(type.typeName(), K(showAmbiguousSymDef));
+  if (!std::get<0>(typeTuple).isDef()) {
+    HR_LOG(kError, SrcPos(), E_UnknownType) << "Unknown super type: " << type;
+  }
+  else if (std::get<0>(typeTuple).isRecord()) {
+    ReqTypeInitTuple tuple;
+    tuple.fType = type;
+    tuple.fIsRecord = true;
+    tuple.fSlotParams = std::get<1>(typeTuple);
+    return tuple;
+  }
+  else {
+    ReqTypeInitTuple tuple;
+    tuple.fType = type;
+    tuple.fIsRecord = false;
+    return tuple;
+  }
+
+  return ReqTypeInitTuple();
+}
+
+
+static std::vector<ReqTypeInitTuple> getInheritedTypes(const Type& inType,
+                                                       std::shared_ptr<Scope> scope)
+{
+  std::vector<ReqTypeInitTuple> reqTypeInits;
+
+  auto defType = scope->lookupType(inType);
+
+  if ((defType.isType() || defType.isRecord()) && defType.typeInheritance().isDef()) {
+    if (defType.typeInheritance().isIntersection()) {
+      const TypeVector& inheritedTypes = defType.typeInheritance().intersectionTypes();
+
+      for (size_t i = 0; i < inheritedTypes.size(); i++) {
+        ReqTypeInitTuple tuple = reqTypeInitTupleForType(inheritedTypes[i], scope);
+        if (tuple.fType.isDef()) {
+          reqTypeInits.push_back(tuple);
+
+          auto types = getInheritedTypes(tuple.fType, scope);
+          reqTypeInits.insert(begin(reqTypeInits), begin(types), end(types));
+        }
+      }
+    }
+    else {
+      ReqTypeInitTuple tuple = reqTypeInitTupleForType(defType.typeInheritance(), scope);
+      if (tuple.fType.isDef()) {
+        reqTypeInits.push_back(tuple);
+
+        auto types = getInheritedTypes(tuple.fType, scope);
+        reqTypeInits.insert(begin(reqTypeInits), begin(types), end(types));
+      }
+    }
+  }
+
+  return reqTypeInits;
+}
+
+
+String SecondPass::createHooknameInTypeDerivedNs(const String& typeName,
+                                                 const String& hookname)
+{
+  return qualifyId(qualifyId(currentModuleName(), typeName), hookname);
+}
 
 
 std::shared_ptr<AstNode> SecondPass::generateConstructor(
@@ -849,20 +927,59 @@ std::shared_ptr<AstNode> SecondPass::generateConstructor(
 
   const SrcPos& srcpos = typeExpr.srcpos();
 
+  //-------- construct the init function with a self first parameter
   String ctorFuncName = qualifyId(fullTypeName, Names::kInitFuncName);
   String selfParamSym = uniqueName("obj");
 
   ScopeGuard scopeGuard(fScope, recScope);
 
   NodeList params = details::copyNodes(defaultApplyParams);
-  params.insert(params.begin(), makeParamNode(fScope, srcpos, String(), selfParamSym,
+  params.insert(params.begin(), makeParamNode(recScope, srcpos, String(), selfParamSym,
                                               kPosArg, defType, nullptr));
+
+  // add all slot params from the super classes as additional function parameters
+  for (const auto& reqTypeInit : getInheritedTypes(defType, fScope)) {
+    if (reqTypeInit.fIsRecord) {
+      for (auto slotParam : reqTypeInit.fSlotParams) {
+        auto slotPrmNd = std::dynamic_pointer_cast<ParamNode>(slotParam);
+        params.push_back(
+            cloneParamNode(recScope, dynamic_cast<ParamNode*>(slotParam.get())));
+      }
+    }
+  }
 
   auto body = makeBlockNode(fScope, srcpos);
 
-  generatePrimeInits(srcpos, body, defType, selfParamSym);
-
   // initialize slots
+  // ... first for the super types (if records)
+  for (const auto& reqTypeInit : getInheritedTypes(defType, fScope)) {
+    if (reqTypeInit.fIsRecord) {
+      auto recType = fScope->lookupType(reqTypeInit.fType);
+      hr_assert(recType.isRecord());
+      hr_assert(recType.slots().size() == reqTypeInit.fSlotParams.size());
+
+      auto superType = reqTypeInit.fType;
+      superType.setIsValueType(false);
+
+      for (auto slotidx = 0u; slotidx < recType.slots().size(); ++slotidx) {
+        const auto& typeSlot = recType.slots()[slotidx];
+        auto slotParam =
+            std::dynamic_pointer_cast<ParamNode>(reqTypeInit.fSlotParams[slotidx]);
+
+        auto slotInit = makeAssignNode(
+            fScope, srcpos,
+            makeSlotRefNode(fScope, srcpos,
+                            makeCastNode(fScope, srcpos,
+                                         makeSymbolNode(fScope, srcpos, selfParamSym),
+                                         superType),
+                            typeSlot.name()),
+            makeSymbolNode(fScope, srcpos, slotParam->name()));
+        body->appendNode(slotInit);
+      }
+    }
+  }
+
+  // ... then for the slots of this class
   for (auto i = 0u; i < slotDefs.size(); ++i) {
     auto slot = std::dynamic_pointer_cast<SlotdefNode>(slotDefs[i]);
     hr_assert(slot);
@@ -878,8 +995,33 @@ std::shared_ptr<AstNode> SecondPass::generateConstructor(
     body->appendNode(slotInit);
   }
 
+  // ... create .xxx.on-create() hooks for all super types
+  for (const auto& reqTypeInit : getInheritedTypes(defType, fScope)) {
+    if (reqTypeInit.fIsRecord) {
+      auto recType = fScope->lookupType(reqTypeInit.fType);
+      auto superType = reqTypeInit.fType;
+      superType.setIsValueType(false);
+
+      auto hookFuncName =
+          createHooknameInTypeDerivedNs(superType.typeName(), Names::kOnInitFuncName);
+      auto funcNode = makeSymbolNode(fScope, srcpos, hookFuncName);
+      auto initExpr = makeApplyNode(fScope, srcpos, funcNode);
+
+      initExpr->appendNode(makeCastNode(
+          fScope, srcpos, makeSymbolNode(fScope, srcpos, selfParamSym), superType));
+
+      funcNode->setIsRemoveable(true);
+      initExpr->setIsRemoveable(true);
+
+      body->appendNode(makeWeakNode(fScope, initExpr));
+    }
+  }
+
+  // ... create .yyy.on-create() hook for this
   {
-    auto funcNode = makeSymbolNode(fScope, srcpos, Names::kOnAllocFuncName);
+    auto hookFuncName =
+        createHooknameInTypeDerivedNs(fullTypeName, Names::kOnInitFuncName);
+    auto funcNode = makeSymbolNode(fScope, srcpos, hookFuncName);
     auto initExpr = makeApplyNode(fScope, srcpos, funcNode);
     initExpr->appendNode(makeSymbolNode(fScope, srcpos, selfParamSym));
 
@@ -902,80 +1044,6 @@ std::shared_ptr<AstNode> SecondPass::generateConstructor(
   fScope->attachSymbolForExport(Scope::kNormal, fullTypeName, ctorFuncName);
 
   return newDefNode(ctorFunc, !K(isLocal));
-}
-
-
-struct ReqTypeInitTuple {
-  Type fType;
-  bool fReqExplicitPrime;
-  bool fIsRecord;
-};
-
-
-static ReqTypeInitTuple reqTypeInitTupleForType(const Type& type,
-                                                std::shared_ptr<Scope> scope)
-{
-  Type superType = scope->lookupType(type.typeName(), K(showAmbiguousSymDef));
-  if (!superType.isDef()) {
-    HR_LOG(kError, SrcPos(), E_UnknownType) << "Unknown super type: " << type;
-  }
-  else if (superType.isRecord()) {
-    ReqTypeInitTuple tuple;
-    tuple.fType = type;
-    tuple.fIsRecord = true;
-    tuple.fReqExplicitPrime = superType.applySignature().hasPositionalParam();
-    return tuple;
-  }
-  else {
-    ReqTypeInitTuple tuple;
-    tuple.fType = type;
-    tuple.fIsRecord = false;
-    tuple.fReqExplicitPrime = false;
-    return tuple;
-  }
-
-  return ReqTypeInitTuple();
-}
-
-
-static std::vector<ReqTypeInitTuple> getDirectInheritedTypes(const Type& defType,
-                                                             std::shared_ptr<Scope> scope)
-{
-  std::vector<ReqTypeInitTuple> reqTypeInits;
-
-  if (defType.typeInheritance().isDef()) {
-    if (defType.typeInheritance().isIntersection()) {
-      const TypeVector& inheritedTypes = defType.typeInheritance().intersectionTypes();
-
-      for (size_t i = 0; i < inheritedTypes.size(); i++) {
-        ReqTypeInitTuple tuple = reqTypeInitTupleForType(inheritedTypes[i], scope);
-        if (tuple.fType.isDef())
-          reqTypeInits.push_back(tuple);
-      }
-    }
-    else {
-      ReqTypeInitTuple tuple = reqTypeInitTupleForType(defType.typeInheritance(), scope);
-      if (tuple.fType.isDef())
-        reqTypeInits.push_back(tuple);
-    }
-  }
-
-  return reqTypeInits;
-}
-
-
-void SecondPass::generatePrimeInits(const SrcPos& srcpos, std::shared_ptr<ListNode> body,
-                                    const Type& defType, const String& selfParamSym)
-{
-  for (const auto& reqTypeInit : getDirectInheritedTypes(defType, fScope)) {
-    // does the super type requires an explicit prime?
-    if (reqTypeInit.fIsRecord) {
-      auto apply =
-          generateInitObjectCall(SrcPos(), makeSymbolNode(fScope, SrcPos(), selfParamSym),
-                                 reqTypeInit.fType, TokenVector());
-      body->appendNode(apply);
-    }
-  }
 }
 
 

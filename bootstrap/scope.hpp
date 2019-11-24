@@ -22,6 +22,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <tuple>
 
 
 namespace herschel {
@@ -29,6 +30,7 @@ class Macro;
 class AstNode;
 class FunctionNode;
 
+using NodeList = std::vector<std::shared_ptr<AstNode>>;
 
 enum ScopeLevel {
   kScopeL_CompileUnit,
@@ -130,9 +132,12 @@ public:
 
   //-------- types
 
-  void registerType(const SrcPos& srcpos, const String& name, const Type& type);
+  void registerType(const SrcPos& srcpos, const String& name, const Type& type,
+                    const NodeList& slotDefs = {});
 
   const Type& lookupType(const String& name, bool showAmbiguousSymDef) const;
+  std::tuple<Type, NodeList> lookupTypeWithSlotParams(const String& name,
+                                                      bool showAmbiguousSymDef) const;
 
   Type lookupType(const Type& type) const;
 

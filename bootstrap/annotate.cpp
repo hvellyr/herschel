@@ -202,17 +202,26 @@ struct NodeAnnotator<std::shared_ptr<ApplyNode>> {
       auto funcName = node->simpleCallName();
       auto varNode = node->scope()->lookupVarOrFunc(node->srcpos(), funcName,
                                                     !K(showAmbiguousSymDef));
+      // if not such binding is found, but the name looks like it has
+      // a namespace, and the lastName of this name is known, then
+      // let's rewrite this expression into a parameter passing
+      // function call.  E.g.
+      //
+      // foo.bar()     => bar(foo)
+      // foo.bar(gaz)  => bar(foo, gaz)
       if (!varNode && hasNamespace(funcName)) {
         auto lastName = baseName(funcName);
         if (auto varNode = node->scope()->lookupVarOrFunc(node->srcpos(), lastName,
                                                           !K(showAmbiguousSymDef))) {
-          // foo.bar()     => bar(foo)
-          // foo.bar(gaz)  => bar(foo, gaz)
 
-          node->setBase(makeSymbolNode(node->scope(), node->srcpos(), lastName));
-          node->children().insert(
-              node->children().begin(),
-              makeSymbolNode(node->scope(), node->srcpos(), nsName(funcName)));
+          auto baseNode = makeSymbolNode(node->scope(), node->srcpos(), lastName);
+          baseNode->setIsRemoveable(node->isRemoveable());
+          node->setBase(baseNode);
+
+          auto funcNameNode =
+              makeSymbolNode(node->scope(), node->srcpos(), nsName(funcName));
+          funcNameNode->setIsRemoveable(node->isRemoveable());
+          node->children().insert(node->children().begin(), funcNameNode);
 
           // re-annotate the rewritten code
           node->setBase(ann->annotateNode(node->base()));
@@ -238,15 +247,19 @@ namespace {
       auto slotName = baseName(name);
       auto rootName = nsName(name);
 
-      auto var = node->scope()->lookupVarOrFunc(node->srcpos(), rootName,
-                                                K(showAmbiguouseSymDef));
-      return makeSlotRefNode(node->scope(), node->srcpos(),
-                             var ? makeSymbolNode(node->scope(), node->srcpos(), rootName)
-                                 : unrollSlotRefs(node, rootName),
-                             slotName);
+      if (!slotName.isEmpty()) {
+        auto var = node->scope()->lookupVarOrFunc(node->srcpos(), rootName,
+                                                  K(showAmbiguouseSymDef));
+        auto slotrefNd = var ? makeSymbolNode(node->scope(), node->srcpos(), rootName)
+                             : unrollSlotRefs(node, rootName);
+        slotrefNd->setIsRemoveable(node->isRemoveable());
+        return makeSlotRefNode(node->scope(), node->srcpos(), slotrefNd, slotName);
+      }
     }
 
-    return makeSymbolNode(node->scope(), node->srcpos(), name);
+    auto symNd = makeSymbolNode(node->scope(), node->srcpos(), name);
+    symNd->setIsRemoveable(node->isRemoveable());
+    return symNd;
   }
 }  // namespace
 

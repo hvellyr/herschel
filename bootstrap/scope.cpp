@@ -384,6 +384,20 @@ const Type& Scope::lookupType(const String& name, bool showAmbiguousSymDef) cons
 }
 
 
+std::tuple<Type, NodeList> Scope::lookupTypeWithSlotParams(const String& name,
+                                                           bool showAmbiguousSymDef) const
+{
+  auto lv = lookupItem(SrcPos(), ScopeName(kNormal, name), showAmbiguousSymDef,
+                       kScopeItem_type);
+  if (lv.fItem) {
+    auto item = dynamic_cast<const TypeScopeItem*>(lv.fItem);
+    return std::make_tuple(item->type(), item->slotParams());
+  }
+
+  return std::make_tuple(sInvalidType, NodeList{});
+}
+
+
 Type Scope::normalizeType(const Type& type)
 {
   if (type.isRef()) {

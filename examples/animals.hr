@@ -10,6 +10,8 @@ def record Mamal : Animal
   fur? : Bool
 )
 
+def .Mamal.on-init(self : ^Mamal) self
+
 def record Dog : Mamal, SoundMaking
 (
   size : String
@@ -20,8 +22,12 @@ def record Cat : Mamal
   size : String
 )
 
-def on-alloc(self : ^Cat)
-  self
+def .Cat.on-init(self : ^Cat) self
 
-def on-alloc(self : ^Dog)
-  self
+-- def on-alloc(self : ^Dog) self
+
+
+def .app.main() {
+  let a = Dog()
+  0
+}

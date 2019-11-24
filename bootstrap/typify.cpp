@@ -865,9 +865,9 @@ struct NodeTypifier<std::shared_ptr<SlotRefNode>> {
           typf->annotateTypeConv(node, node->type());
         }
       }
-      else {
+      else if (!node->base()->isRemoveable()) {
         HR_LOG(kError, node->srcpos(), E_SlotRefToNonClass)
-            << "slot reference to non-record type";
+            << "reference to slot '" << node->slotName() << "' is non-record type";
         node->setType(Type::makeAny());
         node->setDstType(Type::makeAny());
         typf->annotateTypeConv(node, node->type());

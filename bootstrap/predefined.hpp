@@ -346,7 +346,7 @@ public:
   const static String kInitFuncName;
   const static String kValueKeyargName;
   const static String kNullValueFuncName;
-  const static String kOnAllocFuncName;
+  const static String kOnInitFuncName;
   const static String kOnCopyFuncName;
 };
 

@@ -84,8 +84,6 @@ private:
   generateConstructor(std::shared_ptr<Scope> recScope, const Token& typeExpr,
                       const String& fullTypeName, const Type& defType,
                       const NodeList& defaultApplyParams, const NodeList& slotDefs);
-  void generatePrimeInits(const SrcPos& srcpos, std::shared_ptr<ListNode> body,
-                          const Type& defType, const String& selfParamSym);
 
   std::shared_ptr<AstNode> parseAliasDef(const Token& expr, size_t ofs, bool isLocal,
                                          VizType vizType);
@@ -151,6 +149,7 @@ private:
 
 
   //@{ Parsing functions
+  String createHooknameInTypeDerivedNs(const String& typeName, const String& hookname);
 
   struct FundefClauseData {
     FundefClauseData()
