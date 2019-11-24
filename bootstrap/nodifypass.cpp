@@ -776,20 +776,13 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
     TypeSlotList slotTypes;
     paramsNodeListToSlotList(&slotTypes, &funcParams, slotParams);
 
-    String ctorFuncName = qualifyId(fullTypeName, Names::kInitFuncName);
-    FunctionSignature sign = FunctionSignature(
-        !K(isGeneric),
-        ctorFuncName,  // func name
-        // rettype
-        Type::makeTypeRef(fullTypeName, generics, K(isValue)), funcParams);
-
     TypeVector genGenerics;
     for (size_t i = 0; i < generics.size(); i++) {
       hr_assert(generics[i].isRef());
       genGenerics.push_back(genericTypeRef(generics[i].typeName(), K(isValue)));
     }
 
-    defType = Type::makeClass(fullTypeName, generics, inheritsFrom, sign, slotTypes);
+    defType = Type::makeClass(fullTypeName, generics, inheritsFrom, slotTypes);
   }
   else {
     defType = Type::makeType(fullTypeName, generics, inheritsFrom);

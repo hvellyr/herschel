@@ -1870,11 +1870,6 @@ void Typifier::checkAllocateArraySignature(std::shared_ptr<ApplyNode> node)
     if (arrayBaseType.isBaseType()) {
       // this is always ok.
     }
-    else if (arrayBaseType.isRecord()) {
-      if (node->type().arrayBaseType().applySignature().hasPositionalParam())
-        HR_LOG(kError, node->srcpos(), E_ArrayReqDefaultCtor)
-            << "array allocation requires default constructor";
-    }
     else if (arrayBaseType.isType()) {
       // TODO: when we distinguish nullable types, this is only allowed if the
       // type is nullable

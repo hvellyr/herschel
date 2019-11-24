@@ -427,13 +427,11 @@ namespace {
 class TypeTypeImpl : public TypeImpl {
 public:
   TypeTypeImpl(const String& name, bool isInstantiatable, const TypeVector& generics,
-               const Type& inherit, const FunctionSignature& applySign,
-               const TypeSlotList& slots)
+               const Type& inherit, const TypeSlotList& slots)
       : fName(name)
       , fIsInstantiatable(isInstantiatable)
       , fGenerics(generics)
       , fInherit(inherit)
-      , fApplySign(applySign)
       , fSlots(slots)
   {
   }
@@ -443,7 +441,7 @@ public:
   {
     return std::make_shared<TypeTypeImpl>(fName, fIsInstantiatable,
                                           vectorClone(fGenerics), fInherit.clone(),
-                                          fApplySign.clone(), vectorClone(fSlots));
+                                          vectorClone(fSlots));
   }
 
 
@@ -529,15 +527,11 @@ public:
   }
 
 
-  const FunctionSignature& applySignature() const { return fApplySign; }
-
-
 protected:
   String fName;
   bool fIsInstantiatable;
   TypeVector fGenerics;
   Type fInherit;
-  FunctionSignature fApplySign;
   TypeSlotList fSlots;
 };
 
@@ -1028,16 +1022,16 @@ Type Type::makeType(const String& name, const TypeVector& generics, const Type& 
 {
   return Type(kType_Type, K(isValue), !K(isImg),
               std::make_shared<TypeTypeImpl>(name, !K(isInstantiable), generics, inherit,
-                                             FunctionSignature(), TypeSlotList()));
+                                             TypeSlotList()));
 }
 
 
 Type Type::makeClass(const String& name, const TypeVector& generics, const Type& inherit,
-                     const FunctionSignature& applySign, const TypeSlotList& slots)
+                     const TypeSlotList& slots)
 {
-  return Type(kType_Class, K(isValue), !K(isImg),
-              std::make_shared<TypeTypeImpl>(name, K(isInstantiable), generics, inherit,
-                                             applySign, slots));
+  return Type(
+      kType_Class, K(isValue), !K(isImg),
+      std::make_shared<TypeTypeImpl>(name, K(isInstantiable), generics, inherit, slots));
 }
 
 
@@ -1575,13 +1569,6 @@ const Type& Type::typeInheritance() const
 {
   hr_assert(isType() || isRecord());
   return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->inherit();
-}
-
-
-const FunctionSignature& Type::applySignature() const
-{
-  hr_assert(isRecord());
-  return std::dynamic_pointer_cast<TypeTypeImpl>(fImpl)->applySignature();
 }
 
 
@@ -2577,15 +2564,6 @@ String FunctionSignature::toString() const
   buf << "<ty:ret>\n" << fReturnType.toString() << "</ty:ret>\n";
   buf << "</ty:fun>\n";
   return buf.toString();
-}
-
-
-bool FunctionSignature::hasPositionalParam() const
-{
-  return std::any_of(fParameters.begin(), fParameters.end(),
-                     [](const FunctionParameter& p) {
-                       return p.kind() == FunctionParameter::kParamPos;
-                     });
 }
 
 

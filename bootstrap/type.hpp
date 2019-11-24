@@ -195,15 +195,14 @@ public:
   static Type makeType(const String& name, const TypeVector& generics,
                        const Type& inherit);
 
-  //! Creates a new Class type instance named \p inheriting from \p inherit.
-  //! \p applySign specifies the signatures of the ctor apply call, and \p
-  //! slots specifies the list of slots.  If the class is parameterized the
-  //! parameter types are to be specifies in \p generics.
+  //! Creates a new Class type instance named \p inheriting from \p
+  //! inherit.  \p slots specifies the list of slots.  If the class is
+  //! parameterized the parameter types are to be specifies in \p
+  //! generics.
   //!
   //! \pre \p applySign must a valid signature; \p name must not be empty
   static Type makeClass(const String& name, const TypeVector& generics,
-                        const Type& inherit, const FunctionSignature& applySign,
-                        const TypeSlotList& slots);
+                        const Type& inherit, const TypeSlotList& slots);
 
   //! Creates a new type alias named \p name for type \p isa.  If the alias
   //! itself is parameterized the type parameters have to be specified in \p
@@ -323,7 +322,6 @@ public:
 
   bool isType() const;
   const Type& typeInheritance() const;
-  const FunctionSignature& applySignature() const;
 
   //@}
 
@@ -653,8 +651,6 @@ public:
 
   String toString() const;
   String typeId() const;
-
-  bool hasPositionalParam() const;
 
 private:
   bool fIsGeneric;
