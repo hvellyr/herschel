@@ -25,6 +25,7 @@
 #include "utils.hpp"
 #include "xmlrenderer.hpp"
 
+#include <algorithm>
 #include <map>
 
 
@@ -821,6 +822,8 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
   if (isRecord) {
     result.push_back(generateConstructor(recScope, expr, fullTypeName, defType,
                                          defaultApplyParams, slotParams));
+    result.push_back(
+        generateDestructor(recScope, expr, fullTypeName, defType, slotParams));
     // result.push_back(generateCopyFunction(recScope, expr, fullTypeName, defType,
     //                                       defaultApplyParams, slotParams));
   }
@@ -906,6 +909,16 @@ static std::vector<ReqTypeInitTuple> getInheritedTypes(const Type& inType,
   }
 
   return reqTypeInits;
+}
+
+
+static std::vector<ReqTypeInitTuple>
+getInheritedTypes(const Type& inType, std::shared_ptr<Scope> scope, bool reverse)
+{
+  auto result = getInheritedTypes(inType, scope);
+  if (reverse)
+    std::reverse(begin(result), end(result));
+  return result;
 }
 
 
@@ -1044,6 +1057,120 @@ std::shared_ptr<AstNode> SecondPass::generateConstructor(
   fScope->attachSymbolForExport(Scope::kNormal, fullTypeName, ctorFuncName);
 
   return newDefNode(ctorFunc, !K(isLocal));
+}
+
+
+std::shared_ptr<AstNode> SecondPass::generateDestructor(std::shared_ptr<Scope> recScope,
+                                                        const Token& typeExpr,
+                                                        const String& fullTypeName,
+                                                        const Type& defTypeIn,
+                                                        const NodeList& slotDefs)
+{
+  auto defType = defTypeIn;
+  defType.setIsValueType(false);
+
+  const SrcPos& srcpos = typeExpr.srcpos();
+
+  //-------- construct the init function with a self first parameter
+  String dtorFuncName = Names::kLangDeinitialize;
+  String selfParamSym = uniqueName("obj");
+
+  ScopeGuard scopeGuard(fScope, recScope);
+
+  auto params = NodeList{};
+  params.insert(params.begin(), makeParamNode(recScope, srcpos, String(), selfParamSym,
+                                              kSpecArg, defType, nullptr));
+
+  auto body = makeBlockNode(fScope, srcpos);
+
+  // call destructor hooks for the inherited types
+  // ... first the slots of this class
+  for (auto i = 0u; i < slotDefs.size(); ++i) {
+    auto hookFuncName =
+        createHooknameInTypeDerivedNs(fullTypeName, Names::kOnDeinitFuncName);
+    auto funcNode = makeSymbolNode(fScope, srcpos, hookFuncName);
+    auto onDestroyExpr = makeApplyNode(fScope, srcpos, funcNode);
+    onDestroyExpr->appendNode(makeSymbolNode(fScope, srcpos, selfParamSym));
+
+    funcNode->setIsRemoveable(true);
+    onDestroyExpr->setIsRemoveable(true);
+
+    body->appendNode(makeWeakNode(fScope, onDestroyExpr));
+  }
+
+  // ... then for the super types (if records)
+  for (const auto& reqTypeInit : getInheritedTypes(defType, fScope, K(reverse))) {
+    if (reqTypeInit.fIsRecord) {
+      auto recType = fScope->lookupType(reqTypeInit.fType);
+      auto superType = reqTypeInit.fType;
+      superType.setIsValueType(false);
+
+      auto hookFuncName =
+          createHooknameInTypeDerivedNs(superType.typeName(), Names::kOnDeinitFuncName);
+      auto funcNode = makeSymbolNode(fScope, srcpos, hookFuncName);
+      auto onDestroyExpr = makeApplyNode(fScope, srcpos, funcNode);
+
+      onDestroyExpr->appendNode(makeCastNode(
+          fScope, srcpos, makeSymbolNode(fScope, srcpos, selfParamSym), superType));
+
+      funcNode->setIsRemoveable(true);
+      onDestroyExpr->setIsRemoveable(true);
+
+      body->appendNode(makeWeakNode(fScope, onDestroyExpr));
+    }
+  }
+
+  // initialize slots
+  // ... first for the slots of this class
+  for (auto i = 0u; i < slotDefs.size(); ++i) {
+    auto slot = std::dynamic_pointer_cast<SlotdefNode>(slotDefs[i]);
+    hr_assert(slot);
+
+    auto funcNode = makeSymbolNode(fScope, srcpos, Names::kLangDeinitialize);
+    auto slotDetroy = makeApplyNode(fScope, srcpos, funcNode);
+    slotDetroy->appendNode(makeSlotRefNode(
+        fScope, srcpos, makeSymbolNode(fScope, srcpos, selfParamSym), slot->name()));
+
+    body->appendNode(slotDetroy);
+  }
+
+  // ... then for the super types (if records)
+  for (const auto& reqTypeInit : getInheritedTypes(defType, fScope, K(reverse))) {
+    if (reqTypeInit.fIsRecord) {
+      auto recType = fScope->lookupType(reqTypeInit.fType);
+      hr_assert(recType.isRecord());
+      hr_assert(recType.slots().size() == reqTypeInit.fSlotParams.size());
+
+      auto superType = reqTypeInit.fType;
+      superType.setIsValueType(false);
+
+      for (auto slotidx = 0u; slotidx < recType.slots().size(); ++slotidx) {
+        const auto& typeSlot = recType.slots()[slotidx];
+        auto slotParam =
+            std::dynamic_pointer_cast<ParamNode>(reqTypeInit.fSlotParams[slotidx]);
+
+        auto funcNode = makeSymbolNode(fScope, srcpos, Names::kLangDeinitialize);
+        auto slotDestroy = makeApplyNode(fScope, srcpos, funcNode);
+        slotDestroy->appendNode(makeSlotRefNode(
+            fScope, srcpos,
+            makeCastNode(fScope, srcpos, makeSymbolNode(fScope, srcpos, selfParamSym),
+                         superType),
+            typeSlot.name()));
+        body->appendNode(slotDestroy);
+      }
+    }
+  }
+
+  body->appendNode(makeSymbolNode(fScope, srcpos, selfParamSym));
+
+  scopeGuard.reset();
+
+  // don't register this "function" as it is a method implementation, which must not be
+  // seen in the scope (it's otherwise overwriting its generic method).
+  return newDefNode(makeFuncDefNode(fScope, srcpos, dtorFuncName,
+                                    kFuncIsMethod,  // we define a method
+                                    params, defType, body),
+                    !K(isLocal));
 }
 
 
@@ -1377,10 +1504,8 @@ std::shared_ptr<AstNode> SecondPass::makeMethod(const SrcPos& srcpos, const Stri
 
   String fullFuncName = qualifyId(currentModuleName(), sym);
 
-  return makeFuncDefNode(fScope, srcpos, fullFuncName,
-                         // force abstractedness
-                         data.fFlags | kFuncIsMethod, data.fParams, data.fType,
-                         data.fBody);
+  return makeFuncDefNode(fScope, srcpos, fullFuncName, data.fFlags | kFuncIsMethod,
+                         data.fParams, data.fType, data.fBody);
 }
 
 

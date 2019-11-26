@@ -11,6 +11,7 @@ def record Mamal : Animal
 )
 
 def .Mamal.on-init(self : ^Mamal) self
+-- def .Mamal.on-deinit(self : ^Mamal) self
 
 def record Dog : Mamal, SoundMaking
 (
@@ -23,6 +24,8 @@ def record Cat : Mamal
 )
 
 def .Cat.on-init(self : ^Cat) self
+
+def .Cat.on-deinit(self : ^Cat) self
 
 -- def on-alloc(self : ^Dog) self
 

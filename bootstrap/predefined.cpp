@@ -95,6 +95,8 @@ const String Names::kLangSubtract = String(MID_core_ns "." MID_subtract);
 const String Names::kLangMultiply = String(MID_core_ns "." MID_multiply);
 const String Names::kLangDivide = String(MID_core_ns "." MID_divide);
 
+const String Names::kLangDeinitialize = String(MID_lang_deinitialize);
+
 const String Names::kAppMain = String(MID_app_main);
 
 const String Names::kClangIntTypeName = String(MID_clang_IntTypeName);
@@ -109,6 +111,7 @@ const String Names::kInitFuncName = String("init");
 const String Names::kValueKeyargName = String("value");
 const String Names::kNullValueFuncName = String("null-value");
 const String Names::kOnInitFuncName = String("on-init");
+const String Names::kOnDeinitFuncName = String("on-deinit");
 const String Names::kOnCopyFuncName = String("on-copy");
 
 }  // namespace herschel
