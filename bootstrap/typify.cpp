@@ -1839,7 +1839,7 @@ Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeLis
     Type retty = funcNode->retType().replaceGenerics(localCtx);
 
     if (retty.isDef())
-      return retty;
+      return retty.setIsValueType(funcNode->retType().isValueType());
     else
       HR_LOG(kError, srcpos, E_TypeMismatch)
           << "function has unmatched generic return type.";
