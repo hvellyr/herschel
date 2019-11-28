@@ -95,6 +95,7 @@ const String Names::kLangSubtract = String(MID_core_ns "." MID_subtract);
 const String Names::kLangMultiply = String(MID_core_ns "." MID_multiply);
 const String Names::kLangDivide = String(MID_core_ns "." MID_divide);
 
+const String Names::kLangDeallocate = String(MID_lang_deallocate);
 const String Names::kLangDeinitialize = String(MID_lang_deinitialize);
 
 const String Names::kAppMain = String(MID_app_main);

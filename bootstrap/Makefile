@@ -83,6 +83,7 @@ LIBHRC_SOURCES =         \
 	abstrpass.cpp       \
 	annotate.cpp        \
 	annotate2.cpp       \
+	ast.cpp             \
 	compilepass.cpp     \
 	compiler.cpp        \
 	exprpass.cpp        \

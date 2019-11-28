@@ -31,6 +31,8 @@ def .Cat.on-deinit(self : ^Cat) self
 
 
 def .app.main() {
-  let a = Dog()
+  let class = "x"
+  let greeting = "hello world"
+  let a = Dog(classification: class)
   0
 }

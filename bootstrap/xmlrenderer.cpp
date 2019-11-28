@@ -726,6 +726,8 @@ struct NodeRenderer<std::shared_ptr<VardefNode>> {
 
     if (!node.linkage().isEmpty())
       attrs << " linkage='" << node.linkage() << "'";
+    if (node.willBeMoved())
+      attrs << " moved='t'";
 
     switch (node.allocType()) {
     case kAlloc_Local: break;

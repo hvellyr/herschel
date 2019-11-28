@@ -239,6 +239,10 @@ namespace herschel {
   MID_core_ns "."    \
               "nil"
 
+#define MID_lang_deallocate \
+  MID_core_ns "."           \
+              "deallocate"
+
 #define MID_lang_deinitialize \
   MID_core_ns "."             \
               "deinitialize"
@@ -337,6 +341,7 @@ public:
 
   const static String kAppMain;
 
+  const static String kLangDeallocate;
   const static String kLangDeinitialize;
 
   const static String kClangIntTypeName;

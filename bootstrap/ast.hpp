@@ -789,8 +789,14 @@ public:
   void setLastUser(std::shared_ptr<AstNode> user) { fLastUser = user; }
   std::weak_ptr<AstNode> lastUser() { return fLastUser; }
 
+  bool willBeMoved() const { return fWillBeMoved; }
+  void setWillBeMoved(bool flag) { fWillBeMoved = flag; }
+
+  virtual const String& symbolName() const = 0;
+
 protected:
   std::weak_ptr<AstNode> fLastUser;
+  bool fWillBeMoved = false;
 };
 
 
@@ -866,6 +872,8 @@ public:
 
   VardefFlags flags() const { return fFlags; }
 
+  const String& symbolName() const override { return fSymbolName; }
+
 private:
   bool fIsLocal;
   VardefFlags fFlags;
@@ -927,6 +935,8 @@ public:
 
   //! Indicates whether this is a specialized parameter ("@").
   bool isSpecArg() const { return (fFlags & kSpecArg) != 0; }
+
+  const String& symbolName() const override { return fSymbolName; }
 
 private:
   String fKey;
@@ -1529,6 +1539,12 @@ public:
     details::copyNodes(&block->fChildren, &fChildren);
     return details::cloneScope(this, std::move(block));
   }
+
+  /*! takes the last expression node from the children (the "return
+      value"), assigns it to a new local variable, and returns that.
+      The local variable will be marked as "return value".  This is a
+      preparation for the finalizer generation. */
+  void markReturnNode(std::shared_ptr<Scope> scope);
 };
 
 inline std::shared_ptr<BlockNode> makeBlockNode(std::shared_ptr<Scope> scope,

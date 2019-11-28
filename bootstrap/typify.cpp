@@ -31,7 +31,6 @@
 
 
 namespace herschel {
-
 namespace {
   void trackMoveablePositions(std::shared_ptr<AstNode> node)
   {
@@ -39,34 +38,66 @@ namespace {
       if (auto luser = binding->lastUser().lock()) {
         if (auto moveablend = std::dynamic_pointer_cast<MoveableReferrer>(luser)) {
           moveablend->setIsInMovePos(true);
+          binding->setWillBeMoved(true);
         }
       }
     }
   }
 
-  void generateFinalizers(Typifier* typf, std::shared_ptr<BlockNode> parent,
-                          std::shared_ptr<AstNode> node)
+  std::shared_ptr<AstNode> generateFinalizer(Typifier* typf,
+                                             std::shared_ptr<AstNode> node)
   {
-    HR_LOG() << "~~~~1";
     if (auto binding = std::dynamic_pointer_cast<MoveableBinding>(node)) {
-      HR_LOG() << "~~~~2 " << node->type();
+      // things which will be moved are not subject to destruction
+      if (binding->willBeMoved()) {
+        return nullptr;
+      }
+
+      std::shared_ptr<AstNode> freeExpr;
+
+      /* TODO we must not deallocate(deinitialize()) anything which has been moved away. */
       if (node->type().isValueType()) {
+        auto deinitExpr = makeApplyNode(
+            node->scope(), node->srcpos(),
+            makeSymbolNode(node->scope(), node->srcpos(), Names::kLangDeinitialize));
+        auto bindingRefNd =
+            makeSymbolNode(node->scope(), node->srcpos(), binding->symbolName());
+        bindingRefNd->setIsInMovePos(true);
+        deinitExpr->appendNode(bindingRefNd);
+
+        freeExpr = deinitExpr;
+
+        binding->setWillBeMoved(true);
+      }
+      else {
         auto deallocExpr = makeApplyNode(
             node->scope(), node->srcpos(),
-            makeSymbolNode(node->scope(), node->srcpos(), String("deallocate")));
-        deallocExpr->appendNode(node);
+            makeSymbolNode(node->scope(), node->srcpos(), Names::kLangDeallocate));
+        auto deinitExpr = makeApplyNode(
+            node->scope(), node->srcpos(),
+            makeSymbolNode(node->scope(), node->srcpos(), Names::kLangDeinitialize));
+        auto bindingRefNd =
+            makeSymbolNode(node->scope(), node->srcpos(), binding->symbolName());
+        bindingRefNd->setIsInMovePos(true);
+        deinitExpr->appendNode(bindingRefNd);
+        deallocExpr->appendNode(deinitExpr);
+        freeExpr = deallocExpr;
 
-        std::shared_ptr<AstNode> expr;
-        {
-          Annotator an{typf->fCompiler};
-          expr = an.annotateNode(deallocExpr);
-        }
-
-        typf->typifyNode(expr);
-
-        parent->appendNode(expr);
+        binding->setWillBeMoved(true);
       }
+
+      std::shared_ptr<AstNode> expr;
+      {
+        Annotator an{typf->fCompiler};
+        expr = an.annotateNode(freeExpr);
+      }
+
+      typf->typifyNode(expr);
+
+      return expr;
     }
+
+    return {};
   }
 }  // namespace
 
@@ -207,6 +238,7 @@ struct NodeTypifier<std::shared_ptr<FuncDefNode>> {
     for (auto c : node->params()) {
       trackMoveablePositions(c);
     }
+    // TODO(gck) finalizers for the params
   }
 };
 
@@ -230,6 +262,7 @@ struct NodeTypifier<std::shared_ptr<FunctionNode>> {
     for (auto c : node->params()) {
       trackMoveablePositions(c);
     }
+    // TODO(gck) finalizers for the params
   }
 };
 
@@ -247,7 +280,9 @@ template <>
 struct NodeTypifier<std::shared_ptr<BlockNode>> {
   static void typify(Typifier* typf, std::shared_ptr<BlockNode> node)
   {
-    hr_assert(!node->children().empty());
+    // there's at least a local (return) variable binding and a return
+    // of that binding
+    hr_assert(node->children().size() >= 2);
 
     typf->typifyNodeList(node->children());
 
@@ -259,11 +294,23 @@ struct NodeTypifier<std::shared_ptr<BlockNode>> {
       }
     }
 
-    for (auto c : node->children()) {
+    auto& ndChildren = node->children();
+    hr_assert(dynamic_cast<const SymbolNode*>(prev(ndChildren.end(), 1)->get()));
+    hr_assert(dynamic_cast<const LetNode*>(prev(ndChildren.end(), 2)->get()));
+
+    std::vector<std::shared_ptr<AstNode>> finalizers;
+    for (auto c : ndChildren) {
       if (auto letnd = std::dynamic_pointer_cast<LetNode>(c)) {
-        generateFinalizers(typf, node, letnd->defNode());
+        // we don't have to protect the letNode for the final return
+        // value, since trackMoveablePositions() above will have set
+        // the willBeMoved() flag on it, and thus it won't be
+        // destructed.
+        if (auto finalizer = generateFinalizer(typf, letnd->defNode()))
+          finalizers.push_back(finalizer);
       }
     }
+
+    ndChildren.insert(prev(ndChildren.end()), begin(finalizers), end(finalizers));
   }
 };
 
@@ -338,6 +385,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
 
           typf->flattenArguments(node);
 
+          // HR_LOG(kError, node->srcpos()) << "varNode->type()? [-1] " << funcNode->type().functionSignature();
           node->setFunSign(funcNode->type().functionSignature());
         }
         else {
@@ -355,6 +403,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             if (!bestFuncNode.fNode->type().isFunction()) {
               typf->typifyNode(bestFuncNode.fNode);
             }
+            // HR_LOG(kError, node->srcpos()) << "varNode->type()? [0] " << bestFuncNode.fNode->type().functionSignature();
             node->setFunSign(bestFuncNode.fNode->type().functionSignature());
 
             typf->reorderArguments(node, bestFuncNode.fNode.get());
@@ -389,6 +438,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             node->base()->setType(varNode->type());
             node->setType(varNode->type().functionSignature().returnType());
             // TODO: check function signature of the function type
+            /// HR_LOG(kError, node->srcpos()) << "varNode->type()? [1] " << varNode->type().functionSignature();
             node->setFunSign(varNode->type().functionSignature());
           }
           else if (varNode->type().isClassTypeOf()) {
@@ -401,8 +451,10 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             //---
             std::shared_ptr<AstNode> funcNode;
             if (varNode->type().isOpen()) {
+              // HR_LOG(kError, varNode->srcpos()) << "typify applynode " << varNode->type().typeName();
               auto apply = makeApplyNode(
                   node->scope(), node->srcpos(),
+                  // TODO(gck) ?
                   makeSymbolNode(node->scope(), node->srcpos(), Names::kLangInitFunctor));
               apply->appendNode(
                   makeTypeNode(node->scope(), node->srcpos(), varNode->type()));
@@ -429,6 +481,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             // TODO: check function signature of the type constructor
             node->setBase(createNode);
             node->setType(createNode->type());
+            // HR_LOG(kError, node->srcpos()) << "varNode->type()? " << varNode->type().functionSignature();
             // node->setFunSign(varNode->type().functionSignature());
           }
           else {
@@ -456,13 +509,17 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
         node->setType(typeNode->type());
       }
       else if (auto funNode = std::dynamic_pointer_cast<FunctionNode>(node->base())) {
+        // HR_LOG(kError, node->srcpos()) << "varNode->type()? [3] " << funNode->type().toString();
         node->setType(funNode->type());
       }
       else if (auto applyNode = std::dynamic_pointer_cast<ApplyNode>(node->base())) {
         if (applyNode->type().isFunction()) {
+          // HR_LOG(kError, node->srcpos()) << "varNode->type()? [4a] ??? " << applyNode->type().functionSignature();
           node->setType(applyNode->type().functionSignature().returnType());
+          node->setFunSign(applyNode->type().functionSignature());
         }
         else {
+          HR_LOG(kError, node->srcpos()) << "varNode->type()? [4b] ??? ";
           node->setType(applyNode->type());
         }
       }

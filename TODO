@@ -2,8 +2,17 @@
 
 Herschel 2
 
+x - create proper constructors (see below)
+    - check init calls to slots in array type creation
 
   - generate finalizer() calls for variables going out of scope (RAII)
+x   - need to capture the return value of a block in a local variable,
+      then add the finalizer calls, then return that local variable.
+      When generating the finalizers this local variable must not be
+      destructed of course (look for reference types, etc.!)
+    - decide when to call deallocate(deinitialize()) or only deinitialize() on local variables
+    - do we need to run generateFinalizers for functions params, too?
+
   - reference types, ref-counted types,
   - "mut" modifier
   - rewrite operators +=, *=, ++=, ... to set!( ....) etc.

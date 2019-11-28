@@ -1045,6 +1045,7 @@ std::shared_ptr<AstNode> SecondPass::generateConstructor(
   }
 
   body->appendNode(makeSymbolNode(fScope, srcpos, selfParamSym));
+  body->markReturnNode(fScope);
 
   scopeGuard.reset();
 
@@ -1162,6 +1163,7 @@ std::shared_ptr<AstNode> SecondPass::generateDestructor(std::shared_ptr<Scope> r
   }
 
   body->appendNode(makeSymbolNode(fScope, srcpos, selfParamSym));
+  body->markReturnNode(fScope);
 
   scopeGuard.reset();
 
@@ -2349,6 +2351,7 @@ void SecondPass::transformCollForClause(const Token& token, NodeList* loopDefine
   auto stepNextNode = makeAssignNode(fScope, srcpos, stepVarNode, nextSeqNode);
   altNode->appendNode(stepNextNode);
   altNode->appendNode(makeBoolNode(fScope, srcpos, true));
+  altNode->markReturnNode(fScope);
 
   auto ifNode = makeIfNode(fScope, srcpos, testNode, consNode, altNode);
 
@@ -2461,6 +2464,8 @@ std::shared_ptr<AstNode> SecondPass::transformLoopExpr(const SrcPos& srcpos,  //
   if (evalNextStepTestNode)
     bodyNode->appendNode(evalNextStepTestNode->clone());
 
+  bodyNode->markReturnNode(fScope);
+
   auto loopNode = makeWhileNode(fScope, srcpos, testNode->clone(), bodyNode);
 
   auto returnNode = makeSymbolNode(fScope, srcpos, returnSym.idValue());
@@ -2469,6 +2474,7 @@ std::shared_ptr<AstNode> SecondPass::transformLoopExpr(const SrcPos& srcpos,  //
     auto consequent = makeBlockNode(fScope, srcpos);
     consequent->appendNode(loopNode);
     consequent->appendNode(returnNode);
+    consequent->markReturnNode(fScope);
 
     auto ifNode = makeIfNode(fScope, srcpos, testNode->clone(), consequent, alternate);
     block->appendNode(ifNode);
@@ -2479,6 +2485,8 @@ std::shared_ptr<AstNode> SecondPass::transformLoopExpr(const SrcPos& srcpos,  //
     if (requiresReturnValue)
       block->appendNode(returnNode);
   }
+
+  block->markReturnNode(fScope);
 
   return block;
 }
@@ -2807,12 +2815,15 @@ std::shared_ptr<AstNode> SecondPass::parseMatch(const Token& expr)
 
       if (auto consqNode = singletonNodeListOrNull(parseExpr(typeMapping[3]))) {
         localBlock->appendNode(consqNode);
+        localBlock->markReturnNode(fScope);
+
         matchNode->addMapping(typeMapping[0].srcpos(), varName, varType, localBlock);
       }
     }
   }
 
   block->appendNode(transformMatchNode(fScope, matchNode));
+  block->markReturnNode(fScope);
 
   return block;
 }
@@ -3065,6 +3076,7 @@ std::shared_ptr<AstNode> SecondPass::parseBlock(const Token& expr)
 
   auto block = makeBlockNode(fScope, expr.srcpos());
   block->appendNodes(nodes);
+  block->markReturnNode(fScope);
 
   return block;
 }
