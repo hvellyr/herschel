@@ -82,6 +82,8 @@ enum TypeKind {
 
 class TypeImpl {
 public:
+  virtual ~TypeImpl() {}
+
   //! Make a deep copy of the receiver.  Note that even the base type Type
   //! must be cloned.
   virtual std::shared_ptr<TypeImpl> clone() const = 0;
@@ -496,6 +498,8 @@ enum TypeConstOperator {
 
 class BaseTypeConstraintImpl {
 public:
+  virtual ~BaseTypeConstraintImpl() {}
+
   virtual std::shared_ptr<BaseTypeConstraintImpl> clone() const = 0;
   virtual bool isEqual(const BaseTypeConstraintImpl* other) const = 0;
   virtual TypeConstOperator constOp() const = 0;

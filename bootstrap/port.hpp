@@ -62,6 +62,8 @@ public:
 template <typename T>
 class Port {
 public:
+  virtual ~Port() {}
+
   virtual bool isOpen() const = 0;
   virtual bool isEof() const = 0;
 

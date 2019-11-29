@@ -32,6 +32,8 @@ public:
   using ValueMapTypeIterator = typename std::map<String, ValueType>::iterator;
   using ValueMapTypeConstIterator = typename std::map<String, ValueType>::const_iterator;
 
+  virtual ~Registry() {}
+
   //! Bind a new value \p value to key \p name.  If \p name was bound before
   //! the previous bound value is silently dropped.
   virtual void registerValue(const String& name, ValueType value)

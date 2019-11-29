@@ -239,9 +239,9 @@ public:
     {
     }
 
+    virtual ~ScopeItem() {}
 
     const SrcPos& srcpos() const { return fSrcPos; }
-
 
     virtual ScopeItemKind kind() const = 0;
 
