@@ -190,7 +190,9 @@ struct NodeAnnotator2<std::shared_ptr<ApplyNode>> {
     ann->annotateNodeList(node->child_nodes());
 
     FunctionParamVector params = node->funSign().parameters();
-    hr_assert(params.size() >= node->children().size());
+    if (params.size() < node->children().size()) {
+      HR_LOG(kError, node->srcpos()) << "Not enough arguments for function";
+    }
 
     if (params.size() >= node->children().size()) {
       // rewrite arguments to copy/move where necessary
