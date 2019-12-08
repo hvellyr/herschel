@@ -10,6 +10,7 @@ export public (
     init-functor,
     type-of,
     isa?,
+    assoc-or,
     null-value,
     on-copy,
     destroy,
@@ -20,18 +21,22 @@ def type Type<Z>
     ~ The type of types themselves. ~
 
 
-def generic init-functor(ty @ Type<'T>) -> Function(o : 'T, rest-args ...) -> 'T ...
+def generic init-functor(ty @ Type<'T>) -> Function(o : ^'T, rest-args ...) -> ^'T ...
     ~ Returns the init function for type @var{ty}. ~
 
 
-def generic type-of(obj @ 'T) -> Type<'T> ...
+def generic type-of(obj @ ^'T) -> Type<'T> ...
     ~ Returns the type of an object @var{obj}. ~
 
 
-def generic isa?(obj @ 'T, ty @ Type<'V>) -> Bool ...
+def generic isa?(obj @ ^'T, ty @ Type<'V>) -> Bool ...
     ~ If @var{obj} is an instance, indicates whether @var{obj} is of type
     @var{ty}.  If @var{obj} is a type or a class itself indicates whether
     @var{obj} is a kind of @var{ty}. ~
+
+def pub assoc(obj : ^Any[], key : ^Keyword) -> ^Any ...
+  ~ find @prm{key} in the flat @prm{slice} and returns it.  If no such
+  key pair is found return @const{unspecified} ~
 
 
 ------------------------------------------------------------------------------

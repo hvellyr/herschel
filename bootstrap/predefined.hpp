@@ -214,6 +214,7 @@ namespace herschel {
   MID_clang_ns "."             \
                "char"
 
+#define MID_assoc "assoc"
 
 //--------------------------------------------------------------------------
 // names of predefined functions
@@ -255,6 +256,8 @@ namespace herschel {
 #define MID_lang_unequal_q MID_core_ns "." MID_unequalq
 #define MID_lang_compare MID_core_ns "." MID_compare
 #define MID_lang_concat MID_core_ns "." MID_concat
+
+#define MID_lang_assoc MID_core_ns "." MID_assoc
 
 #define MID_app_main ".app.main"
 
@@ -338,6 +341,8 @@ public:
   const static String kLangSubtract;
   const static String kLangMultiply;
   const static String kLangDivide;
+
+  const static String kLangAssoc;
 
   const static String kAppMain;
 

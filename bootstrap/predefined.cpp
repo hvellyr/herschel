@@ -98,6 +98,8 @@ const String Names::kLangDivide = String(MID_core_ns "." MID_divide);
 const String Names::kLangDeallocate = String(MID_lang_deallocate);
 const String Names::kLangDeinitialize = String(MID_lang_deinitialize);
 
+const String Names::kLangAssoc = String(MID_lang_assoc);
+
 const String Names::kAppMain = String(MID_app_main);
 
 const String Names::kClangIntTypeName = String(MID_clang_IntTypeName);

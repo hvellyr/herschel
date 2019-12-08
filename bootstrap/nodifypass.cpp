@@ -822,6 +822,8 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
   if (isRecord) {
     result.push_back(generateConstructor(recScope, expr, fullTypeName, defType,
                                          defaultApplyParams, slotParams));
+    result.push_back(generateInitFunctorConstructor(recScope, expr, fullTypeName, defType,
+                                                    defaultApplyParams, slotParams));
     result.push_back(
         generateDestructor(recScope, expr, fullTypeName, defType, slotParams));
     // result.push_back(generateCopyFunction(recScope, expr, fullTypeName, defType,
@@ -1057,6 +1059,118 @@ std::shared_ptr<AstNode> SecondPass::generateConstructor(
 
   fScope->attachSymbolForExport(Scope::kNormal, fullTypeName, ctorFuncName);
 
+  return newDefNode(ctorFunc, !K(isLocal));
+}
+
+
+std::shared_ptr<AstNode> SecondPass::generateInitFunctorConstructor(
+    std::shared_ptr<Scope> recScope, const Token& typeExpr, const String& fullTypeName,
+    const Type& defTypeIn, const NodeList& defaultApplyParams, const NodeList& slotDefs)
+{
+  hr_assert(defaultApplyParams.size() == slotDefs.size());
+
+  auto defType = defTypeIn;
+  defType.setIsValueType(false);
+
+  const SrcPos& srcpos = typeExpr.srcpos();
+
+  //-------- construct the init function with a self first parameter
+  String ctorFuncName = Names::kLangInitFunctor;
+  String selfParamSym = uniqueName("obj");
+  String restParamSym = uniqueName("rest");
+
+  ScopeGuard scopeGuard(fScope, recScope);
+
+  // def generic init-functor(ty @ Type<'T>) -> Function(o : ^'T, rest-args ...) -> ^'T ...
+
+  auto params = NodeList{};
+  params.insert(params.end(),
+                makeParamNode(recScope, srcpos, String(), selfParamSym, kSpecArg,
+                              Type::makeClassTypeOf(defType.setIsValueType(true)),
+                              nullptr));
+  params.insert(params.end(), makeParamNode(recScope, srcpos, String(), restParamSym,
+                                            kRestArg, Type::makeAny(), nullptr));
+
+  auto body = makeBlockNode(fScope, srcpos);
+
+  auto makeAssocOrCall = [&](ParamNode* prmNd) {
+    auto testBody = makeBlockNode(fScope, prmNd->srcpos());
+
+    auto assocNd =
+        makeApplyNode(fScope, prmNd->srcpos(),
+                      makeSymbolNode(fScope, prmNd->srcpos(), Names::kLangAssoc));
+    assocNd->appendNode(makeSymbolNode(fScope, prmNd->srcpos(), restParamSym));
+    assocNd->appendNode(makeKeywordNode(fScope, prmNd->srcpos(), prmNd->key()));
+
+    auto localVarNm = uniqueName("test");
+    auto localVar = makeVardefNode(fScope, prmNd->srcpos(), localVarNm, kNormalVar,
+                                   K(isLocal), Type::makeAny(), assocNd);
+    fScope->registerVar(prmNd->srcpos(), localVarNm, localVar);
+    testBody->appendNode(localVar);
+
+    auto testNd =
+        makeApplyNode(fScope, prmNd->srcpos(),
+                      makeSymbolNode(fScope, prmNd->srcpos(), Names::kLangIsaQ));
+    testNd->appendNode(makeSymbolNode(fScope, prmNd->srcpos(), localVarNm));
+    testNd->appendNode(makeTypeNode(fScope, prmNd->srcpos(), prmNd->type()));
+
+    testBody->appendNode(makeIfNode(
+        fScope, prmNd->srcpos(), testNd,
+        makeCastNode(fScope, prmNd->srcpos(),
+                     makeSymbolNode(fScope, prmNd->srcpos(), localVarNm), prmNd->type()),
+        prmNd->initExpr()->clone()));
+    testBody->markReturnNode(fScope);
+
+    return makeKeyargNode(fScope, prmNd->srcpos(), prmNd->key(), testBody);
+  };
+
+  String realTypeCtorFuncName = qualifyId(fullTypeName, Names::kInitFuncName);
+
+  auto realCtorSymNode = makeSymbolNode(fScope, srcpos, realTypeCtorFuncName);
+  auto realCtorExpr = makeApplyNode(fScope, srcpos, realCtorSymNode);
+
+  auto newObjAllocExpr =
+      makeApplyNode(fScope, srcpos, makeSymbolNode(fScope, srcpos, Names::kLangAllocate));
+  newObjAllocExpr->appendNode(makeSymbolNode(fScope, srcpos, selfParamSym));
+
+  realCtorExpr->appendNode(newObjAllocExpr);
+
+  for (auto& prm : defaultApplyParams) {
+    realCtorExpr->appendNode(makeAssocOrCall(dynamic_cast<ParamNode*>(prm.get())));
+  }
+
+  for (const auto& reqTypeInit : getInheritedTypes(defType, fScope)) {
+    if (reqTypeInit.fIsRecord) {
+      for (auto slotParam : reqTypeInit.fSlotParams) {
+        realCtorExpr->appendNode(
+            makeAssocOrCall(dynamic_cast<ParamNode*>(slotParam.get())));
+      }
+    }
+  }
+
+  auto innerBody = makeBlockNode(fScope, srcpos);
+  innerBody->appendNode(realCtorExpr);
+  innerBody->markReturnNode(fScope);
+
+  body->appendNode(
+      makeFunctionNode(fScope, srcpos,
+                       {makeParamNode(fScope, srcpos, String(), selfParamSym, kPosArg,
+                                      defType.setIsValueType(false), nullptr),
+                        makeParamNode(fScope, srcpos, String(), restParamSym, kRestArg,
+                                      Type::makeAny(), nullptr)},
+                       defType.setIsValueType(false), innerBody));
+
+  body->markReturnNode(fScope);
+
+  scopeGuard.reset();
+
+  auto retType = Type::makeFunction(
+      FunctionSignature(!K(isGeneric), String{}, defType,
+                        {FunctionParameter::makePosParam(defType),
+                         FunctionParameter::makeRestParam(Type::makeAny())}));
+
+  auto ctorFunc =
+      makeFuncDefNode(fScope, srcpos, ctorFuncName, kFuncIsMethod, params, retType, body);
   return newDefNode(ctorFunc, !K(isLocal));
 }
 

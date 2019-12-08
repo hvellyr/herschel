@@ -1,10 +1,6 @@
 def record Foo<A> (a : A)
 
-def make(n : Type<'T>) -> 'T {
-  n()
-}
-
-def make2(n : Type<'T>) -> 'T {
+def make(n : Type<'T>) -> ^'T {
   'T()
 }
 
