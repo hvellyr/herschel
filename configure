@@ -481,17 +481,17 @@ if test "x$llvm_config_path" = xauto; then
   llvm_config_path=$(which llvm-config)
 fi
 
-llvm_config_dir=$(dirname "$llvm_config_path" 2>/dev/null)
+eval "llvm_config_dir=$(dirname "$llvm_config_path" 2>/dev/null)"
 llvm_config_file=$(basename "$llvm_config_path" 2>/dev/null)
 abs_llvm_config_path=$(cd "$llvm_config_dir" && pwd 2>/dev/null)/"$llvm_config_file"
 
 
 llvm_version=$("$abs_llvm_config_path" --version 2>/dev/null)
-if test "x$llvm_version" = x"3.7.0"; then
-  echo "${ECHO_T}$llvm_version"
-else
+if test "x$llvm_version" \< x"8.0.0"; then
   echo "${ECHO_T}no matching installation found"
   failure=yes
+else
+  echo "${ECHO_T}$llvm_version"
 fi
 
 if test "x$failure" = xno; then
