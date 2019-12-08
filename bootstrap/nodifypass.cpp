@@ -3029,8 +3029,8 @@ std::shared_ptr<AstNode> SecondPass::parseTypeExpr(const Token& expr, bool inArr
     return makeTypeNode(fScope, expr.srcpos(), ty);
   }
 
-  fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n", (zstring)StrHelper(expr.toString()),
-          __FILE__, __LINE__);
+  HR_LOG(kError) << "UNEXPECTED DEXPR: " << expr.toString() << " (" __FILE__ << ":"
+                 << __LINE__ << ")";
   hr_invalid("");
   return nullptr;
 }
@@ -3113,8 +3113,8 @@ NodeList SecondPass::parseSeq(const Token& expr)
                expr[1].leftToken() == kBracketOpen)
         return makeNodeList(parseTypeExpr(expr));
       else {
-        fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",
-                (zstring)StrHelper(expr.toString()), __FILE__, __LINE__);
+        HR_LOG(kError) << "UNEXPECTED DEXPR: " << expr.toString() << " (" << __FILE__
+                       << ":" << __LINE__ << ")";
         hr_invalid("");  // TODO
       }
     }
@@ -3129,7 +3129,7 @@ NodeList SecondPass::parseSeq(const Token& expr)
       case kRational: return makeNodeList(parseRationalNumber(expr));
       case kFloat: return makeNodeList(parseRealNumber(expr));
       default:
-        fprintf(stderr, "%d\n", expr.tokenType());
+        HR_LOG(kError) << "Unexpected token type: " << expr.tokenType();
         hr_invalid("");
         return NodeList();
       }
@@ -3141,8 +3141,8 @@ NodeList SecondPass::parseSeq(const Token& expr)
       return makeNodeList(parseSlotAccess(expr));
     }
     else {
-      fprintf(stderr, "UNEXPECTED DEXPR: %s (%s %d)\n",
-              (zstring)StrHelper(expr.toString()), __FILE__, __LINE__);
+      HR_LOG(kError) << "UNEXPECTED DEXPR: " << expr.toString() << " (" << __FILE__ << ":"
+                     << __LINE__ << ")";
       hr_invalid("");  // TODO
     }
   }

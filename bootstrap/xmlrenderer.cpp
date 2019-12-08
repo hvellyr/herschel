@@ -105,8 +105,8 @@ struct NodeRenderer<std::shared_ptr<ArrayTypeNode>> {
           std::make_pair(node.type().typeId(), node.type()));
     }
     else if (rootType) {
-      fprintf(stderr, "Unexpected type node: %p %s\n", rootType.get(),
-              typeid(rootType.get()).name());
+      HR_LOG(kError) << "Unexpected type node: " << rootType.get() << " "
+                     << typeid(rootType.get()).name();
       hr_invalid("unexpected type node");
     }
   }

@@ -80,7 +80,7 @@ int startProcess(const String& cmd, const std::vector<String>& args, bool logCal
     if (WIFEXITED(status))
       status = 0;
     else {
-      fprintf(stderr, "ERROR: subprocess '%s' crashed\n", (zstring)StrHelper(cmd));
+      HR_LOG(kError) << "ERROR: subprocess '" << cmd << "' crashed";
       status = -1;
     }
   }

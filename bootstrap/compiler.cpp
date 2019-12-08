@@ -478,7 +478,7 @@ void compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
       }
 
       if (doCompile) {
-        XmlRenderer out{std::make_shared<FilePort>(stderr), true};
+        XmlRenderer out{std::make_shared<FilePort>(stdout), true};
         out.render(ast);
 
         hr_assert(ast);

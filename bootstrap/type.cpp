@@ -2826,8 +2826,8 @@ bool isSameType(const Type& left0, const Type& right0, const Scope& scope,
     return false;
   }
 
-  fprintf(stderr, "LEFT: %s\n", (zstring)StrHelper(left.toString()));
-  fprintf(stderr, "RIGHT: %s\n", (zstring)StrHelper(right.toString()));
+  HR_LOG(kError) << "LEFT: " << left.toString();
+  HR_LOG(kError) << "RIGHT: " << right.toString();
   hr_invalid("unhandled type?");
   return false;
 }

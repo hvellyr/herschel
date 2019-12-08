@@ -11,6 +11,7 @@
 #include "token.hpp"
 
 #include "exception.hpp"
+#include "log.hpp"
 #include "parsertypes.hpp"
 #include "predefined.hpp"
 #include "str.hpp"
@@ -900,7 +901,7 @@ ExprType Token::type() const
   case kWhileId:
   case kWithId: return kId;
 
-  default: fprintf(stderr, "Type: %d\n", fType); hr_invalid("");
+  default: HR_LOG(kError) << "Type: " << fType; hr_invalid("");
   }
 
   return kPunct;

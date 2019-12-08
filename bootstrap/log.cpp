@@ -92,7 +92,7 @@ LineLogger::LineLogger(LogLevel level)
 
 LineLogger::~LineLogger()
 {
-  fprintf(stdout, "%s\n", fMsgBuffer.str().c_str());
+  fprintf(stderr, "%s\n", fMsgBuffer.str().c_str());
   fMsgBuffer.str("");
 }
 
