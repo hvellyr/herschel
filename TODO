@@ -1,10 +1,11 @@
--*-org-*-
+-*-text-*-
 
 Herschel 2
 
+  - change init-functor(ty @ Type<'T> to init-functor(ty @ ^'T)
+
 x - create proper constructors (see below)
     - check init calls to slots in array type creation
-
   - generate finalizer() calls for variables going out of scope (RAII)
 x   - need to capture the return value of a block in a local variable,
       then add the finalizer calls, then return that local variable.
@@ -56,7 +57,6 @@ x - the for loop is rewritten into while + variable definitions too
 x - remove record inheritance
 
 ? - rename function() to fn(), and the type of it to Fn()
-? - remove keywords
 ? - remove type constraints (value constraints ...)
 
 
@@ -207,8 +207,8 @@ Memory model
   pointers can't be reset to nil.
 
 
-  Certain expression use auto-dereferencing of references.  With two
-  bindings - p and v - they can be assigned with references or nor in
+  Certain expressions use auto-dereferencing of references.  With two
+  bindings - p and v - they can be assigned with references or not in
   the following way:
 
    v1 = v2                   -- copy value of v2 to v1
@@ -218,7 +218,7 @@ Memory model
    p1 = p2                   -- let p1 point to p2
    p1^ = p2     p1^ = p2^    -- copy of value of p2^ into p1
 
-  with two function `foov(v)` and `foop(p)` the same rules apply:
+  with two functions `foov(v)` and `foop(p)` the same rules apply:
 
    foov(v)                   -- call foov with a copy of v
    foov(p)      foov(p^)     -- call foov with a copy of p^
@@ -1153,25 +1153,6 @@ hooks are run, all members are still initialized.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Documentation
 
   - Write assignment section.
@@ -1316,8 +1297,8 @@ Language and ideas:
     }
 
     let e : Element
-    e^a = 42
-    e^b = "The question"
+    e.a = 42
+    e.b = "The question"
 
 
   - Think about non-gc objects.
@@ -1380,7 +1361,7 @@ We need to add atomic stuff to the language.
     Herschel                            C
 -------------------------------------------------------------
 !   identifier                          not
-    modifier function marker
+    (modifier function marker)
 "   string delimiter                    string delimiter
 #   keyword notation                    preproc
     constant array notation
@@ -1391,14 +1372,14 @@ $   identifier                          [----------]
                                         pointer ref op.
 '   implicit type generics              char
 ()  arguments                           arguments
-    grouping
+    grouping                            grouping
     record slot list
     complex types
 *   operator (*, **)                    operator(*)
     identifier                          pointer ref op.
-+   operator (+, ++)                    operator(+)
++   operator (+, ++)                    operator(+, ++)
     identifier
-,   parameter separator                 prm separator
+,   parameter separator                 parameter separator
 -   identifier                          operator (-)
     operator (-)
     negative numbers
@@ -1421,7 +1402,7 @@ $   identifier                          [----------]
     assignment                          assignment
     parameter default
 ?   identifier                          ternary operator
-    predicat function marker
+    (predicat function marker)
     macro variable marker (?...)
 @   specialize marker                   [----------]
 A-Z identifier                          identifier
@@ -1440,3 +1421,16 @@ a-z identifier                          identifier
     select/match/macro case marker
 ~   docstring limiter                   operator (bit not)
 «»  macro block (alt: ?(, )?)
+
+
+
+
+
+
+
+Links:
+https://pauladamsmith.com/blog/2015/01/how-to-get-started-with-llvm-c-api.html
+https://github.com/paulsmith/getting-started-llvm-c-api/blob/master/sum.c
+http://llvm.org/doxygen/group__LLVMC.html
+
+look into clang+llvm/include/llvm-c/
