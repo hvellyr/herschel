@@ -1061,6 +1061,16 @@ struct NodeTypifier<std::shared_ptr<SelectNode>> {
 
 
 template <>
+struct NodeTypifier<std::shared_ptr<MatchNode>> {
+  static void typify(Typifier* typf, std::shared_ptr<MatchNode> node)
+  {
+    hr_assert("there must be no matchNode anymore in this phase.  Forgot to call "
+              "transformMatchNode in nodifypass?");
+  }
+};
+
+
+template <>
 struct NodeTypifier<std::shared_ptr<RangeNode>> {
   static void typify(Typifier* typf, std::shared_ptr<RangeNode> node)
   {
@@ -1767,9 +1777,11 @@ void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node,
         }
       }
       else if (param->flags() == kRestArg) {
-        // TODO: create code to generate a array on stack, and assign
+        // TODO(gck): create code to generate a array on stack, and assign
         // the remaining arguments to it; then pass the array as
         // single parameter.
+        // TODO(gck): better: pass arguments as such, but access the
+        // arguments inside the function as arg.
         for (auto i = posArgIdx; i < posArgs.size(); ++i) {
           newArgs.push_back(posArgs[i]);
         }
