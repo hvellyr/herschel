@@ -60,14 +60,14 @@ LineLogger::LineLogger(LogLevel level, const SrcPos& where, int errorCode)
     else
       fMsgBuffer << where.file().to_string() << ":" << where.lineNumber() << ": "
                  << levelStr[level] << ": (" << std::setw(4) << std::right << std::hex
-                 << std::setfill('0') << errorCode << ") ";
+                 << std::setfill('0') << errorCode << ") " << std::dec;
   }
   else {
     if (errorCode == 0)
       fMsgBuffer << levelStr[level] << ": ";
     else
       fMsgBuffer << levelStr[level] << ": (" << std::setw(4) << std::right << std::hex
-                 << std::setfill('0') << errorCode << ") ";
+                 << std::setfill('0') << errorCode << ") " << std::dec;
   }
 }
 
