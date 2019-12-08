@@ -89,14 +89,14 @@ static void annotateFuncdefNode(Annotator* ann, std::shared_ptr<FuncDefNode> nod
     else if (auto funcdef = dynamic_cast<const FuncDefNode*>(var)) {
       if (!funcdef->isGeneric()) {
         HR_LOG(kError, node->srcpos(), E_BadGenericReferrer)
-            << "Bad method binding type (referred symbol is not a generic function).";
+            << "Bad method '" << node->name() << "' binding type (referred symbol is not a generic function).";
         HR_LOG(kError, var->srcpos(), E_BadGenericReferrer)
             << "Referred function definition was here";
       }
     }
     else {
       HR_LOG(kError, node->srcpos(), E_BadGenericReferrer)
-          << "Bad method binding type (referred symbol is not a generic function).";
+          << "Bad method '" << node->name() << "' binding type (referred symbol is not a generic function [2]).";
       HR_LOG(kError, var->srcpos(), E_BadGenericReferrer)
           << "Referred symbol definition was here";
     }
