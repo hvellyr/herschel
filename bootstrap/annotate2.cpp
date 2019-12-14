@@ -45,7 +45,7 @@ namespace {
   {
     if (!valExpr->isTempValue() && !isMoveable(valExpr)) {
       auto symNd =
-          makeSymbolNode(valExpr->scope(), valExpr->srcpos(), Names::kOnCopyFuncName);
+          makeSymbolNode(valExpr->scope(), valExpr->srcpos(), Names::kCopyFuncName);
       symNd->setRefersTo(kFunction, !K(isShared));
 
       auto copyExpr = makeApplyNode(valExpr->scope(), valExpr->srcpos(), symNd);
@@ -186,7 +186,7 @@ struct NodeAnnotator2<std::shared_ptr<ApplyNode>> {
   {
     // first annotate base and arguments, only then wrap for copy/move
     // operators.  Otherwise we would annotate the just created
-    // on-copy(x) calls into on-copy(on-copy(x)), etc.
+    // copy(x) calls into copy(copy(x)), etc.
     ann->annotateNodeList(node->child_nodes());
 
     FunctionParamVector params = node->funSign().parameters();

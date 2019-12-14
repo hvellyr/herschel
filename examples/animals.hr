@@ -27,7 +27,7 @@ def .Cat.on-init(self : ^Cat) self
 
 def .Cat.on-deinit(self : ^Cat) self
 
--- def on-alloc(self : ^Dog) self
+def .Cat.on-copy(self : ^Cat, rhs : ^Cat) self
 
 
 def .app.main() {

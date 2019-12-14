@@ -1080,8 +1080,7 @@ bool Type::operator==(const Type& other) const
   if (fIsValue != other.fIsValue)
     return false;
 
-  hr_assert(fImpl);
-  return fImpl->isEqual(other.fImpl.get());
+  return fImpl && other.fImpl && fImpl->isEqual(other.fImpl.get());
 }
 
 

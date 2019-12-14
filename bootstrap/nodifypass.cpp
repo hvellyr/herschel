@@ -826,23 +826,12 @@ NodeList SecondPass::parseTypeDef(const Token& expr, size_t ofs, bool isRecord,
                                                     defaultApplyParams, slotParams));
     result.push_back(
         generateDestructor(recScope, expr, fullTypeName, defType, slotParams));
-    // result.push_back(generateCopyFunction(recScope, expr, fullTypeName, defType,
-    //                                       defaultApplyParams, slotParams));
+    result.push_back(
+        generateCopyFunction(recScope, expr, fullTypeName, defType, slotParams));
   }
 
   return result;
 }
-
-
-// std::shared_ptr<AstNode> SecondPass::generateCopyFunction(
-//     std::shared_ptr<Scope> recScope, const Token& typeExpr, const String& fullTypeName,
-//     const Type& defType, const NodeList& defaultApplyParams, const NodeList& slotDefs)
-// {
-//   /*
-//     def on-alloc(o : ^T) -> T {
-
-//    */
-// }
 
 
 struct ReqTypeInitTuple {
@@ -1242,11 +1231,11 @@ std::shared_ptr<AstNode> SecondPass::generateDestructor(std::shared_ptr<Scope> r
     hr_assert(slot);
 
     auto funcNode = makeSymbolNode(fScope, srcpos, Names::kLangDeinitialize);
-    auto slotDetroy = makeApplyNode(fScope, srcpos, funcNode);
-    slotDetroy->appendNode(makeSlotRefNode(
+    auto slotDestroy = makeApplyNode(fScope, srcpos, funcNode);
+    slotDestroy->appendNode(makeSlotRefNode(
         fScope, srcpos, makeSymbolNode(fScope, srcpos, selfParamSym), slot->name()));
 
-    body->appendNode(slotDetroy);
+    body->appendNode(slotDestroy);
   }
 
   // ... then for the super types (if records)
@@ -1261,8 +1250,8 @@ std::shared_ptr<AstNode> SecondPass::generateDestructor(std::shared_ptr<Scope> r
 
       for (auto slotidx = 0u; slotidx < recType.slots().size(); ++slotidx) {
         const auto& typeSlot = recType.slots()[slotidx];
-        auto slotParam =
-            std::dynamic_pointer_cast<ParamNode>(reqTypeInit.fSlotParams[slotidx]);
+        // auto slotParam =
+        //     std::dynamic_pointer_cast<ParamNode>(reqTypeInit.fSlotParams[slotidx]);
 
         auto funcNode = makeSymbolNode(fScope, srcpos, Names::kLangDeinitialize);
         auto slotDestroy = makeApplyNode(fScope, srcpos, funcNode);
@@ -1284,6 +1273,161 @@ std::shared_ptr<AstNode> SecondPass::generateDestructor(std::shared_ptr<Scope> r
   // don't register this "function" as it is a method implementation, which must not be
   // seen in the scope (it's otherwise overwriting its generic method).
   return newDefNode(makeFuncDefNode(fScope, srcpos, dtorFuncName,
+                                    kFuncIsMethod,  // we define a method
+                                    params, defType, body),
+                    !K(isLocal));
+}
+
+
+std::shared_ptr<AstNode> SecondPass::generateCopyFunction(std::shared_ptr<Scope> recScope,
+                                                          const Token& typeExpr,
+                                                          const String& fullTypeName,
+                                                          const Type& defTypeIn,
+                                                          const NodeList& slotDefs)
+{
+  /*
+    def copy(o @ ^Bar) {
+      let t = Foo()
+      t.nm = copy(o.nm)
+      t.xy = copy(o.xy)
+      .Foo.on-copy(t, o) <<opt>>
+      .Bar.on-copy(t, o) <<opt>>
+      t
+    }
+  */
+
+  auto defType = defTypeIn;
+  defType.setIsValueType(false);
+
+  const SrcPos& srcpos = typeExpr.srcpos();
+
+  //-------- construct the init function with a self first parameter
+  auto lhsParamSym = uniqueName("lhs");
+  auto localVarNm = uniqueName("tmp");
+
+  ScopeGuard scopeGuard(fScope, recScope);
+
+  auto body = makeBlockNode(fScope, srcpos);
+
+  NodeList initParams;
+
+  {
+    auto makeSlotArg = [&](const auto& slotNm, bool doCast, const auto& instType) {
+      auto lhsTypedSelf = std::shared_ptr<AstNode>{};
+
+      if (!doCast) {
+        lhsTypedSelf = makeSymbolNode(fScope, srcpos, lhsParamSym);
+      }
+      else {
+        lhsTypedSelf = makeCastNode(
+            fScope, srcpos, makeSymbolNode(fScope, srcpos, lhsParamSym), instType);
+      }
+
+      auto lhsSlotCopy =
+          makeApplyNode(fScope, srcpos, makeSymbolNode(fScope, srcpos, Names::kLangCopy));
+      lhsSlotCopy->appendNode(makeSlotRefNode(fScope, srcpos, lhsTypedSelf, slotNm));
+
+      return makeKeyargNode(fScope, srcpos, slotNm, lhsSlotCopy);
+    };
+
+    // copy the slots
+    // ... then for the super types (if records)
+    for (const auto& reqTypeInit : getInheritedTypes(defType, fScope, K(reverse))) {
+      if (reqTypeInit.fIsRecord) {
+        auto recType = fScope->lookupType(reqTypeInit.fType);
+        hr_assert(recType.isRecord());
+        hr_assert(recType.slots().size() == reqTypeInit.fSlotParams.size());
+
+        auto superType = reqTypeInit.fType;
+        superType.setIsValueType(false);
+
+        for (auto slotidx = 0u; slotidx < recType.slots().size(); ++slotidx) {
+          const auto& typeSlot = recType.slots()[slotidx];
+          // auto slotParam =
+          //     std::dynamic_pointer_cast<ParamNode>(reqTypeInit.fSlotParams[slotidx]);
+
+          //body->appendNode(makeSlotArg(typeSlot.name(), superType));
+          initParams.push_back(makeSlotArg(typeSlot.name(), K(cast), superType));
+        }
+      }
+    }
+
+    // ... first for the slots of this class
+    for (auto i = 0u; i < slotDefs.size(); ++i) {
+      auto slot = std::dynamic_pointer_cast<SlotdefNode>(slotDefs[i]);
+      hr_assert(slot);
+
+      //body->appendNode(makeSlotArg(slot->name(), defType));
+      initParams.push_back(makeSlotArg(slot->name(), !K(cast), defType));
+    }
+  }
+
+  auto allocExpr =
+      makeApplyNode(fScope, srcpos, makeSymbolNode(fScope, srcpos, Names::kLangAllocate));
+  allocExpr->appendNode(makeTypeNode(fScope, srcpos, defType.setIsValueType(true)));
+  auto initExpr =
+      generateInitObjectCall(srcpos, allocExpr, defType.setIsValueType(true), initParams);
+
+  auto localVar = makeVardefNode(fScope, srcpos, localVarNm, kNormalVar, K(isLocal),
+                                 defType.setIsValueType(true), initExpr);
+  fScope->registerVar(srcpos, localVarNm, localVar);
+  auto localLetNd = makeLetNode(fScope, localVar);
+  body->appendNode(localLetNd);
+
+
+  auto makeOnCopyHook = [&](const auto& typeName, const auto& instType) {
+    auto localTypedSelf = std::shared_ptr<AstNode>{};
+    auto lhsTypedSelf = std::shared_ptr<AstNode>{};
+    if (instType == defType) {
+      localTypedSelf = makeSymbolNode(fScope, srcpos, localVarNm);
+      lhsTypedSelf = makeSymbolNode(fScope, srcpos, lhsParamSym);
+    }
+    else {
+      localTypedSelf = makeCastNode(fScope, srcpos,
+                                    makeSymbolNode(fScope, srcpos, localVarNm), instType);
+      lhsTypedSelf = makeCastNode(fScope, srcpos,
+                                  makeSymbolNode(fScope, srcpos, lhsParamSym), instType);
+    }
+
+    auto hookFuncName = createHooknameInTypeDerivedNs(typeName, Names::kOnCopyFuncName);
+    auto funcNode = makeSymbolNode(fScope, srcpos, hookFuncName);
+    auto onCopyExpr = makeApplyNode(fScope, srcpos, funcNode);
+    onCopyExpr->appendNode(localTypedSelf);
+    onCopyExpr->appendNode(lhsTypedSelf);
+
+    funcNode->setIsRemoveable(true);
+    onCopyExpr->setIsRemoveable(true);
+
+    return makeWeakNode(fScope, onCopyExpr);
+  };
+
+  // call copy hooks for the inherited types
+  // ... for tfirst for the super types (if records)
+  for (const auto& reqTypeInit : getInheritedTypes(defType, fScope, K(reverse))) {
+    if (reqTypeInit.fIsRecord) {
+      auto recType = fScope->lookupType(reqTypeInit.fType);
+      auto superType = reqTypeInit.fType;
+      superType.setIsValueType(false);
+
+      body->appendNode(makeOnCopyHook(superType.typeName(), superType));
+    }
+  }
+
+  // ... then for this type
+  body->appendNode(makeOnCopyHook(fullTypeName, defType));
+
+  body->appendNode(makeSymbolNode(fScope, srcpos, localVarNm));
+  body->markReturnNode(fScope);
+
+  auto params = NodeList{};
+  params.insert(params.begin(), makeParamNode(recScope, srcpos, String(), lhsParamSym,
+                                              kSpecArg, defType, nullptr));
+
+  scopeGuard.reset();
+
+  // don't register this "function" as it is a method implementation, which must not be
+  // seen in the scope (it's otherwise overwriting its generic method).
+  return newDefNode(makeFuncDefNode(fScope, srcpos, Names::kLangCopy,
                                     kFuncIsMethod,  // we define a method
                                     params, defType, body),
                     !K(isLocal));
@@ -2122,7 +2266,7 @@ std::shared_ptr<AstNode> SecondPass::generateArrayAlloc(const Token& expr,
 std::shared_ptr<AstNode>
 SecondPass::generateInitObjectCall(const SrcPos& srcpos,
                                    std::shared_ptr<AstNode> newObjAllocExpr,
-                                   const Type& type, const TokenVector& argTokens)
+                                   const Type& type, const NodeList& params)
 {
   //---
   std::shared_ptr<AstNode> funcNode;
@@ -2139,12 +2283,19 @@ SecondPass::generateInitObjectCall(const SrcPos& srcpos,
 
   auto initExpr = makeApplyNode(fScope, srcpos, funcNode);
   initExpr->appendNode(newObjAllocExpr);
-
-  //---
-  NodeList args = parseFunCallArgs(argTokens);
-  initExpr->appendNodes(args);
+  initExpr->appendNodes(params);
 
   return initExpr;
+}
+
+
+std::shared_ptr<AstNode>
+SecondPass::generateInitObjectCall(const SrcPos& srcpos,
+                                   std::shared_ptr<AstNode> newObjAllocExpr,
+                                   const Type& type, const TokenVector& argTokens)
+{
+  return generateInitObjectCall(srcpos, newObjAllocExpr, type,
+                                parseFunCallArgs(argTokens));
 }
 
 

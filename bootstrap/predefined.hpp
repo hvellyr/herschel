@@ -248,6 +248,10 @@ namespace herschel {
   MID_core_ns "."             \
               "deinitialize"
 
+#define MID_lang_copy \
+  MID_core_ns "."     \
+              "copy"
+
 #define MID_lang_equal_q MID_core_ns "." MID_equalq
 #define MID_lang_greater_q MID_core_ns "." MID_greaterq
 #define MID_lang_less_q MID_core_ns "." MID_lessq
@@ -348,6 +352,7 @@ public:
 
   const static String kLangDeallocate;
   const static String kLangDeinitialize;
+  const static String kLangCopy;
 
   const static String kClangIntTypeName;
   const static String kClangCharTypeName;
@@ -363,6 +368,7 @@ public:
   const static String kNullValueFuncName;
   const static String kOnInitFuncName;
   const static String kOnDeinitFuncName;
+  const static String kCopyFuncName;
   const static String kOnCopyFuncName;
 };
 

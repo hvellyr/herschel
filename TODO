@@ -1063,7 +1063,25 @@ hooks are run, all members are still initialized.
 
 
 
+copy construction
+-----------------
 
+    def gen copy(o @ ^'T) -> ^T ...
+
+The compiler will generate on-copy methods for each type like this:
+
+    def copy(o @ ^Foo) {
+      let t = Foo(nm: o.nm)
+      .Foo.on-copy(t, o) <<opt>>
+      t
+    }
+
+    def copy(o @ ^Bar) {
+      let t = Foo(nm: o.nm, xy: o.xy)
+      .Foo.on-copy(t, o) <<opt>>
+      .Bar.on-copy(t, o) <<opt>>
+      t
+    }
 
 
 
