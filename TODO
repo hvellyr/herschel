@@ -2,8 +2,6 @@
 
 Herschel 2
 
-  - change init-functor(ty @ Type<'T> to init-functor(ty @ ^'T)
-
 x - create proper constructors (see below)
     - check init calls to slots in array type creation
   - generate finalizer() calls for variables going out of scope (RAII)
@@ -310,17 +308,17 @@ Operators
 
     a ++ b      =>    concat(a, b)
 
-    a += b      =>    set!(a, add(a, b))
-    a -= b      =>    set!(a, subtract(a, b))
-    a *= b      =>    set!(a, multiply(a, b))
-    a /= b      =>    set!(a, divide(a, b))
-    a **= b     =>    set!(a, power(a, b))
-    a ++= b     =>    set!(a, concat(a, b))
-    a OR= b     =>    set!(a, bitwise-or(a, b))
-    a AND= b    =>    set!(a, bitwise-and(a, b))
-    a XOR= b    =>    set!(a, bitwise-xor(a, b))
-    a or= b     =>    set!(a, logical-or(a, b))
-    a and= b    =>    set!(a, logical-and(a, b))
+    a += b      =>    a = add(a, b)
+    a -= b      =>    a = subtract(a, b)
+    a *= b      =>    a = multiply(a, b)
+    a /= b      =>    a = divide(a, b)
+    a **= b     =>    a = power(a, b)
+    a ++= b     =>    a = concat(a, b)
+    a OR= b     =>    a = bitwise-or(a, b)
+    a AND= b    =>    a = bitwise-and(a, b)
+    a XOR= b    =>    a = bitwise-xor(a, b)
+    a or= b     =>    a = logical-or(a, b)
+    a and= b    =>    a = logical-and(a, b)
 
     not a       =>    not(a)
     - a         =>    negate(a)
@@ -341,7 +339,7 @@ Operators
     a, b ... = e         =>  {
                                let tmp = e
                                a = slice(tmp, 0)
-                               b = slice-reset(tmp, 1)
+                               b = slice-rest(tmp, 1)
                              }
 
 
@@ -1290,26 +1288,12 @@ Bootstrap compiler
 
     The same for append(), fold()
 
-  - Missing node support:
-     - match
-     - select
-     - on
-     - UnitConst
-
-  - replace the UnitConstant node by a proper Measure() ctor call.  Apply
-    the unit transformation inplace (if simple enough).  Register
-    unit-transform calls as special functions.
-
   - transform nested functions
     - detect closure variable access
 
     - detect whether nested functions can simply be inlined
 
     - otherwise lambda lift functions to outside.
-
-  - enum:
-    - construct proper enum constraint type
-    - check that init values match the base type
 
   - extend macro parameter types (like ?a:type-spec)
 
@@ -1340,28 +1324,8 @@ Language and ideas:
     e.b = "The question"
 
 
-  - Think about non-gc objects.
-
   - Think about lazy evaluation (generalize the 'promise' concept
     introduced en passent with sync).  See x10 -> futures.  (cf. doc/CHANGES)
-
-  - checked exceptions.  Declare as
-
-      def generic f() : 'X
-          raises 'B
-          reify () : N, () : P
-          where B isa Throwable
-        ...
-
-    additionally
-
-      def generic f() : 'X
-          no-raise
-          reify ....
-
-    to document that a function does not pass exceptions.
-
-  - Function contracts (cf. doc/CHANGES)
 
 
 
