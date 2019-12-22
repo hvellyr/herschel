@@ -1,4 +1,7 @@
-module beer99 {
+application beer99 (
+   name: "99beer",
+   bundled?: true)
+{
 export public bottles
 
 import lang
@@ -6,6 +9,7 @@ import lang
 def type OutPort
 def *stdout*() -> OutPort ...
 def outln(port = *stdout*(), msgs ...) -> Int ...
+
 
 def bottles(n : Int)
   for (i in n .. 0 by -1) {

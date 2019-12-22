@@ -56,6 +56,7 @@ public:
   Token parse();
 
 private:
+  friend struct AppKeysParser;
   friend struct BasePatternParser;
   friend struct EnumItemParser;
   friend struct ExportParser;
@@ -87,6 +88,7 @@ private:
 
   TokenVector parseTop();
   Token parseLibrary();
+  Token parseApplication();
   Token parseModule();
   Token parseExport();
   TokenVector parseImport();
@@ -143,6 +145,7 @@ private:
   Token parseFunctionCall(const Token& expr, const TokenVector& preScannedArgs,
                           bool parseParams);
   void parseFuncallArgs(TokenVector* args);
+  void parseAppArgs(TokenVector* argsVector);
 
   Token makeBinaryToken(const Token& expr1, OperatorType op1, const Token& expr2,
                         const SrcPos& op1Srcpos) const;
@@ -261,6 +264,7 @@ private:
   Token fToken;
   bool fEvaluateExprs = true;
   bool fInLibrary = false;
+  bool fInApplication = false;
 };
 
 

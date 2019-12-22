@@ -718,6 +718,32 @@ inline std::shared_ptr<CompileUnitNode> makeCompileUnitNode(std::shared_ptr<Scop
 }
 
 
+class ApplicationNode : public ListNode {
+public:
+  ApplicationNode(const SrcPos& srcpos)
+      : ListNode(srcpos)
+  {
+  }
+
+  std::shared_ptr<AstNode> clone() const override
+  {
+    auto node = std::make_shared<ApplicationNode>(fSrcPos);
+    details::copyNodes(&node->fChildren, &fChildren);
+    details::copyNodes(&node->fParams, &fParams);
+    return details::cloneScope(this, std::move(node));
+  }
+
+  NodeList fParams;
+};
+
+
+inline std::shared_ptr<ApplicationNode> makeApplicationNode(std::shared_ptr<Scope> scope,
+                                                            const SrcPos& srcpos)
+{
+  return details::enscope(std::make_shared<ApplicationNode>(srcpos), scope);
+}
+
+
 class BaseDefNode : public AstNode {
 public:
   BaseDefNode(const SrcPos& srcpos, std::shared_ptr<AstNode> defined)

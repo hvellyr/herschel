@@ -50,6 +50,15 @@ struct NodeAnnotator<std::shared_ptr<CompileUnitNode>> {
 
 
 template <>
+struct NodeAnnotator<std::shared_ptr<ApplicationNode>> {
+  static void annotate(Annotator* ann, std::shared_ptr<ApplicationNode> node)
+  {
+    ann->annotateNodeList(node->children(), !K(markTailPos), !K(markSingleType));
+  }
+};
+
+
+template <>
 struct NodeAnnotator<std::shared_ptr<ArrayTypeNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<ArrayTypeNode> node)
   {

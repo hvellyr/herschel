@@ -626,6 +626,27 @@ Modules compile typically into static or dynamic libraries.
      }
 
 
+  application xyz
+
+  declares an application, i.e. a standalone executable program.  The
+  name ("xyz") opens a namespace (like for the "library"
+  construction).  It might be used by the compiler for naming the
+  resulting executable.  Additional parameters could be given as keyed
+  arguments; which arguments are used depends on the compiler,
+  platforms, and target format.
+
+    application b99 (
+      name: "beer99",
+      bundled?: false,            -- use on Mac to make a bundled app
+      icon: "../resources/icon.?"
+    )
+
+  All of this is optional and might be ignored by the compiler or
+  overwritten by compiler options.  The "application" keyword is
+  mainly the marker for the compiler that it is should compile and
+  link an executable.
+
+
 
 
 export, importing

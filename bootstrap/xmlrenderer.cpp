@@ -790,7 +790,22 @@ struct NodeRenderer<std::shared_ptr<WhileNode>> {
     renderer->displayNode("body", node.body());
     renderer->displayCloseTag("while");
   }
-};  // namespace herschel
+};
+
+
+template <>
+struct NodeRenderer<std::shared_ptr<ApplicationNode>> {
+  static void render(XmlRenderer* renderer, const ApplicationNode& node)
+  {
+    StringBuffer attrs;
+
+    renderer->displayOpenTagAttrs("app", StrHelper(attrs.toString()));
+    renderer->displayNodeList(nullptr, node.children());
+    renderer->displayCloseTag("app");
+  }
+};
+
+
 
 
 //----------------------------------------------------------------------------------------

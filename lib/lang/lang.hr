@@ -6,6 +6,7 @@
 -- This source code is released under the BSD License.
 
 library lang
+    ~ defines the core language library ~
 
 include public (
     "runtime.hr",

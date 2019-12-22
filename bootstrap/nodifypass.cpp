@@ -94,6 +94,45 @@ std::shared_ptr<AstNode> SecondPass::parseLibrary(const Token& expr)
 }
 
 
+std::shared_ptr<AstNode> SecondPass::parseApplication(const Token& expr)
+{
+  hr_assert(expr.isSeq() && expr.count() > 3);
+  hr_assert(expr[0] == kApplicationId);
+  hr_assert(expr[1].isSymbol());
+
+  String appName = expr[1].idValue();
+
+  if (expr.count() > 3) {
+    hr_assert(expr[2].isNested() && expr[2].leftToken() == kParanOpen);
+    hr_assert(expr[3].isNested() && expr[3].leftToken() == kBraceOpen);
+
+
+    ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), !K(doPropIntern),
+                            kScopeL_Library);
+    ModuleHelper moduleHelper(this, appName);
+
+    // TODO: parse app parameters
+
+    auto appRootNode = makeApplicationNode(fScope, SrcPos());
+    {
+      auto prevRootNode = fRootNode;
+      fRootNode = appRootNode;
+
+      parseTopExprlist(expr[3]);
+
+      fRootNode = prevRootNode;
+    }
+
+    return appRootNode;
+  }
+  else {
+    hr_invalid("");
+  }
+
+  return nullptr;
+}
+
+
 std::shared_ptr<AstNode> SecondPass::parseModule(const Token& expr)
 {
   hr_assert(expr.isSeq() && expr.count() >= 2);
@@ -239,6 +278,8 @@ void SecondPass::parseWithNamespaceImpl(NodeList* functions, const Token& expr)
 
 std::shared_ptr<AstNode> SecondPass::parseWith(const Token& expr)
 {
+  hr_assert(fRootNode);
+
   NodeList nodeList;
 
   if (expr.isSeq() && expr.count() == 4 && expr[1] == kNamespaceId) {
@@ -3224,6 +3265,8 @@ NodeList SecondPass::parseSeq(const Token& expr)
     return makeNodeList(parseModule(expr));
   else if (first == kLibraryId)
     return makeNodeList(parseLibrary(expr));
+  else if (first == kApplicationId)
+    return makeNodeList(parseApplication(expr));
   else if (first == kExportId)
     return makeNodeList(parseExport(expr));
   else if (first == kImportId)

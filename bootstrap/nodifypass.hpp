@@ -51,6 +51,7 @@ private:
   NodeList parseSeq(const Token& expr);
 
   std::shared_ptr<AstNode> parseLibrary(const Token& expr);
+  std::shared_ptr<AstNode> parseApplication(const Token& expr);
   std::shared_ptr<AstNode> parseModule(const Token& expr);
   std::shared_ptr<AstNode> parseExport(const Token& expr);
   std::shared_ptr<AstNode> parseImport(const Token& expr);

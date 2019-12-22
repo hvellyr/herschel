@@ -43,6 +43,9 @@ Ret dispatchNode(std::shared_ptr<AstNode> node, Functor&& functor)
   else if (auto comunitnd = std::dynamic_pointer_cast<CompileUnitNode>(node)) {
     return std::forward<Functor>(functor)(comunitnd);
   }
+  else if (auto appnd = std::dynamic_pointer_cast<ApplicationNode>(node)) {
+    return std::forward<Functor>(functor)(appnd);
+  }
   else if (auto defnd = std::dynamic_pointer_cast<DefNode>(node)) {
     return std::forward<Functor>(functor)(defnd);
   }
@@ -146,6 +149,16 @@ template <>
 struct NodeTraversator<std::shared_ptr<CompileUnitNode>> {
   template <typename Delegate>
   static void traverse(Traversator<Delegate>* trv, std::shared_ptr<CompileUnitNode> node)
+  {
+    trv->traverseNodeList(node->children());
+  }
+};
+
+
+template <>
+struct NodeTraversator<std::shared_ptr<ApplicationNode>> {
+  template <typename Delegate>
+  static void traverse(Traversator<Delegate>* trv, std::shared_ptr<ApplicationNode> node)
   {
     trv->traverseNodeList(node->children());
   }

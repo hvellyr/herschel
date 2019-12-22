@@ -95,7 +95,8 @@ Token FirstPass::scanUntilTopExprAndResume()
 {
   while (fToken != kEOF && fToken != kDefId && fToken != kModuleId &&
          fToken != kLibraryId && fToken != kExportId && fToken != kImportId &&
-         fToken != kIncludeId && fToken != kWhenId && fToken != kExternId)
+         fToken != kIncludeId && fToken != kWhenId && fToken != kExternId &&
+         fToken != kApplicationId)
     nextToken();
 
   return Token();
@@ -363,6 +364,106 @@ Token FirstPass::parseLibrary()
   }
 
   return libExpr;
+}
+
+
+struct AppKeysParser {
+  bool operator()(FirstPass* pass, Token& result)
+  {
+    if (pass->fToken.isKeyArg()) {
+      Token key = pass->fToken;
+      pass->nextToken();
+
+      Token val = pass->parseExpr(!K(acceptComma));
+      if (!val.isSet()) {
+        HR_LOG(kError, pass->fToken.srcpos(), E_UnexpectedToken)
+            << "Unexpected token while parsing application keyed argument's expr: "
+            << pass->fToken;
+        pass->scanUntilNextParameter();
+        return true;
+      }
+      result << key;
+      result << val;
+    }
+    else {
+      HR_LOG(kError, pass->fToken.srcpos(), E_UnexpectedToken)
+        << "unexpected token while parsing application arguments: " << pass->fToken;
+      pass->scanUntilNextParameter();
+      return true;
+    }
+
+    return true;
+  }
+};
+
+
+void FirstPass::parseAppArgs(TokenVector* argsVector)
+{
+  Token args;
+  parseSequence(AppKeysParser(), kParanOpen, kParanClose, K(hasSeparator),
+                E_BadParameterList, args, "funcall-args", !K(skipFirst));
+
+  if (args.isSeq())
+    *argsVector = args.children();
+}
+
+
+
+Token FirstPass::parseApplication()
+{
+  Token tagToken = fToken;
+  nextToken();
+
+  Token appExpr;
+
+  auto qSymbol = parseQualifiedName(false);
+  if (!qSymbol.empty()) {
+    Token appName = qualifyIdToken(qSymbol);
+
+    appExpr = Token() << tagToken << appName;
+
+    Token docString = parseOptDocString();
+    if (docString.isSet())
+      appExpr << docString;
+
+    Token params = Token(fToken.srcpos(), kParanOpen, kParanClose);
+
+    if (fToken == kParanOpen) {
+      nextToken();
+
+      TokenVector args;
+      parseAppArgs(&args);
+      params << args;
+    }
+
+    Token defines = Token(fToken.srcpos(), kBraceOpen, kBraceClose);
+
+    {
+      ScopeHelper scopeHelper(fScope, K(doExport), !K(isInnerScope), !K(doPropIntern),
+                              kScopeL_Library);
+      ModuleHelper moduleScope(this, appName.idValue());
+
+      fInApplication = true;
+
+      if (fToken == kBraceOpen) {
+        parseSequence(LibraryParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
+                      E_MissingBraceClose, defines, "application-body");
+      }
+      else {
+        while (fToken != kEOF) {
+          TokenVector n = parseTop();
+          if (!n.empty())
+            defines << n;
+        }
+      }
+
+      fInApplication = false;
+    }
+
+    appExpr << params << defines;
+  }
+
+  return appExpr;
 }
 
 
@@ -1513,7 +1614,7 @@ bool FirstPass::parseExprListUntilBrace(TokenVector* result, bool endAtToplevelI
   for (;;) {
     if (fToken == kDefId || fToken == kExternId || fToken == kExportId ||
         fToken == kImportId || fToken == kIncludeId || fToken == kModuleId ||
-        fToken == kLibraryId) {
+        fToken == kLibraryId || fToken == kApplicationId) {
       if (!endAtToplevelId) {
         HR_LOG(kError, fToken.srcpos(), E_UnexpectedTopExpr)
             << "unexpected top level expression: " << fToken;
@@ -3769,6 +3870,17 @@ TokenVector FirstPass::parseTop()
     else {
       HR_LOG(kError, fToken.srcpos(), E_NestedLibrary)
           << "Nested library not supported. Skipped";
+      nextToken();
+      return scanUntilTopExprAndResume().toTokenVector();
+    }
+  }
+  else if (fToken == kApplicationId) {
+    if (!fInApplication) {
+      return parseApplication().toTokenVector();
+    }
+    else {
+      HR_LOG(kError, fToken.srcpos(), E_NestedApp)
+          << "Nested application not supported. Skipped";
       nextToken();
       return scanUntilTopExprAndResume().toTokenVector();
     }

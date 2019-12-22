@@ -256,6 +256,7 @@ Token Tokenizer::readSymbolOrOperator(bool acceptGenerics)
         {String(MID_includeid), kIncludeId},
         {String(MID_letid), kLetId},
         {String(MID_libraryid), kLibraryId},
+        {String(MID_applicationid), kApplicationId},
         {String(MID_matchid), kMatchId},
         {String(MID_moduleid), kModuleId},
         {String(MID_namespaceid), kNamespaceId},
