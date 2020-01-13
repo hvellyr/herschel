@@ -47,6 +47,13 @@ bool isSilent()
 
 static zstring levelStr[] = {"debug", "info", "warning", "error"};
 
+static int errorLogs = 0;
+
+int numberOfLoggedErrors()
+{
+  return errorLogs;
+}
+
 
 LineLogger::LineLogger(LogLevel level, const SrcPos& where, int errorCode)
 {
@@ -68,6 +75,10 @@ LineLogger::LineLogger(LogLevel level, const SrcPos& where, int errorCode)
     else
       fMsgBuffer << levelStr[level] << ": (" << std::setw(4) << std::right << std::hex
                  << std::setfill('0') << errorCode << ") " << std::dec;
+  }
+
+  if (level == kError) {
+    ++errorLogs;
   }
 }
 

@@ -18,6 +18,8 @@ namespace herschel {
 //! Base class for message based exceptions
 class Exception {
 public:
+  Exception(const Exception& ) = default;
+
   Exception(const String& msg)
       : fMsg(msg)
   {
@@ -51,6 +53,17 @@ class NotSupportedException : public Exception {
 public:
   NotSupportedException(zstring functionName)
       : Exception(String("Method ") + functionName + " is not supported")
+  {
+  }
+};
+
+
+//! Exception denoting an aborted compilation
+class AbortException : public Exception {
+public:
+  AbortException(const AbortException& ) = default;
+  AbortException(const String& msg)
+    : Exception(msg)
   {
   }
 };

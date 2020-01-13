@@ -32,6 +32,7 @@ private:
 
 bool isSilent();
 
+int numberOfLoggedErrors();
 
 class LineLogger {
 public:

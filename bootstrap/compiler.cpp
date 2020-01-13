@@ -15,6 +15,7 @@
 #include "ast.hpp"
 //#include "codegen.hpp"
 #include "errcodes.hpp"
+#include "exception.hpp"
 #include "exprpass.hpp"
 #include "file.hpp"
 #include "filetool.hpp"
@@ -159,6 +160,10 @@ std::shared_ptr<AstNode> Compiler::processImpl(std::shared_ptr<Port<Char>> port,
 
       NodifyPass nodifyPass{2, *this, fState.fScope};
       ast = nodifyPass.apply(parsedExprs, doTrace);
+
+      if (numberOfLoggedErrors() > 0) {
+        throw AbortException(String("too many errors"));
+      }
 
       // if the compileunit contains open-ended module declarations
       // (i.e. without {}) get the last valid scope back and make it the
@@ -481,26 +486,30 @@ void compileFile(const String& file, bool doParse, bool doCompile, bool doLink,
         XmlRenderer out{std::make_shared<FilePort>(stdout), true};
         out.render(ast);
 
-        hr_assert(ast);
-        auto unit = dynamic_cast<CompileUnitNode*>(ast.get());
-        hr_assert(unit);
+        if (ast) {
+          auto unit = dynamic_cast<CompileUnitNode*>(ast.get());
+          hr_assert(unit);
 
-        if (unit) {
-          String outExt = makeCompileOutputFileExt(Properties::compileOutFormat());
-          String outFile =
-              makeOutputFileName(Properties::outdir(), outfileName, file, outExt);
+          if (unit) {
+            String outExt = makeCompileOutputFileExt(Properties::compileOutFormat());
+            String outFile =
+                makeOutputFileName(Properties::outdir(), outfileName, file, outExt);
 
 #if 0
-          CodeGenerator codegen{ compiler };
-          codegen.compileToCode(unit, outFile);
+            CodeGenerator codegen{ compiler };
+            codegen.compileToCode(unit, outFile);
 #endif
-        }
+          }
 
-        if (doLink) {
-          // TODO
+          if (doLink) {
+            // TODO
+          }
         }
       }
     }
+  }
+  catch (const AbortException& e) {
+    HR_LOG(kError) << "compilation of '" << file << "' aborted: " << e.message();
   }
   catch (const Exception& e) {
     HR_LOG(kError) << "compilation of '" << file << "' failed: " << e.message();
