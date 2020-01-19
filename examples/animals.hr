@@ -1,25 +1,22 @@
 def type SoundMaking
 
-def record Animal
-(
-  classification : String
-)
+def type Animal
+def type Mamal : Animal
+def type Dog : Mamal, SoundMaking
+def type Cat : Mamal
 
-def record Mamal : Animal
-(
-  fur? : Bool
-)
 
-def .Mamal.on-init(self : ^Mamal) self
--- def .Mamal.on-deinit(self : ^Mamal) self
-
-def record Dog : Mamal, SoundMaking
+def record DogImpl : Dog
 (
+  classification : String,
+  fur? : Bool,
   size : String
 )
 
-def record Cat : Mamal
+def record CatImpl : Cat
 (
+  classification : String,
+  fur? : Bool,
   size : String
 )
 
@@ -33,6 +30,6 @@ def .Cat.on-copy(self : ^Cat, rhs : ^Cat) self
 def .app.main() {
   let class = "x"
   let greeting = "hello world"
-  let a = Dog(classification: class)
+  let a = DogImpl(classification: class)
   0
 }

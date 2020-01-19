@@ -84,6 +84,7 @@ enum ErrCodes {
   E_InvariantType = 0x403d,
   E_MultiDimenArray = 0x403e,
   E_BadGenericType = 0x403f,
+  E_InheritsRecords = 0x4040,
   E_UnknownType = 0x4041,
   E_SlotRefToNonClass = 0x4042,
   E_UnknownSlot = 0x4043,
@@ -162,6 +163,9 @@ enum ErrCodes {
   E_NestedLibrary = 0x4546,
   E_UnknownIncludeScope = 0x4547,
   E_NestedApp = 0x4548,
+
+  // types
+  E_NonInstantiatableType = 0x4600,
 
   // external C syntax
   E_BadCSyntax = 0xe000,

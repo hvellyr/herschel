@@ -1556,13 +1556,15 @@ void Typifier::setupBindingNodeType(std::shared_ptr<BindingNode> node, zstring e
       }
       else if (!node->initExpr()->type().isDef()) {
         HR_LOG(kError, node->initExpr()->srcpos(), E_TypeMismatch)
-            << "Undefined type in %s initialization " << errdesc;
+            << "Undefined type in " << errdesc << " initialization";
         node->initExpr()->setDstType(Type::makeAny());
       }
       else if (!isContravariant(bindty, node->initExpr()->type(), *node->scope(),
                                 node->srcpos())) {
         HR_LOG(kError, node->initExpr()->srcpos(), E_TypeMismatch)
-            << "type mismatch in %s initialization" << errdesc;
+            << "type mismatch in " << errdesc << " initialization: ";
+        HR_LOG(kError, node->initExpr()->srcpos(), E_TypeMismatch)
+            << "expected " << bindty << " found " << node->initExpr()->type();
         node->initExpr()->setDstType(Type::makeAny());
       }
       else {
@@ -1687,11 +1689,9 @@ void Typifier::checkArgParamType(TypeCtx& localCtx,
   if (param->type().isOpen()) {
     if (!param->type().matchGenerics(localCtx, arg->type(), *arg->scope(),
                                      arg->srcpos())) {
-      HR_LOG(kError) << "param: " << param->type();
-      HR_LOG(kError) << "arg: " << arg->type();
       HR_LOG(kError, arg->srcpos(), E_TypeMismatch)
           << "type mismatch for argument " << idx << " in call to function '" << funcName
-          << "'";
+          << "' (" << param->type() << " for " << arg->type() << ")";
       return;
     }
   }

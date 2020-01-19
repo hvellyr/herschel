@@ -1,0 +1,19 @@
+def record Id
+(
+  name : String,
+  first : String,
+  id-number : String
+)
+
+def record Address
+(
+  street : String,
+  city : String,
+  zip : String
+)
+
+def record Person
+(
+  id : Id,
+  addr : Address
+)

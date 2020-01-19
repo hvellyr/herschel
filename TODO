@@ -2,6 +2,68 @@
 
 Herschel 2
 
+  - memory management, reference types, ...
+    - document/take the following matrix
+
+                                var is on stack     var is ptr to heap
+       base types (int, bool)        x
+       record types                  x
+       interface types                                     x
+       any type                                            x
+       ref to base type                                    x
+       ref to record                                       x
+       ref interface                                       x
+       ref to any                                          x
+
+x   - remove inheritance from record types.  Only interfaces can inherit.
+    - record types are always concrete types
+
+    - change (local) variable setup with "creating a new instance"
+      from "var def is initializing", to a more imperative style:
+      + define a local var with a proper type as "undef"
+      + if the type is
+        - a base type: set to default value
+        - a concrete (record) type: call the concrete .Foo.init(...) initializer with the local var
+        - an interface or any type: -> Error (since generic types can't be instantiated)
+        - a reference type: -> Error
+      + when the init value is some other value or expression: keep the current style.
+
+    - generating copy occurances.  with a = b  and
+      - a and b are the same base type: simply copy the base value
+      - a and b are of different base type: Error
+      - a and/or b are references to the same base type: simply copy the base value with
+        appropriate de-referencing
+      - a and b are the same concrete (record) type call the concrete copy operator .Foo.copy(a, b)
+        (which sets a in place)
+      - a and b are different concrete types: error
+      - a and/or b are references to the same concrete (record) types: call the concrete copy
+        operator .Foo.copy(a, b) with appropriate de-referencing
+      - b is an interface or any type: call the generic function copy(b @ ...), assign the ptr result
+      - a and/or b are references to interface or any types: call the generic function
+        copy(b @ ...), assign the ptr result
+
+    - generating move occurances.  with a = b  and
+      - a and b are the same base type: simply copy the base value
+      - a and b are of different base type: Error
+      - a and/or b are references to the same base type: simply copy the base value with
+        appropriate de-referencing
+      - a and b are the same concrete (record) type call the concrete move operator .Foo.move(a, b)
+        (which sets a in place)
+      - a and b are different concrete types: error
+      - a and b are references to the same concrete (record) types: assign the ptr of b to a
+      - a or b are references to the same concrete (record) types: call the concrete move
+        operator .Foo.move(a, b) with appropriate de-referencing
+      - a and b are interface or any types: assign the ptr of b to a
+      - a and/or b are references to interface or any types: assign the ptr of b to a
+
+    - in case of destruction if a member/variables is
+      - a base type: do nothing
+      - a concrete (record) type: make calls to destructors concrete: .Foo.deinit(...)
+      - an interface or any type: call the generic function deinitialize(x @)
+      - a reference type: do nothing
+    - create the virtual overload for deinitialize(x @ Foo) which calls the concrete .Foo.deinit(...)
+
+
 x - create proper constructors (see below)
     - check init calls to slots in array type creation
   - generate finalizer() calls for variables going out of scope (RAII)
@@ -9,10 +71,11 @@ x   - need to capture the return value of a block in a local variable,
       then add the finalizer calls, then return that local variable.
       When generating the finalizers this local variable must not be
       destructed of course (look for reference types, etc.!)
-    - decide when to call deallocate(deinitialize()) or only deinitialize() on local variables
-    - do we need to run generateFinalizers for functions params, too?
+    - don't call allocate or deallocate in constructor/destructor
+      calls.  Only init() and deinitialize()
+    - generateFinalizers for functions params
 
-  - reference types, ref-counted types,
+  - reference types, ref-counted types, pointer dereferencation
   - "mut" modifier
   - rewrite operators +=, *=, ++=, ... to set!( ....) etc.
 
@@ -153,8 +216,8 @@ Others
 Memory model
 ------------
 
-1. types are values; simply assigning makes copies (unless the
-  compiler can prove that moving it won't make a difference).  All
+1. types have value semantics; simply assigning makes copies (unless
+  the compiler can prove that moving it won't make a difference).  All
   values in tail position can be moved.
 
     def foo() {
@@ -185,7 +248,10 @@ Memory model
     }
 
   a is a pointer to a Bar variable.  Simply using it reads its value
-  (not the address!).  Assigning pointer variables:
+  (not the address!).  Assigning values to pointer variables, copies
+  (or moves) the value into the pointer destination.  Assigning
+  pointers to pointers let's both pointer refer to the same
+  destination:
 
     let a = Student(...)
     let b : ^ = a             -- let b point to a (with type deduction)
@@ -193,16 +259,13 @@ Memory model
     b.name = "Heinz"          -- change a through b
     display(a.name)           -- => "Heinz"
 
-    b^ = Student(...)         -- copies a new value into the storage of b (here a!)
-    b = Student(...)          -- ERROR: b would point to unbound value
+    b = Student(...)          -- copies a new Student value into a (through b)
     let c : ^ = a             -- let c point to a
-    c = b                     -- c points now to the same value as b
+    c = b                     -- copy value of b through c into a
 
-    let d = Student(...)
-    b = d                     -- now b points to d
-    b^ = d                    -- copy d into the slot pointer to by b
-
-  pointers can't be reset to nil.
+  pointers can never be reset to nil, not being uninitialized.  After
+  definition a pointer can't be rebound to a different location
+  (accept by being assigned to another pointer).
 
 
   Certain expressions use auto-dereferencing of references.  With two
@@ -210,34 +273,138 @@ Memory model
   the following way:
 
    v1 = v2                   -- copy value of v2 to v1
-   v1 = p1      v1 = p1^     -- copy value of p1^ to v1
-   p1 = v1                   -- let p1 point to v1
-   p1^ = v1                  -- copy value of v1 into p1
-   p1 = p2                   -- let p1 point to p2
-   p1^ = p2     p1^ = p2^    -- copy of value of p2^ into p1
+   v1 = p1                   -- copy value of p1.get() to v1
+   p1 = v1                   -- copy value of v1 into p1
+   p1 = p2                   -- copy value of p2.get() into p1
 
   with two functions `foov(v)` and `foop(p)` the same rules apply:
 
    foov(v)                   -- call foov with a copy of v
-   foov(p)      foov(p^)     -- call foov with a copy of p^
+   foov(p)                   -- call foov with a copy of p.get()
    foop(v)                   -- call foop with a reference to v
    foop(p)                   -- call foop with p as reference
 
 
-  traps:
+  let a : Bar            -- default initialized stack value
+  let a = Bar()          -- default initialized stack value
+  let a : &Bar           -- shared pointer object (default initialized)
+  let a : & = Bar()      -- shared pointer object (default initialized)
+  let a = &Bar()         -- shared pointer object (default initialized)
+  let a : & = p          -- shared pointer object (a + p have shared object)
+  let a : & = v          -- shared pointer object (copied from v)
+  let a : ^              -- ERROR: uninitialized + untyped reference
+  let a : ^Bar           -- ERROR: uninitialized reference
+  let a : ^Bar = b       -- reference to value
+  let a : ^ = b          -- reference to value
+  let a = b              -- copy of value
+  let a : ^ = &Bar()     -- ERROR: reference the rvalue
+  let a : ^ = 5          -- ERROR: reference the rvalue
+
+
+
+For array, string, and heap allocation we need resetable pointers.
+Can we use "references" with some syntax to make pointers?  Here it
+goes: references can be reset:
+
+   p1^ = v1                  -- set p1 to refer to v1
+   p1^ = p2                  -- let p1 point to the same value as p2
+
+
+  careful!:
 
     def foo(a:^) {
       let b = Student()
-      a = b                   -- error: pointer arg points to local variable
+      a = b                  -- copies value of b through a into the caller
+    }
+
+    def foo(a:^) {
+      let b = Student()
+      a^ = b                 -- resets a to point to b.  original a is not accessible anymore
     }
 
     def foo() -> ^ {
       let b = Student()
-      b                       -- error: returns reference to local variable
+      b                      -- ERROR: returns reference to local variable
+    }
+
+    def const sentinel
+    def record Obj ( _ref : ^ = sentinel )
+
+    def foo(o:^) {
+      let b = Student()
+      o._ref^ = b            -- ERROR: o._ref points to local variable
     }
 
 
-  Shared pointers:
+3. copy vs. move
+
+  Value variables are copied() when assigned and moved() when in tail
+  position.
+
+  For the copying the compiler generates copy() methods for each
+  (complex) type.  The user has the change to define hooks into the
+  copying process (on-copy).  Primitive types (like int, char, bool,
+  byte, float, or double) are copied with system primitives
+  (e.g. register or memory slot assignment).
+
+  For the moving the compiler generates move() methods for each
+  (complex) type.  Here the user has the chance, too, to hook into the
+  process.  The goal of the move methods is to move all values from
+  one place to another, and leave the source instance in a state that
+  a deallocation/deinitialization doesn't destroy state now used by
+  the target instance).  Moving only makes a difference for reference
+  or shared objects; for complex types consisting of primitive types
+  only the move() method is the same as the copy() method.
+
+
+4. Constructor / Destructor
+
+  Instances of primitive and complex typrs are normally allocated on
+  the stack.  The compiler will reserve enough space on the stack (or
+  in record memory layout) for a given type.  When the type is
+  initialized the compiler generates a call to an initialization
+  function.  This function initializes all members of the type and
+  calls a init hook (if the user provided one):
+
+  let a : Student
+
+  ->
+
+  .Student.init(a, ...)
+
+  Before a scope is left the compiler will generate calls to the
+  deinitialize() method for all variables which are not moved, heap
+  allocation, or references:
+
+  deinitialize(a)
+
+
+5. Heap allocated objects
+
+  Instances of primitive and complex types are normally allocated on
+  the stack.  In some cases it is advisable to allocate objects
+  explicitly on the heap.  Objects allocated on the heap are not
+  automatically deinitialized when the scope is left.  They require
+  manual deallocation.
+
+    let x : ^ = allocate(Student, ...)
+
+  or
+
+    let x = allocate(Student, ...)
+
+  The return value of allocate() is always ^T.
+
+  Run the deinitialize() method and free the memory:
+
+    deallocate(x)
+
+  x must be a reference type.
+
+  To manage memory (without leaking) use Shared pointers.
+
+
+6. Shared pointers:
 
   shared pointers are reference counted owner pointers holding a
   value.  The reference counter is not intrusive, but organized by the
@@ -255,6 +422,7 @@ Memory model
     let a : & = Bar()         -- Ok.
 
     let a : (&Bar | Nil) = nil  -- shared ptr to a Bar|Nil initialized to nil.
+    let a : (&Bar | Nil)      -- ERROR: a is uninitialized
 
 
 
@@ -274,6 +442,67 @@ Memory model
     def foo(a : (&Bar | Nil))
     def foo(a : (^Bar | Nil))
 
+
+6.2. A possible shared pointer implementation
+
+  A shared pointer implementation:
+
+    def record SharedObjBlock<T> (
+      ref-count : Int,
+      val : T
+    )
+
+    def const shared-block-sentinel = SharedObjBlock<Any>
+
+    def record SharedPtr<T> (
+      cb : ^SharedObjBlock<T> = shared-block-sentinel as SharedObjBlock<T>
+    )
+
+    -- named constructor
+    def make-shared(o : 'T) -> SharedPtr<'T> {
+      SharedPtr<'T>(cb: allocate(SharedObjBlock<'T>, ref-count: 1, val: o))
+    }
+
+    -- copy constructor
+    def copy(rhs @ ^SharedPtr<'T>) -> SharedPtr<'T> {
+      SharedPtr<'T>(cb: {
+                          incr!(rhs.cb.ref-count)
+                          rhs.cb
+                        })
+    }
+
+    -- destructor
+    def deinitialize(self @ ^SharedPtr<'T>) {
+      if (cb.ref-count == 1) {
+        deallocate(lhs.cb)
+        --lhs.data = nil
+      }
+      else
+        decr!(self.cb.ref-count)
+      self
+    }
+
+    -- cast operator
+    def value(self @ ^SharedPtr<'T>, as-type : Type<'U>) -> ^'U {
+      self.cb.val as 'U
+    }
+
+
+  The cast operator is used when
+
+  - a shared pointer instance is assigned to a primitive like:
+
+    let si = make-shared(42)
+    let a : Int = si                -- let a : Int = value(si, Type<Int>)
+    let a = si as Int               -- let a : Int = value(si, Type<Int>)
+    let a = si as Float             -- let a : Int = value(si, Type<Float>)
+
+
+7. Automatic heap allocation
+
+  For .lang.Any types all non primitive types are automatically boxed,
+  i.e. kept on the heap.  The compiler will generate automatic boxing
+  and unboxing code where necessary.
 
 
 Operators
@@ -326,7 +555,7 @@ Operators
     a .. b      =>    range(a, b)
     a .. b by c =>    range(a, b, c)
 
-    a^          =>    value(a)                  ??????????
+    a as X      =>    value(a, Type<X>)     -- if a is a SharedPtr
 
     a[x]        =>    slice(a, x)
     a[x] = y    =>    slice!(a, x, y)
@@ -764,9 +993,9 @@ Functions
 
 　signature definition of functions in headers:
 
-   def foo(a, b) ...
-   def foo(a, b) -> Int ...
-   def generic foo(a @ Bar) ...
+    def foo(a, b) ...
+    def foo(a, b) -> Int ...
+    def generic foo(a @ Bar) ...
 
 
 --------------------------------------------------------------------------------
@@ -978,47 +1207,72 @@ declaration
     )
 
     def record SharedPtr<T> (
-      data^ : SharedObjBlock<T> | Nil
+      data : (^SharedObjBlock<T> | Nil) = nil
     )
 
     -- implementation of = operator
-    def set!(lhs : ^SharedPtr<T>, rhs : SharedPtr<T>) -> ^SharedPtr<T> {
-      if (not nil?(rhs.data)) {
-        inc!(rhs.data.ref-count)
-      }
+    def set!(lhs : ^SharedPtr<T>, rhs : ^SharedPtr<T>) -> ^SharedPtr<T> {
+      match (lhs.data)
+        | _ : Nil -> {
+                       match (rhs.data)
+                         | _ : Nil -> unspecified
+                         | rcb : ^SharedObjBlock<T> -> {
+                                                         inc!(rcb.ref-count)
+                                                         lhs.data^ = rcb
+                                                       }
+                     }
+        | lcb : SharedObjBlock<T> -> {
+                                       match (rhs.data)
+                                         | _ : Nil -> unspecified
+                                         | rcb : ^SharedObjBlock<T> -> inc!(rcb.ref-count)
 
-      if (not nil?(lhs.data)) {
-        if (lhs.data.ref-count == 1) {
-          lhs.data^ = nil
-        }
-        else {
-          dec!(lhs.data.ref-count)
-        }
-      }
+                                       if (lcb.ref-count == 1)
+                                         lhs.data = nil
+                                       else
+                                         dec!(lcb.ref-count)
 
-      lhs.data = rhs.data
+                                       match (rhs.data)
+                                         | _ : Nil -> unspecified
+                                         | rcb : ^SharedObjBlock<T> -> lhs.data^ = rcb
+                                    }
       lhs
     }
 
+    -- copy constructor
+    def copy(rhs @ ^SharedPtr<T>) -> SharedPtr<T> {
+      SharedPtr<T>(data: {
+                           match (rhs.data)
+                             | _ : Nil -> nil
+                             | rcb : ^SharedObjBlock<T> -> {
+                                                             inc!(rcb.ref-count)
+                                                             rcb
+                                                           }
+                         })
+    }
+
     -- destructor
-    def free!(self : ^SharedPtr<T>) {
-      if (not nil?(self.data)) {
-        if (self.data.ref-count == 1) {
-          lhs.data^ = nil
-        }
-        else {
-          dec!(self.data.ref-count)
-        }
-      }
+    def deinitialize(self : ^SharedPtr<T>) {
+      match (self.data)
+        | _ : Nil -> unspecified
+        | cb : ^SharedObjBlock<T> -> if (cb.ref-count == 1)
+                                       lhs.data = nil
+                                     else
+                                       dec!(cb.ref-count)
     }
 
     def value(self : ^SharedPtr<T>) -> ^T {
-      match (self.data^)
-        | _ : Nil -> { display("Derefencing unset shared pointer")
-                       sys.exit(1)
+      match (self.data)
+        | _ : Nil -> {
+                       -- display("Derefencing unset shared pointer")
+                       unspecified
                      }
-        | x : ^SharedObjBlock<T> -> x.val
+        | cb : ^SharedObjBlock<T> -> cb.val
     }
+
+
+  Assign
+
+
 
 
 ----------------------------------------------------------------------------------------

@@ -77,12 +77,6 @@ def pub generic deinitialize(v @ ^'T) -> ^'T ...
     call @var{v} is uninitialized raw memory which either could be
     re-initialized or freed with @fun{deallocate}. ~
 
-------------------------------------------------------------------------------
-
--- def pub generic copy(o @ ^'T) -> 'T ...
-
--- def on-copy(v : 'T) -> 'T ...
-
 
 ------------------------------------------------------------------------------
 
