@@ -2,6 +2,28 @@
 
 Herschel 2
 
+  ast::node clone must clone the fScope, too.  Keep entire subtrees on
+  the same fScope messes up var registration and lookup later (which
+  messes up finalizer generation, etc.).
+
+  Either:
+
+    - when cloning a node, make a recursive clone of the scopes.
+      requires a scope map though since multiple nodes might share the
+      same scope and should so after the clone.
+
+    - try to make mutable scopes unnecessary.  currently we're using the scope
+      - as secret tunnel from symbol usage to symbol definition
+        - with functions we use this for ...
+        - with vars we use this for
+          a) to find the last user of a variable in a given scope (figure
+             out move/copy)
+          b) track if a symbol is moved away or not and thus requires
+             finalization in a given scope.
+          c) annotate symbols whether they refer to local, or global variables.
+             Annotate vars as taken by closures.
+          d) to set delayer infered type specs
+
   - memory management, reference types, ...
     - document/take the following matrix
 
