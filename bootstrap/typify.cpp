@@ -1366,6 +1366,18 @@ struct NodeTypifier<std::shared_ptr<KeywordNode>> {
 };
 
 
+template <>
+struct NodeTypifier<std::shared_ptr<ScopeNode>> {
+  static void typify(Typifier* typf, std::shared_ptr<ScopeNode> node)
+  {
+    typf->typifyNodeList(node->child_nodes());
+    if (!node->children().empty()) {
+      node->setType(node->children().back()->type());
+    }
+  }
+};
+
+
 //------------------------------------------------------------------------------
 
 Typifier::Typifier(Compiler& compiler)

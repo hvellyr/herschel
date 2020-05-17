@@ -695,6 +695,49 @@ inline std::shared_ptr<BoolNode> makeBoolNode(std::shared_ptr<Scope> scope,
 }
 
 
+class ScopeNode : public ListNode {
+public:
+  ScopeNode(const SrcPos& srcpos, bool doExport, bool isInnerScope,
+            bool doPropagateIntern, ScopeLevel level)
+      : ListNode(srcpos)
+      , fDoExport(doExport)
+      , fIsInnerScope(isInnerScope)
+      , fDoPropagateIntern(doPropagateIntern)
+      , fLevel(level)
+  {
+  }
+
+  std::shared_ptr<AstNode> clone() const override
+  {
+    auto node = std::make_shared<ScopeNode>(fSrcPos, fDoExport, fIsInnerScope,
+                                            fDoPropagateIntern, fLevel);
+    details::copyNodes(&node->fChildren, &fChildren);
+    return details::cloneScope(this, std::move(node));
+  }
+
+  bool fDoExport;
+  bool fIsInnerScope;
+  bool fDoPropagateIntern;
+  ScopeLevel fLevel;
+};
+
+
+inline std::shared_ptr<ScopeNode> makeScopeNode(std::shared_ptr<Scope> scope,
+                                                const SrcPos& srcpos,
+                                                std::shared_ptr<AstNode> node,
+                                                bool doExport, bool isInnerScope,
+                                                bool doPropagateIntern, ScopeLevel level)
+{
+  auto nd = details::enscope(std::make_shared<ScopeNode>(srcpos, doExport, isInnerScope,
+                                                         doPropagateIntern, level),
+                             scope);
+  if (node) {
+    nd->appendNode(node);
+  }
+  return nd;
+}
+
+
 class CompileUnitNode : public ListNode {
 public:
   CompileUnitNode(const SrcPos& srcpos)

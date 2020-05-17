@@ -241,6 +241,17 @@ struct NodeRenderer<std::shared_ptr<CompileUnitNode>> {
 
 
 template <>
+struct NodeRenderer<std::shared_ptr<ScopeNode>> {
+  static void render(XmlRenderer* renderer, const ScopeNode& node)
+  {
+    renderer->displayOpenTag("scope");
+    renderer->displayNodeList(nullptr, node.children());
+    renderer->displayCloseTag("scope");
+  }
+};
+
+
+template <>
 struct NodeRenderer<std::shared_ptr<DefNode>> {
   static void render(XmlRenderer* renderer, const DefNode& node)
   {

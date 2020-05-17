@@ -91,6 +91,9 @@ Ret dispatchNode(std::shared_ptr<AstNode> node, Functor&& functor)
   else if (auto realnd = std::dynamic_pointer_cast<RealNode>(node)) {
     return std::forward<Functor>(functor)(realnd);
   }
+  else if (auto scopend = std::dynamic_pointer_cast<ScopeNode>(node)) {
+    return std::forward<Functor>(functor)(scopend);
+  }
   else if (auto selnd = std::dynamic_pointer_cast<SelectNode>(node)) {
     return std::forward<Functor>(functor)(selnd);
   }

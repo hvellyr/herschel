@@ -31,6 +31,25 @@
 
 namespace herschel {
 
+namespace {
+  class RootNodeHelper {
+  public:
+    RootNodeHelper(std::shared_ptr<ListNode>* currentRootNode,
+                   std::shared_ptr<ListNode> newRootNode)
+        : fCurrentRootNode(currentRootNode)
+        , fPrevRootNode(*currentRootNode)
+    {
+      *fCurrentRootNode = newRootNode;
+    }
+
+    ~RootNodeHelper() { *fCurrentRootNode = fPrevRootNode; }
+
+    std::shared_ptr<ListNode>* fCurrentRootNode;
+    std::shared_ptr<ListNode> fPrevRootNode;
+  };
+}  // namespace
+
+
 NodifyPass::NodifyPass(int level, Compiler& compiler, std::shared_ptr<Scope> scope)
     : Token2AstNodeCompilePass(level)
     , fScope(std::move(scope))
@@ -84,7 +103,15 @@ std::shared_ptr<AstNode> SecondPass::parseLibrary(const Token& expr)
                             kScopeL_Library);
     ModuleHelper moduleHelper(this, libName);
 
-    parseTopExprlist(expr[2]);
+    auto scopeNode = makeScopeNode(fScope, expr.srcpos(), nullptr, K(doExport),
+                                   !K(isInnerScope), !K(doPropIntern), kScopeL_Local);
+
+    {
+      RootNodeHelper rootNodeHelper{&fRootNode, scopeNode};
+      parseTopExprlist(expr[2]);
+    }
+
+    fRootNode->appendNode(scopeNode);
   }
   else {
     hr_invalid("");
@@ -114,13 +141,12 @@ std::shared_ptr<AstNode> SecondPass::parseApplication(const Token& expr)
     // TODO: parse app parameters
 
     auto appRootNode = makeApplicationNode(fScope, SrcPos());
+
     {
-      auto prevRootNode = fRootNode;
-      fRootNode = appRootNode;
-
+      RootNodeHelper rootNodeHelper{
+          &fRootNode, makeScopeNode(fScope, expr.srcpos(), appRootNode, K(doExport),
+                                    !K(isInnerScope), !K(doPropIntern), kScopeL_Library)};
       parseTopExprlist(expr[3]);
-
-      fRootNode = prevRootNode;
     }
 
     return appRootNode;
@@ -147,7 +173,16 @@ std::shared_ptr<AstNode> SecondPass::parseModule(const Token& expr)
     ScopeHelper scopeHelper(fScope, K(doExport), K(isInnerScope), K(doPropIntern),
                             kScopeL_Module);
     ModuleHelper moduleHelper(this, modName);
-    parseTopExprlist(expr[2]);
+
+    auto scopeNode = makeScopeNode(fScope, expr.srcpos(), nullptr, K(doExport),
+                                   K(isInnerScope), K(doPropIntern), kScopeL_Module);
+
+    {
+      RootNodeHelper rootNodeHelper{&fRootNode, scopeNode};
+      parseTopExprlist(expr[2]);
+    }
+
+    fRootNode->appendNode(scopeNode);
   }
   else {
     hr_invalid("");
@@ -2220,7 +2255,8 @@ std::shared_ptr<AstNode> SecondPass::generateAlloc(const SrcPos& srcpos, const T
 
     block->markReturnNode(fScope);
 
-    return block;
+    return makeScopeNode(fScope, srcpos, block, !K(doExport), K(isInnerScope),
+                         !K(doPropIntern), kScopeL_Local);
   }
   else {
     auto newObjAllocExpr = makeApplyNode(
@@ -2725,9 +2761,11 @@ std::shared_ptr<AstNode> SecondPass::parseFor(const Token& expr)
     }
   }
 
-  return transformLoopExpr(expr.srcpos(), std::move(loopDefines),
-                           constructWhileTestNode(expr, testExprs), std::move(stepExprs),
-                           body, alternate);
+  return makeScopeNode(fScope, expr.srcpos(),
+                       transformLoopExpr(expr.srcpos(), std::move(loopDefines),
+                                         constructWhileTestNode(expr, testExprs),
+                                         std::move(stepExprs), body, alternate),
+                       !K(doExport), K(isInnerScope), !K(doPropIntern), kScopeL_Local);
 }
 
 
@@ -2754,8 +2792,10 @@ std::shared_ptr<AstNode> SecondPass::parseWhile(const Token& expr)
     return nullptr;
   }
 
-  return transformLoopExpr(expr[0].srcpos(), NodeList{}, testExprs[0], NodeList{}, body,
-                           alternate);
+  return makeScopeNode(fScope, expr[0].srcpos(),
+                       transformLoopExpr(expr[0].srcpos(), NodeList{}, testExprs[0],
+                                         NodeList{}, body, alternate),
+                       !K(doExport), K(isInnerScope), !K(doPropIntern), kScopeL_Local);
 }
 
 
@@ -3019,7 +3059,8 @@ std::shared_ptr<AstNode> SecondPass::parseMatch(const Token& expr)
   block->appendNode(transformMatchNode(fScope, matchNode));
   block->markReturnNode(fScope);
 
-  return block;
+  return makeScopeNode(fScope, expr.srcpos(), block, !K(doExport), K(isInnerScope),
+                       !K(doPropIntern), kScopeL_Local);
 }
 
 
@@ -3274,7 +3315,8 @@ std::shared_ptr<AstNode> SecondPass::parseBlock(const Token& expr)
   block->appendNodes(nodes);
   block->markReturnNode(fScope);
 
-  return block;
+  return makeScopeNode(fScope, expr.srcpos(), block, !K(doExport), K(isInnerScope),
+                       !K(doPropIntern), kScopeL_Local);
 }
 
 
