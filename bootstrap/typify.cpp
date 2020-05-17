@@ -385,7 +385,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
 
           typf->flattenArguments(node);
 
-          // HR_LOG(kError, node->srcpos()) << "varNode->type()? [-1] " << funcNode->type().functionSignature();
+          // HR_LOG(kInfo, node->srcpos()) << "varNode->type()? [-1] " << funcNode->type().functionSignature();
           node->setFunSign(funcNode->type().functionSignature());
         }
         else {
@@ -403,7 +403,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             if (!bestFuncNode.fNode->type().isFunction()) {
               typf->typifyNode(bestFuncNode.fNode);
             }
-            // HR_LOG(kError, node->srcpos()) << "varNode->type()? [0] " << bestFuncNode.fNode->type().functionSignature();
+            // HR_LOG(kInfo, node->srcpos()) << "varNode->type()? [0] " << bestFuncNode.fNode->type().functionSignature();
             node->setFunSign(bestFuncNode.fNode->type().functionSignature());
 
             typf->reorderArguments(node, bestFuncNode.fNode.get());
@@ -438,7 +438,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             node->base()->setType(varNode->type());
             node->setType(varNode->type().functionSignature().returnType());
             // TODO: check function signature of the function type
-            /// HR_LOG(kError, node->srcpos()) << "varNode->type()? [1] " << varNode->type().functionSignature();
+            /// HR_LOG(kInfo, node->srcpos()) << "varNode->type()? [1] " << varNode->type().functionSignature();
             node->setFunSign(varNode->type().functionSignature());
           }
           else if (varNode->type().isClassTypeOf()) {
@@ -451,7 +451,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             //---
             std::shared_ptr<AstNode> funcNode;
             if (varNode->type().isOpen()) {
-              // HR_LOG(kError, varNode->srcpos()) << "typify applynode " << varNode->type().typeName();
+              // HR_LOG(kInfo, varNode->srcpos()) << "typify applynode " << varNode->type().typeName();
               auto apply = makeApplyNode(
                   node->scope(), node->srcpos(),
                   // TODO(gck) ?
@@ -481,7 +481,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             // TODO: check function signature of the type constructor
             node->setBase(createNode);
             node->setType(createNode->type());
-            // HR_LOG(kError, node->srcpos()) << "varNode->type()? " << varNode->type().functionSignature();
+            // HR_LOG(kInfo, node->srcpos()) << "varNode->type()? " << varNode->type().functionSignature();
             // node->setFunSign(varNode->type().functionSignature());
           }
           else {
@@ -509,12 +509,13 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
         node->setType(typeNode->type());
       }
       else if (auto funNode = std::dynamic_pointer_cast<FunctionNode>(node->base())) {
-        // HR_LOG(kError, node->srcpos()) << "varNode->type()? [3] " << funNode->type().toString();
+        // HR_LOG(kInfo, node->srcpos()) << "varNode->type()? [3] " << funNode->type().toString();
         node->setType(funNode->type());
       }
       else if (auto applyNode = std::dynamic_pointer_cast<ApplyNode>(node->base())) {
         if (applyNode->type().isFunction()) {
-          // HR_LOG(kError, node->srcpos()) << "varNode->type()? [4a] ??? " << applyNode->type().functionSignature();
+          // HR_LOG(kInfo, node->srcpos())
+          //   << "varNode->type()? [4a] ??? " << applyNode->type().functionSignature();
           node->setType(applyNode->type().functionSignature().returnType());
           node->setFunSign(applyNode->type().functionSignature());
         }
