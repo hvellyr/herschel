@@ -296,7 +296,6 @@ struct NodeTypifier<std::shared_ptr<BlockNode>> {
 
     auto& ndChildren = node->children();
     hr_assert(dynamic_cast<const SymbolNode*>(prev(ndChildren.end(), 1)->get()));
-    hr_assert(dynamic_cast<const LetNode*>(prev(ndChildren.end(), 2)->get()));
 
     std::vector<std::shared_ptr<AstNode>> finalizers;
     for (auto c : ndChildren) {
