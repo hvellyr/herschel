@@ -397,7 +397,9 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             node->setBase(newBase);
             node->setRefFunction(bestFuncNode.fNode);
 
-            // it could be that the function is only defined later ...
+            // it could be that the function is only defined later,
+            // and therefore its node hasn't been typify'ed yet.  To
+            // this lazily here.
             if (!bestFuncNode.fNode->type().isFunction()) {
               typf->typifyNode(bestFuncNode.fNode);
             }
@@ -1761,9 +1763,11 @@ void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node,
     }
   }
 
+  // synchronize the arguments of the apply node with the function declaration
   size_t posArgIdx = 0;
   for (auto i = 0; i < funcParams.size(); ++i) {
     auto param = std::dynamic_pointer_cast<ParamNode>(funcParams[i]);
+    hr_assert(param);
 
     if (param) {
       if (param->flags() == kPosArg || param->flags() == kSpecArg) {
