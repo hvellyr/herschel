@@ -1786,7 +1786,7 @@ void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node,
         else {
           hr_assert(param->initExpr());
           newArgs.push_back(makeKeyargNode(param->scope(), param->srcpos(), param->key(),
-                                           param->initExpr()));
+                                           param->initExpr()->clone()));
         }
       }
       else if (param->flags() == kRestArg) {
