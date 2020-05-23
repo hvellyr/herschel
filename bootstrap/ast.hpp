@@ -1024,18 +1024,6 @@ makeParamNode(std::shared_ptr<Scope> scope, const SrcPos& srcpos, const String& 
 }
 
 
-inline std::shared_ptr<ParamNode> cloneParamNode(std::shared_ptr<Scope> scope,
-                                                 const ParamNode* node)
-{
-  std::shared_ptr<AstNode> initExpr =
-      node->initExpr() ? node->initExpr()->clone() : nullptr;
-  return details::enscope(std::make_shared<ParamNode>(node->srcpos(), node->key(),
-                                                      node->name(), node->flags(),
-                                                      node->type(), initExpr),
-                          scope);
-}
-
-
 class SlotdefNode : public BindingNode {
 public:
   SlotdefNode(const SrcPos& srcpos, const String& symbolName, unsigned int flags,
