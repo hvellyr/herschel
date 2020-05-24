@@ -97,6 +97,7 @@ private:
   std::shared_ptr<Port<Char>> fPort;
   String fSrcName;
   int fLineCount;
+  int fColumnCount;
   int fCC;
   bool fNextCharIsGenericOpen;
   int fInGenericContext;

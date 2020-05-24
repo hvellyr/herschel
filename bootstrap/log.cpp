@@ -62,12 +62,13 @@ LineLogger::LineLogger(LogLevel level, const SrcPos& where, int errorCode)
 
   if (where.isValid()) {
     if (errorCode == 0)
-      fMsgBuffer << where.file().to_string() << ":" << where.lineNumber() << ": "
-                 << levelStr[level] << ": ";
+      fMsgBuffer << where.file().to_string() << ":" << where.lineNumber() << ":"
+                 << where.columnNumber() << ": " << levelStr[level] << ": ";
     else
-      fMsgBuffer << where.file().to_string() << ":" << where.lineNumber() << ": "
-                 << levelStr[level] << ": (" << std::setw(4) << std::right << std::hex
-                 << std::setfill('0') << errorCode << ") " << std::dec;
+      fMsgBuffer << where.file().to_string() << ":" << where.lineNumber() << ":"
+                 << where.columnNumber() << ": " << levelStr[level] << ": ("
+                 << std::setw(4) << std::right << std::hex << std::setfill('0')
+                 << errorCode << ") " << std::dec;
   }
   else {
     if (errorCode == 0)

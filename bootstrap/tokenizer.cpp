@@ -28,6 +28,7 @@ Tokenizer::Tokenizer(std::shared_ptr<Port<Char>> port, const String& srcName,
     : fPort(port)
     , fSrcName(srcName)
     , fLineCount(1)
+    , fColumnCount(0)
     , fCC(0xffff)
     , fNextCharIsGenericOpen(false)
     , fInGenericContext(0)
@@ -110,12 +111,16 @@ int Tokenizer::nextChar()
 
   try {
     int c = fPort->read();
-    if (isEOL(c))
+    if (isEOL(c)) {
       fLineCount++;
+      fColumnCount = 1;
+    }
     fCC = c;
+    fColumnCount++;
   }
   catch (const EofException&) {
     fCC = EOF;
+    fColumnCount = 1;
   }
   return fCC;
 }
@@ -130,7 +135,7 @@ void Tokenizer::scanUntilDelimiter()
 
 SrcPos Tokenizer::srcpos() const
 {
-  return SrcPos(fSrcName, fLineCount);
+  return SrcPos(fSrcName, fLineCount, fColumnCount);
 }
 
 

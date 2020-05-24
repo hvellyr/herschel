@@ -27,38 +27,41 @@ TEST_CASE("SrcPos default constructor", "[srcpos]")
 {
   SrcPos pos;
   REQUIRE(pos.lineNumber() == 0);
+  REQUIRE(pos.columnNumber() == 0);
   REQUIRE(pos.file() == String());
-  REQUIRE(pos.toString() == String(":0"));
+  REQUIRE(pos.toString() == String(":0:0"));
 }
 
 
 TEST_CASE("SrcPos assignment", "[srcpos]")
 {
   SrcPos pos;
-  pos = SrcPos("abc.hr", 1211);
+  pos = SrcPos("abc.hr", 1211, 32);
   REQUIRE(pos.lineNumber() == 1211);
+  REQUIRE(pos.columnNumber() == 32);
   REQUIRE(pos.file() == String("abc.hr"));
-  REQUIRE(pos.toString() == String("abc.hr:1211"));
+  REQUIRE(pos.toString() == String("abc.hr:1211:32"));
 }
 
 
 TEST_CASE("SrcPos copy constructor", "[srcpos]")
 {
-  SrcPos p("abc.hr", 1211);
+  SrcPos p("abc.hr", 1211, 32);
   SrcPos q(p);
   REQUIRE(q.lineNumber() == 1211);
+  REQUIRE(q.columnNumber() == 32);
   REQUIRE(q.file() == String("abc.hr"));
-  REQUIRE(q.toString() == String("abc.hr:1211"));
+  REQUIRE(q.toString() == String("abc.hr:1211:32"));
 }
 
 
 TEST_CASE("SrcPos equal operator", "[srcpos]")
 {
-  REQUIRE(SrcPos("abc.hr", 1211) == SrcPos("abc.hr", 1211));
+  REQUIRE(SrcPos("abc.hr", 1211, 32) == SrcPos("abc.hr", 1211, 32));
   REQUIRE(SrcPos() == SrcPos());
-  REQUIRE(SrcPos("abc.hr", 1211) != SrcPos("abc.hr", 1300));
-  REQUIRE(SrcPos("abc.hr", 1211) != SrcPos("abx.hr", 1211));
-  REQUIRE(SrcPos("abc.hr", 1211) != SrcPos("abx.hr", 1300));
+  REQUIRE(SrcPos("abc.hr", 1211, 32) != SrcPos("abc.hr", 1300, 32));
+  REQUIRE(SrcPos("abc.hr", 1211, 64) != SrcPos("abx.hr", 1211, 64));
+  REQUIRE(SrcPos("abc.hr", 1211, 64) != SrcPos("abx.hr", 1300, 42));
 }
 
 }  // namespace herschel

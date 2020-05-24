@@ -18,7 +18,8 @@ namespace herschel {
 
 String SrcPos::toString() const
 {
-  return (StringBuffer(fFile) << ':' << fromInt(fLineNo)).toString();
+  return (StringBuffer(fFile) << ':' << fromInt(fLineNo) << ':' << fromInt(fColNo))
+      .toString();
 }
 
 }  // namespace herschel

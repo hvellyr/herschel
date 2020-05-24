@@ -230,8 +230,8 @@ void Properties::setConfigVar(const String& keyValuePair)
   if (idx >= 0) {
     if (!sConfigVarRegistry)
       sConfigVarRegistry = std::make_shared<ConfigVarRegistry>();
-    sConfigVarRegistry->registerValue(key,
-                                      Token(SrcPos("<commandline>", 0), kString, value));
+    sConfigVarRegistry->registerValue(
+        key, Token(SrcPos("<commandline>", 0, 0), kString, value));
   }
   else
     HR_LOG(kError) << "bad key-value pair for config key.  Ignored";
