@@ -12,6 +12,7 @@
 
 #include "common.hpp"
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -186,6 +187,8 @@ public:
   operator std::string() const;
   std::string to_string() const;
 
+  std::size_t hash() const;
+
 private:
   friend class StringBuffer;
 
@@ -268,3 +271,15 @@ std::ostream& operator<<(std::ostream& os, char c);
 #endif
 
 }  // namespace herschel
+
+
+// custom specialization of std::hash can be injected in namespace std
+namespace std {
+template <>
+struct hash<herschel::String> {
+  std::size_t operator()(const herschel::String& str) const noexcept
+  {
+    return str.hash();
+  }
+};
+}  // namespace std

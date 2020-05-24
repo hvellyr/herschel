@@ -36,11 +36,7 @@ static int str_rstr(const Char* haystack, int hslen, int ofs, const Char* needle
 
 class StringImpl {
 public:
-  StringImpl()
-      : fData(nullptr)
-      , fLength(0)
-  {
-  }
+  StringImpl() = default;
 
   ~StringImpl()
   {
@@ -55,11 +51,13 @@ public:
     if (size > 0) {
       fData = (Char*)::realloc(fData, size * sizeof(Char));
       fLength = size;
+      fHash = 0;
     }
     else {
       ::free(fData);
       fData = nullptr;
       fLength = 0;
+      fHash = 0;
     }
   }
 
@@ -78,13 +76,6 @@ public:
   }
 
 
-  Char* data(int offset)
-  {
-    hr_assert(offset >= 0 && offset < fLength);
-    return &fData[offset];
-  }
-
-
   void createFromUtf8(zstring utf8, int items)
   {
     int reqlen = str_utf8_to_wcs(utf8, items, nullptr, 0);
@@ -94,6 +85,7 @@ public:
     hr_assert(reallen == reqlen);
 
     fLength = reallen;
+    fHash = 0;
   }
 
 
@@ -108,8 +100,9 @@ public:
   }
 
   //-------- data members
-  Char* fData;
-  int fLength;
+  Char* fData = nullptr;
+  int fLength = 0;
+  size_t fHash = 0;
 };
 
 
@@ -307,6 +300,26 @@ int String::length() const
 bool String::isEmpty() const
 {
   return fImpl->fLength == 0;
+}
+
+
+std::size_t String::hash() const
+{
+  if (fImpl->fHash == 0) {
+    size_t hash = 0x811c9dc5;
+
+    auto cp = fImpl->fData;
+    auto i = fImpl->fLength;
+    while (i > 0) {
+      hash ^= *cp;
+      hash *= 0x01000193;
+      --i;
+    }
+
+    fImpl->fHash = hash;
+  }
+
+  return fImpl->fHash;
 }
 
 
