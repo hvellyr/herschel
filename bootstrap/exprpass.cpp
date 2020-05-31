@@ -213,8 +213,6 @@ template <typename ParseFunctor>
 void FirstPass::parseSumType(ParseFunctor functor, ErrCodes errorCode, Token& result,
                              zstring ctx)
 {
-  SrcPos startPos = fToken.srcpos();
-
   TokenType groupType = kInvalid;
   Token delayedSepToken;
   while (fToken != kParanClose && fToken != kEOF) {
@@ -2006,7 +2004,6 @@ Token FirstPass::parseFor()
     HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "expected '('";
     return scanUntilTopExprAndResume();
   }
-  SrcPos paranPos = fToken.srcpos();
   nextToken();
 
   Token test = parseForTestClause();
@@ -2449,7 +2446,6 @@ TokenVector FirstPass::parseTopOrExprList(bool isTopLevel)
 {
   if (isTopLevel) {
     if (fToken == kBraceOpen) {
-      SrcPos bracePos = fToken.srcpos();
       nextToken();
 
       TokenVector exprs;
@@ -2692,7 +2688,7 @@ TokenVector FirstPass::parseExtern()
     HR_LOG(kError, fToken.srcpos(), E_MissingParanOpen) << "expected '(' after extern";
     return scanUntilTopExprAndResume().toTokenVector();
   }
-  SrcPos paranPos = fToken.srcpos();
+
   nextToken();
   if (fToken != kString) {
     HR_LOG(kError, fToken.srcpos(), E_StringExpected) << "expected external linkage name";
@@ -2712,7 +2708,6 @@ TokenVector FirstPass::parseExtern()
     HR_LOG(kError, fToken.srcpos(), E_MissingBraceOpen) << "expected '{'";
     return scanUntilTopExprAndResume().toTokenVector();
   }
-  SrcPos bracePos = fToken.srcpos();
   nextToken();
 
 #if 0
@@ -4223,7 +4218,6 @@ struct ParamListParamSyntax : public ParameterSyntaxMatcher {
   bool match(FirstPass* pass, const String& paramName, NamedReplacementMap* bindings,
              SyntaxTreeNode& followSet) override
   {
-    SrcPos pos = pass->fToken.srcpos();
     TokenVector params;
 
     // TODO: extract the set of possible end token types from followSet and
