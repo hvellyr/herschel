@@ -176,7 +176,7 @@ public:
   //-------- variables
 
   void registerVar(const SrcPos& srcpos, const String& name,
-                   std::shared_ptr<AstNode> macro);
+                   std::shared_ptr<AstNode> node);
   const AstNode* lookupVar(const SrcPos& srcpos, const String& name,
                            bool showAmbiguousSymDef) const;
 
