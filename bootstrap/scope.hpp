@@ -406,4 +406,4 @@ private:
   bool fIsInnerScope;
   bool fDoPropagateIntern;
 };
-};  // namespace herschel
+}  // namespace herschel
