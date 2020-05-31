@@ -855,16 +855,12 @@ class MoveableBinding {
 public:
   virtual ~MoveableBinding() {}
 
-  void setLastUser(std::shared_ptr<AstNode> user) { fLastUser = user; }
-  std::weak_ptr<AstNode> lastUser() { return fLastUser; }
-
   bool willBeMoved() const { return fWillBeMoved; }
   void setWillBeMoved(bool flag) { fWillBeMoved = flag; }
 
   virtual const String& symbolName() const = 0;
 
 protected:
-  std::weak_ptr<AstNode> fLastUser;
   bool fWillBeMoved = false;
 };
 

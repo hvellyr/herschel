@@ -19,6 +19,7 @@
 #include "port.hpp"
 #include "predefined.hpp"
 #include "properties.hpp"
+#include "rootscope.hpp"
 #include "scope.hpp"
 #include "str.hpp"
 #include "symbol.hpp"
@@ -28,18 +29,18 @@
 #include "xmlrenderer.hpp"
 
 #include <set>
+#include <unordered_map>
 
 
 namespace herschel {
 namespace {
-  void trackMoveablePositions(std::shared_ptr<AstNode> node)
+  void trackMoveablePositions(Typifier* typf, std::shared_ptr<AstNode> node)
   {
     if (auto binding = std::dynamic_pointer_cast<MoveableBinding>(node)) {
-      if (auto luser = binding->lastUser().lock()) {
-        if (auto moveablend = std::dynamic_pointer_cast<MoveableReferrer>(luser)) {
-          moveablend->setIsInMovePos(true);
-          binding->setWillBeMoved(true);
-        }
+      auto iReferer = typf->fBindings.find(binding.get());
+      if (iReferer != end(typf->fBindings)) {
+        iReferer->second->setIsInMovePos(true);
+        const_cast<MoveableBinding*>(iReferer->first)->setWillBeMoved(true);
       }
     }
   }
@@ -55,7 +56,6 @@ namespace {
 
       std::shared_ptr<AstNode> freeExpr;
 
-      /* TODO we must not deallocate(deinitialize()) anything which has been moved away. */
       if (node->type().isValueType()) {
         auto deinitExpr = makeApplyNode(
             node->scope(), node->srcpos(),
@@ -115,13 +115,18 @@ template <>
 struct NodeTypifier<std::shared_ptr<SymbolNode>> {
   static void typify(Typifier* typf, std::shared_ptr<SymbolNode> node)
   {
+    auto var1 = typf->fLastUsedScope->lookupVarOrFunc(node->srcpos(), node->name(),
+                                                      K(showAmbiguousSymDef));
+    if (var1) {
+      if (auto bindnd = dynamic_cast<const MoveableBinding*>(var1)) {
+        typf->fBindings[bindnd] = node.get();
+      }
+    }
+
     auto var = node->scope()->lookupVarOrFunc(node->srcpos(), node->name(),
                                               K(showAmbiguousSymDef));
     if (var) {
-      if (auto bindnd = dynamic_cast<const MoveableBinding*>(var)) {
-        const_cast<MoveableBinding*>(bindnd)->setLastUser(node);
-      }
-      else if (auto fdn = dynamic_cast<const FuncDefNode*>(var))
+      if (auto fdn = dynamic_cast<const FuncDefNode*>(var))
         node->setLinkage(fdn->linkage());
 
       node->setType(var->type());
@@ -191,6 +196,8 @@ template <>
 struct NodeTypifier<std::shared_ptr<VardefNode>> {
   static void typify(Typifier* typf, std::shared_ptr<VardefNode> node)
   {
+    typf->fLastUsedScope->registerVar(node->srcpos(), node->name(), node);
+
     if (node->initExpr())
       typf->typifyNode(node->initExpr());
 
@@ -204,6 +211,9 @@ template <>
 struct NodeTypifier<std::shared_ptr<FuncDefNode>> {
   static void typify(Typifier* typf, std::shared_ptr<FuncDefNode> node)
   {
+    ScopeGuard scopeGuard(typf->fLastUsedScope,
+                          makeScope(kScopeL_Function, typf->fLastUsedScope));
+
     typf->typifyNodeList(node->params());
     if (node->body()) {
       typf->typifyNode(node->body());
@@ -236,7 +246,7 @@ struct NodeTypifier<std::shared_ptr<FuncDefNode>> {
     }
 
     for (auto c : node->params()) {
-      trackMoveablePositions(c);
+      trackMoveablePositions(typf, c);
     }
     // TODO(gck) finalizers for the params
   }
@@ -260,7 +270,7 @@ struct NodeTypifier<std::shared_ptr<FunctionNode>> {
       typf->annotateTypeConv(node->body(), node->retType());
 
     for (auto c : node->params()) {
-      trackMoveablePositions(c);
+      trackMoveablePositions(typf, c);
     }
     // TODO(gck) finalizers for the params
   }
@@ -290,7 +300,7 @@ struct NodeTypifier<std::shared_ptr<BlockNode>> {
 
     for (auto c : node->children()) {
       if (auto letnd = std::dynamic_pointer_cast<LetNode>(c)) {
-        trackMoveablePositions(letnd->defNode());
+        trackMoveablePositions(typf, letnd->defNode());
       }
     }
 
@@ -318,6 +328,8 @@ template <>
 struct NodeTypifier<std::shared_ptr<ParamNode>> {
   static void typify(Typifier* typf, std::shared_ptr<ParamNode> node)
   {
+    typf->fLastUsedScope->registerVar(node->srcpos(), node->name(), node);
+
     if (node->initExpr())
       typf->typifyNode(node->initExpr());
 
@@ -1367,7 +1379,11 @@ template <>
 struct NodeTypifier<std::shared_ptr<ScopeNode>> {
   static void typify(Typifier* typf, std::shared_ptr<ScopeNode> node)
   {
+    ScopeGuard scopeGuard(typf->fLastUsedScope,
+                          makeScope(node->fLevel, typf->fLastUsedScope));
+
     typf->typifyNodeList(node->child_nodes());
+
     if (!node->children().empty()) {
       node->setType(node->children().back()->type());
     }
@@ -1379,6 +1395,7 @@ struct NodeTypifier<std::shared_ptr<ScopeNode>> {
 
 Typifier::Typifier(Compiler& compiler)
     : fCompiler(compiler)
+    , fLastUsedScope(type::newRootScope())
 {
 }
 

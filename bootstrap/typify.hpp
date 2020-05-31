@@ -17,6 +17,7 @@
 #include "token.hpp"
 
 #include <vector>
+#include <unordered_map>
 
 namespace herschel {
 
@@ -117,6 +118,9 @@ public:
   KeyargReturn findKeyedArg(const NodeList& args, size_t argidx, const String& key);
 
   Compiler& fCompiler;  // backlink to owning compiler
+
+  std::unordered_map<const MoveableBinding*, SymbolNode*> fBindings;
+  std::shared_ptr<Scope> fLastUsedScope;
 };
 
 
