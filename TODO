@@ -2,28 +2,6 @@
 
 Herschel 2
 
-  ast::node clone must clone the fScope, too.  Keep entire subtrees on
-  the same fScope messes up var registration and lookup later (which
-  messes up finalizer generation, etc.).
-
-  Either:
-
-    - when cloning a node, make a recursive clone of the scopes.
-      requires a scope map though since multiple nodes might share the
-      same scope and should so after the clone.
-
-    - try to make mutable scopes unnecessary.  currently we're using the scope
-      - as secret tunnel from symbol usage to symbol definition
-        - with functions we use this for ...
-        - with vars we use this for
-          a) to find the last user of a variable in a given scope (figure
-             out move/copy)
-          b) track if a symbol is moved away or not and thus requires
-             finalization in a given scope.
-          c) annotate symbols whether they refer to local, or global variables.
-             Annotate vars as taken by closures.
-          d) to set delayer infered type specs
-
   - memory management, reference types, ...
     - document/take the following matrix
 
@@ -37,17 +15,17 @@ Herschel 2
        ref interface                                       x
        ref to any                                          x
 
-x   - remove inheritance from record types.  Only interfaces can inherit.
-    - record types are always concrete types
+x   + remove inheritance from record types.  Only interfaces can inherit.
+x   + record types are always concrete types
 
-    - change (local) variable setup with "creating a new instance"
+    + change (local) variable setup with "creating a new instance"
       from "var def is initializing", to a more imperative style:
       + define a local var with a proper type as "undef"
       + if the type is
-        - a base type: set to default value
-        - a concrete (record) type: call the concrete .Foo.init(...) initializer with the local var
-        - an interface or any type: -> Error (since generic types can't be instantiated)
-        - a reference type: -> Error
+        + a base type: set to default value
+        + a concrete (record) type: call the concrete .Foo.init(...) initializer with the local var
+        + an interface or any type: -> Error (since generic types can't be instantiated)
+        + a reference type: -> Error
       + when the init value is some other value or expression: keep the current style.
 
     - generating copy occurances.  with a = b  and
@@ -86,14 +64,14 @@ x   - remove inheritance from record types.  Only interfaces can inherit.
     - create the virtual overload for deinitialize(x @ Foo) which calls the concrete .Foo.deinit(...)
 
 
-x - create proper constructors (see below)
+  + create proper constructors (see below)
     - check init calls to slots in array type creation
   - generate finalizer() calls for variables going out of scope (RAII)
-x   - need to capture the return value of a block in a local variable,
+    + need to capture the return value of a block in a local variable,
       then add the finalizer calls, then return that local variable.
       When generating the finalizers this local variable must not be
       destructed of course (look for reference types, etc.!)
-    - don't call allocate or deallocate in constructor/destructor
+    + don't call allocate or deallocate in constructor/destructor
       calls.  Only init() and deinitialize()
     - generateFinalizers for functions params
 
