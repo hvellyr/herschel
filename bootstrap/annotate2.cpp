@@ -43,14 +43,13 @@ namespace {
   std::shared_ptr<AstNode> wrapAsCopy(Compiler& compiler,
                                       std::shared_ptr<AstNode> valExpr)
   {
-    if (!valExpr->isTempValue() && !isMoveable(valExpr)) {
-      auto symNd =
-          makeSymbolNode(valExpr->scope(), valExpr->srcpos(), Names::kCopyFuncName);
+    auto wrapNode = [&](std::shared_ptr<AstNode> expr) {
+      auto symNd = makeSymbolNode(expr->scope(), expr->srcpos(), Names::kCopyFuncName);
       symNd->setRefersTo(kFunction, !K(isShared));
 
-      auto copyExpr = makeApplyNode(valExpr->scope(), valExpr->srcpos(), symNd);
-      copyExpr->appendNode(valExpr);
-      copyExpr->setType(valExpr->type());
+      auto copyExpr = makeApplyNode(expr->scope(), expr->srcpos(), symNd);
+      copyExpr->appendNode(expr);
+      copyExpr->setType(expr->type());
 
       std::shared_ptr<AstNode> nd = copyExpr;
 
@@ -70,6 +69,15 @@ namespace {
       }
 
       return nd;
+    };
+
+    if (!valExpr->isTempValue() && !isMoveable(valExpr)) {
+      if (auto keyedParam = std::dynamic_pointer_cast<KeyargNode>(valExpr)) {
+        keyedParam->setValue(wrapNode(keyedParam->value()));
+        return keyedParam;
+      }
+      else
+        return wrapNode(valExpr);
     }
 
     return valExpr;
