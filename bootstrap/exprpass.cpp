@@ -305,7 +305,7 @@ TokenVector FirstPass::parseQualifiedName(bool acceptLeadingDot)
 
 //----------------------------------------------------------------------------
 
-struct LibraryParser {
+struct ModuleParser {
   bool operator()(FirstPass* pass, Token& result)
   {
     TokenVector n = pass->parseTop();
@@ -344,7 +344,7 @@ Token FirstPass::parseLibrary()
       fInLibrary = true;
 
       if (fToken == kBraceOpen) {
-        parseSequence(LibraryParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
+        parseSequence(ModuleParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
                       E_MissingBraceClose, defines, "library-body");
       }
       else {
@@ -444,7 +444,7 @@ Token FirstPass::parseApplication()
       fInApplication = true;
 
       if (fToken == kBraceOpen) {
-        parseSequence(LibraryParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
+        parseSequence(ModuleParser(), kBraceOpen, kBraceClose, !K(hasSeparator),
                       E_MissingBraceClose, defines, "application-body");
       }
       else {
@@ -463,18 +463,6 @@ Token FirstPass::parseApplication()
 
   return appExpr;
 }
-
-
-struct ModuleParser {
-  bool operator()(FirstPass* pass, Token& result)
-  {
-    TokenVector n = pass->parseTop();
-    if (!n.empty())
-      result << n;
-
-    return true;
-  }
-};
 
 
 Token FirstPass::parseModule()
