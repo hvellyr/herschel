@@ -1,7 +1,7 @@
 application beer99 (
    name: "99beer",
    bundled?: true)
-{
+
 export public bottles
 
 import lang
@@ -25,7 +25,7 @@ def bottles(n : Int)
   }
   else
     -1
-}
+
 
 def .app.main()
-  beer99.bottles(99)
+  bottles(99)
