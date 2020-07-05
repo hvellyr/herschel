@@ -142,14 +142,15 @@ std::shared_ptr<AstNode> SecondPass::parseApplication(const Token& expr)
 
     auto appRootNode = makeApplicationNode(fScope, SrcPos());
 
+    auto scopeNode = makeScopeNode(fScope, expr.srcpos(), appRootNode, K(doExport),
+                                   !K(isInnerScope), !K(doPropIntern), kScopeL_Library);
+
     {
-      RootNodeHelper rootNodeHelper{
-          &fRootNode, makeScopeNode(fScope, expr.srcpos(), appRootNode, K(doExport),
-                                    !K(isInnerScope), !K(doPropIntern), kScopeL_Library)};
+      RootNodeHelper rootNodeHelper{&fRootNode, appRootNode};
       parseTopExprlist(expr[3]);
     }
 
-    return appRootNode;
+    return scopeNode;
   }
   else {
     hr_invalid("");

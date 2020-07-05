@@ -1391,6 +1391,19 @@ struct NodeTypifier<std::shared_ptr<ScopeNode>> {
 };
 
 
+template <>
+struct NodeTypifier<std::shared_ptr<ApplicationNode>> {
+  static void typify(Typifier* typf, std::shared_ptr<ApplicationNode> node)
+  {
+    typf->typifyNodeList(node->child_nodes());
+
+    if (!node->children().empty()) {
+      node->setType(node->children().back()->type());
+    }
+  }
+};
+
+
 //------------------------------------------------------------------------------
 
 Typifier::Typifier(Compiler& compiler)
