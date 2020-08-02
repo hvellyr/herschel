@@ -211,7 +211,7 @@ struct NodeAnnotator2<std::shared_ptr<ApplyNode>> {
       // rewrite arguments to copy/move where necessary
       auto& args = node->children();
       for (auto i = 0; i < args.size(); ++i) {
-        if (params[i].type().isValueType()) {
+        if (params[i].type().isValueType() && !params[i].type().isPlainType()) {
           args[i] = wrapAsCopy(ann->fCompiler, args[i]);
         }
       }
