@@ -228,7 +228,7 @@ struct NodeRenderer<std::shared_ptr<CompileUnitNode>> {
       for (std::map<String, Type>::iterator it = renderer->fReferencedTypes.begin(),
                                             e = renderer->fReferencedTypes.end();
            it != e; ++it) {
-        renderer->displayType("ty:used-type", it->second);
+        renderer->displayType("ty:used-type", it->second, !K(shortForm));
       }
       renderer->displayCloseTag("ty:node-types");
     }
@@ -442,9 +442,11 @@ struct NodeRenderer<std::shared_ptr<ParamNode>> {
     case kAlloc_Shared: attrs << " alloc='shared'"; break;
     }
 
+    if (node.type().isDef())
+      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+
     renderer->displayOpenTagAttrs("param", StrHelper(attrs.toString()));
 
-    renderer->displayType("type", node.type());
     renderer->displayNode("init", node.initExpr());
 
     renderer->displayCloseTag("param");
@@ -552,8 +554,10 @@ struct NodeRenderer<std::shared_ptr<SlotdefNode>> {
     case kAlloc_Shared: attrs << " alloc='shared'"; break;
     }
 
+    if (node.type().isDef())
+      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+
     renderer->displayOpenTagAttrs("slot", StrHelper(attrs.toString()));
-    renderer->displayType("type", node.type());
     renderer->displayNode("init", node.initExpr());
     renderer->displayCloseTag("slot");
   }
@@ -658,7 +662,7 @@ struct NodeRenderer<std::shared_ptr<TypeDefNode>> {
 
     renderer->displayOpenTagAttrs(tagName, StrHelper(attrs.toString()));
     renderer->displayNodeList("slots", node.slots());
-    renderer->displayType("isa", node.defType());
+    renderer->displayType("isa", node.defType(), !K(shortForm));
     renderer->displayCloseTag(tagName);
   }
 };
@@ -745,9 +749,11 @@ struct NodeRenderer<std::shared_ptr<VardefNode>> {
     case kAlloc_Shared: attrs << " alloc='shared'"; break;
     }
 
+    if (node.type().isDef())
+      attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
+
     renderer->displayOpenTagAttrs("vardef", StrHelper(attrs.toString()));
 
-    renderer->displayType("type", node.type());
     renderer->displayNode("init", node.initExpr());
 
     renderer->displayCloseTag("vardef");
@@ -821,23 +827,51 @@ struct NodeRenderer<std::shared_ptr<ApplicationNode>> {
 
 //----------------------------------------------------------------------------------------
 
-void xml::displayType(Port<Octet>& port, zstring tagName, const Type& type)
+void xml::displayType(Port<Octet>& port, zstring tagName, const Type& type, bool shortForm)
 {
   if (type.isDef()) {
-    displayOpenTag(port, tagName);
-    herschel::display(port, type.toString());
-    displayCloseTag(port, tagName);
+    if (shortForm) {
+      StringBuffer attrs;
+      attrs << "ty='" << xmlEncode(type.typeId()) << "'";
+
+      displayEmptyTagAttrs(port, tagName, StrHelper(attrs.toString()));
+    }
+    else {
+      displayOpenTag(port, tagName);
+      herschel::display(port, type.toString());
+      displayCloseTag(port, tagName);
+    }
   }
 }
 
 
-void xml::displayTypeVector(Port<Octet>& port, zstring tagName, const TypeVector& types)
+void xml::displayTypeVector(Port<Octet>& port, zstring tagName, const TypeVector& types, bool shortForm)
 {
   if (!types.empty()) {
-    displayOpenTag(port, tagName);
-    for (size_t i = 0; i < types.size(); i++)
-      herschel::display(port, types[i].toString());
-    displayCloseTag(port, tagName);
+    if (shortForm) {
+      StringBuffer attrs;
+      attrs << "tys='";
+
+      bool first = true;
+      for (size_t i = 0; i < types.size(); i++) {
+        if (first) {
+          first = false;
+        }
+        else {
+          attrs << ", ";
+        }
+        attrs << xmlEncode(types[i].typeId());
+      }
+      attrs << "'";
+
+      displayEmptyTagAttrs(port, tagName, StrHelper(attrs.toString()));
+    }
+    else {
+      displayOpenTag(port, tagName);
+      for (size_t i = 0; i < types.size(); i++)
+        herschel::display(port, types[i].toString());
+      displayCloseTag(port, tagName);
+    }
   }
 }
 
@@ -965,15 +999,15 @@ void XmlRenderer::displayNodeList(zstring tagName, const NodeList& nodelist)
 }
 
 
-void XmlRenderer::displayType(zstring tagName, const Type& type)
+void XmlRenderer::displayType(zstring tagName, const Type& type, bool shortForm)
 {
-  xml::displayType(*fPort, tagName, type);
+  xml::displayType(*fPort, tagName, type, shortForm);
 }
 
 
-void XmlRenderer::displayTypeVector(zstring tagName, const TypeVector& types)
+void XmlRenderer::displayTypeVector(zstring tagName, const TypeVector& types, bool shortForm)
 {
-  xml::displayTypeVector(*fPort, tagName, types);
+  xml::displayTypeVector(*fPort, tagName, types, shortForm);
 }
 
 

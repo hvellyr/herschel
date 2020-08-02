@@ -49,8 +49,8 @@ public:
                               const StringStringMap& strMap);
   void displayNode(zstring tagName, std::shared_ptr<AstNode> node);
   void displayNodeList(zstring tagName, const NodeList& nodelist);
-  void displayType(zstring tagName, const Type& type);
-  void displayTypeVector(zstring tagName, const TypeVector& types);
+  void displayType(zstring tagName, const Type& type, bool shortForm = true);
+  void displayTypeVector(zstring tagName, const TypeVector& types, bool shortForm = true);
 
   std::shared_ptr<Port<Octet>> fPort;
   bool fShowNodeType;
@@ -59,8 +59,8 @@ public:
 
 
 namespace xml {
-  void displayType(Port<Octet>& port, zstring tagName, const Type& type);
-  void displayTypeVector(Port<Octet>& port, zstring tagName, const TypeVector& types);
+  void displayType(Port<Octet>& port, zstring tagName, const Type& type, bool shortForm = true);
+  void displayTypeVector(Port<Octet>& port, zstring tagName, const TypeVector& types, bool shortForm = true);
 
   String displayTypeConv(const AstNode& node);
 
