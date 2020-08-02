@@ -37,6 +37,9 @@ namespace {
     if (auto symbnd = std::dynamic_pointer_cast<SymbolNode>(valExpr)) {
       return symbnd->isInMovePos();
     }
+    else if (auto applynd = std::dynamic_pointer_cast<ApplyNode>(valExpr)) {
+      return true;
+    }
     return false;
   }
 
