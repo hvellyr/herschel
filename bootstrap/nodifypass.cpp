@@ -1249,11 +1249,8 @@ std::shared_ptr<AstNode> SecondPass::generateCopyFunction(std::shared_ptr<Scope>
                                                           const NodeList& slotDefs)
 {
   /*
-    def copy(o @ ^Bar) {
-      let t = Foo()
-      t.nm = copy(o.nm)
-      t.xy = copy(o.xy)
-      .Foo.on-copy(t, o) <<opt>>
+    def .lang.copy(o @ ^Bar) {
+      let t = Bar(copy(o.nm), copy(o.xy))
       .Bar.on-copy(t, o) <<opt>>
       t
     }
@@ -1275,7 +1272,8 @@ std::shared_ptr<AstNode> SecondPass::generateCopyFunction(std::shared_ptr<Scope>
   NodeList initParams;
 
   {
-    auto makeSlotArg = [&](const auto& slotNm, bool doCast, const auto& instType) {
+    auto makeSlotArg = [&](const auto& slotNm, const auto& slotType, bool doCast,
+                           const auto& instType) {
       auto lhsTypedSelf = std::shared_ptr<AstNode>{};
 
       if (!doCast) {
@@ -1286,11 +1284,22 @@ std::shared_ptr<AstNode> SecondPass::generateCopyFunction(std::shared_ptr<Scope>
             fScope, srcpos, makeSymbolNode(fScope, srcpos, lhsParamSym), instType);
       }
 
-      auto lhsSlotCopy =
-          makeApplyNode(fScope, srcpos, makeSymbolNode(fScope, srcpos, Names::kLangCopy));
-      lhsSlotCopy->appendNode(makeSlotRefNode(fScope, srcpos, lhsTypedSelf, slotNm));
+      // if slotNm is a record .type.copy(slotnm)
+      // if slotNm is reference .lang.copy(slotnm)
+      // if base type slotnm
+      auto resSlotTy = fScope->lookupType(slotType);
 
-      return makeKeyargNode(fScope, srcpos, slotNm, lhsSlotCopy);
+      if (resSlotTy.isValueType() && resSlotTy.isPlainType()) {
+        return makeKeyargNode(fScope, srcpos, slotNm,
+                              makeSlotRefNode(fScope, srcpos, lhsTypedSelf, slotNm));
+      }
+      else {
+        auto lhsSlotCopy = makeApplyNode(
+            fScope, srcpos, makeSymbolNode(fScope, srcpos, Names::kLangCopy));
+        lhsSlotCopy->appendNode(makeSlotRefNode(fScope, srcpos, lhsTypedSelf, slotNm));
+
+        return makeKeyargNode(fScope, srcpos, slotNm, lhsSlotCopy);
+      }
     };
 
     // copy the slots
@@ -1299,7 +1308,7 @@ std::shared_ptr<AstNode> SecondPass::generateCopyFunction(std::shared_ptr<Scope>
       hr_assert(slot);
 
       //body->appendNode(makeSlotArg(slot->name(), defType));
-      initParams.push_back(makeSlotArg(slot->name(), !K(cast), defType));
+      initParams.push_back(makeSlotArg(slot->name(), slot->type(), !K(cast), defType));
     }
   }
 
