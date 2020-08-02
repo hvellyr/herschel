@@ -71,16 +71,18 @@ namespace {
       return nd;
     };
 
-    if (!valExpr->isTempValue() && !isMoveable(valExpr)) {
-      if (auto keyedParam = std::dynamic_pointer_cast<KeyargNode>(valExpr)) {
-        keyedParam->setValue(wrapNode(keyedParam->value()));
-        return keyedParam;
-      }
-      else
-        return wrapNode(valExpr);
-    }
+    auto tryWrapNode = [&](std::shared_ptr<AstNode> expr) {
+      if (!expr->isTempValue() && !isMoveable(expr))
+        return wrapNode(expr);
+      return expr;
+    };
 
-    return valExpr;
+    if (auto keyedParam = std::dynamic_pointer_cast<KeyargNode>(valExpr)) {
+      keyedParam->setValue(tryWrapNode(keyedParam->value()));
+      return keyedParam;
+    }
+    else
+      return tryWrapNode(valExpr);
   }
 }  // namespace
 
