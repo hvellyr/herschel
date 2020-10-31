@@ -1574,6 +1574,23 @@ std::ostream& operator<<(std::ostream& os, const Token& token)
 }
 
 
+std::ostream& operator<<(std::ostream& os, const TokenVector& tokens)
+{
+  os << "[";
+  auto first = true;
+  for (auto token : tokens) {
+    if (first)
+      first = false;
+    else
+      os << ", ";
+    os << token;
+  }
+  os << "]";
+
+  return os;
+}
+
+
 std::ostream& operator<<(std::ostream& os, ExprType type)
 {
   switch (type) {

@@ -377,5 +377,6 @@ String operator+(const String& one, const NamedTokenMap& bindings);
 
 std::ostream& operator<<(std::ostream& os, const Token& token);
 std::ostream& operator<<(std::ostream& os, ExprType type);
+std::ostream& operator<<(std::ostream& os, const TokenVector& tokens);
 
 };  // namespace herschel
