@@ -4112,7 +4112,7 @@ struct ExprParamSyntaxMatcher : public ParameterSyntaxMatcher {
     Token expr = pass->parseExpr(!K(acceptComma));
     if (!expr.isSet()) {
       HR_LOG(kError, pos, E_MacroParamMismatch)
-          << "Macro parameter " << paramName << " requires expression";
+          << "Macro parameter '" << paramName << "' requires expression";
       return false;
     }
 
@@ -4133,7 +4133,7 @@ struct NameParamSyntaxMatcher : public ParameterSyntaxMatcher {
     }
 
     HR_LOG(kError, pass->fToken.srcpos(), E_MacroParamMismatch)
-        << "Macro parameter " << paramName << " requires identifier";
+        << "Macro parameter '" << paramName << "' requires identifier: " << pass->fToken;
     return false;
   }
 };
@@ -4151,7 +4151,7 @@ struct OperatorParamSyntaxMatcher : public ParameterSyntaxMatcher {
     }
 
     HR_LOG(kError, pass->fToken.srcpos(), E_MacroParamMismatch)
-        << "Macro parameter " << paramName << " requires operator";
+        << "Macro parameter '" << paramName << "' requires operator";
     return false;
   }
 };
@@ -4167,7 +4167,7 @@ struct AnyParamParamSyntaxMatcher : public ParameterSyntaxMatcher {
 
     if (!param.isSet()) {
       HR_LOG(kError, pos, E_MacroParamMismatch)
-          << "Macro parameter " << paramName << " requires parameter";
+          << "Macro parameter '" << paramName << "' requires parameter";
       return false;
     }
 
@@ -4194,7 +4194,7 @@ struct SpecParamParamSyntaxMatcher : public ParameterSyntaxMatcher {
 
     if (expected != fReqType || !param.isSet()) {
       HR_LOG(kError, pos, E_MacroParamMismatch)
-          << "Macro parameter " << paramName << " requires positional parameter";
+          << "Macro parameter '" << paramName << "' requires positional parameter";
       return false;
     }
 
