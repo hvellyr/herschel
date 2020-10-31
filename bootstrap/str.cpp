@@ -454,6 +454,67 @@ int String::split(const String& needle, String& before, String& after) const
 }
 
 
+std::vector<String> String::split(const String& needle) const
+{
+  auto result = std::vector<String>{};
+
+  auto tmp = *this;
+  String a;
+  String b;
+  while (tmp.split('.', a, b) >= 0) {
+    result.push_back(a);
+    tmp = b;
+  }
+
+  return result;
+}
+
+
+String String::replace(const std::map<String, String>& tokens) const
+{
+  String result;
+
+  int runidx = 0;
+
+  bool done = false;
+  while (!done) {
+    int idx = indexOf(String("${"), runidx);
+    if (idx >= 0) {
+      if (runidx < idx) {
+        result = result + part(runidx, idx);
+      }
+
+      int endidx = indexOf('}', idx);
+      if (endidx >= 0) {
+        auto key = part(idx + 2, endidx);
+
+        auto iReplacement = tokens.find(key);
+        if (iReplacement != end(tokens)) {
+          result = result + iReplacement->second;
+        }
+
+        runidx = endidx + 1;
+        if (runidx >= length()) {
+          done = true;
+        }
+      }
+      else {
+        done = true;
+      }
+    }
+    else {
+      done = true;
+    }
+  }
+
+  if (runidx < length()) {
+    result = result + part(runidx);
+  }
+
+  return result;
+}
+
+
 String String::part(int from, int to) const
 {
   if (to < 0)

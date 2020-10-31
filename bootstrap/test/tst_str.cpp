@@ -282,4 +282,17 @@ TEST_CASE("Macro specifier", "[string][macros]")
   }
 }
 
+
+TEST_CASE("String replace", "[string]")
+{
+  std::map<String, String> tokens;
+  tokens[String("x")] = String("foo");
+  tokens[String("0")] = String("abc ");
+  tokens[String("1")] = String(" bar");
+
+  REQUIRE(String("abc foo bar") == String("abc ${x} bar").replace(tokens));
+  REQUIRE(String("abc foo bar") == String("${0}foo${1}").replace(tokens));
+  REQUIRE(String("abc  bar") == String("abc ${2} bar").replace(tokens));
+}
+
 }  // namespace herschel

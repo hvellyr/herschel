@@ -15,6 +15,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <map>
 #include <vector>
 
 #if defined(UNITTESTS)
@@ -145,6 +146,10 @@ public:
   //! Returns the index where \p c has been found or -1.  Note that \p
   //! needle is neither part of \p before nor \p after.
   int split(const String& needle, String& before, String& after) const;
+
+  std::vector<String> split(const String& needle) const;
+
+  String replace(const std::map<String, String>& tokens) const;
 
   //! Returns a substring from [\p from, \p to).  If @p to is below 0
   //! the entire rest string is used.
