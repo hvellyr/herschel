@@ -171,10 +171,12 @@ void FirstPass::parseSequence(ParseFunctor functor, TokenType startToken,
         delayedCommaToken = fToken;
         nextToken();
       }
-      else if (fToken != endToken)
+      else if (fToken != endToken) {
         HR_LOG(kError, fToken.srcpos(), errorCode)
             << ctx << ": expected '" << Token(SrcPos(), endToken) << "' or ','"
             << "; found: " << fToken;
+        break;
+      }
     }
   }
 
