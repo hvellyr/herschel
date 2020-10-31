@@ -4309,6 +4309,7 @@ bool FirstPass::matchSyntax(TokenVector* result, SyntaxTable& syntaxTable)
 bool FirstPass::parseDoMatchSyntaxDef(TokenVector* result, const Token& expr,
                                       SyntaxTable& syntaxTable, bool isLocal)
 {
+  unreadToken(fToken);
   unreadToken(expr);
 
   if (isLocal)
