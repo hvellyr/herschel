@@ -2,7 +2,7 @@ def record Id
 (
   name : String,
   first : String,
-  id-number : String
+  id-number : Int
 )
 
 def record Address
