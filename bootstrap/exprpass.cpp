@@ -1202,6 +1202,109 @@ Token FirstPass::parseIf()
 }
 
 
+Token FirstPass::parseSlot()
+{
+  Token paramSeq;
+  bool doScanOn = true;
+
+  if (fToken.isSeq() && fToken.count() >= 1) {
+    size_t ofs = 0;
+    if (ofs < fToken.count()) {
+      if (fToken[ofs] == kSymbol) {
+        ofs++;
+        if (ofs + 1 < fToken.count() && fToken[ofs] == kColon) {
+          ofs += 2;
+        }
+        if (ofs + 1 < fToken.count() && fToken[ofs] == kAssign) {
+          paramSeq << fToken;
+          nextToken();
+          ofs += 2;
+          doScanOn = false;
+        }
+        else if (ofs == fToken.count()) {
+          paramSeq << fToken;
+          nextToken();
+          doScanOn = false;
+        }
+      }
+    }
+  }
+
+  if (doScanOn) {
+    if (fToken == kSymbol) {
+      auto symbol = fToken;
+      nextToken();
+      paramSeq << symbol;
+    }
+
+    Token typeIntroToken = fToken;
+    if (fToken == kColon) {
+      nextToken();
+
+      SrcPos pos = fToken.srcpos();
+      Token type = parseTypeSpec(K(onlyNestedConstr), K(needParans));
+      if (!type.isSet()) {
+        HR_LOG(kError, pos, E_MissingType) << "type expression expected";
+        paramSeq << typeIntroToken << makeAnySymbol(pos);
+      }
+      else
+        paramSeq << typeIntroToken << type;
+    }
+    else {
+      paramSeq << Token(typeIntroToken.srcpos(), kColon)
+               << makeAnySymbol(typeIntroToken.srcpos());
+    }
+
+    if (fToken == kAssign) {
+      Token assignToken = fToken;
+      nextToken();
+
+      SrcPos pos = fToken.srcpos();
+      Token initExpr = parseExpr(!K(acceptComma));
+      if (!initExpr.isSet())
+        HR_LOG(kError, pos, E_MissingRHExpr) << "no value in initialized slot";
+      else {
+        paramSeq << assignToken << initExpr;
+      }
+    }
+  }
+
+  return paramSeq.unwrapSingleton();
+}
+
+
+struct ParseRecordSlotsParser {
+  ParseRecordSlotsParser() = default;
+
+  bool operator()(FirstPass* pass, Token& result)
+  {
+    Token param = pass->parseSlot();
+    if (param.isSet())
+      result << param;
+    return true;
+  }
+};
+
+
+bool FirstPass::parseRecordSlotsFull(TokenVector* exprlist, TokenType startToken,
+                                     TokenType endToken, bool skipFirst, bool eatLast)
+{
+  Token params;
+  parseSequence(ParseRecordSlotsParser(), startToken, endToken, K(hasSeparator),
+                E_BadSlotList, params, "slots", skipFirst, eatLast);
+
+  *exprlist = params.children();
+  return true;
+}
+
+
+bool FirstPass::parseRecordSlots(TokenVector* exprlist)
+{
+  return parseRecordSlotsFull(exprlist, kParanOpen, kParanClose, K(skipFirst),
+                              K(eatLast));
+}
+
+
 Token FirstPass::parseParameter(ParamType* expected, bool autoCompleteTypes)
 {
   Token paramSeq;
@@ -3340,7 +3443,7 @@ Token FirstPass::parseTypeDef(const Token& defToken, const Token& vizToken, bool
 
     if (isRecord) {
       TokenVector params;
-      if (!parseFunctionsParams(&params))
+      if (!parseRecordSlots(&params))
         return scanUntilTopExprAndResume();
 
       slotParams = Token(paranPos, kParanOpen, kParanClose) << params;

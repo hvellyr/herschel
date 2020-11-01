@@ -71,6 +71,7 @@ private:
   friend struct MatchPatternParser;
   friend struct ModuleParser;
   friend struct ParseFuncParamsParser;
+  friend struct ParseRecordSlotsParser;
   friend struct SelectPatternParser;
   friend struct TypeParser;
 
@@ -171,6 +172,11 @@ private:
   bool parseFunctionsParams(TokenVector* exprlist, bool autoCompleteType = true,
                             bool exceptEmptyList = true);
 
+  bool parseRecordSlotsFull(TokenVector* exprlist, TokenType startToken,
+                            TokenType endToken, bool skipFirst,
+                            bool eatLast);
+  bool parseRecordSlots(TokenVector* exprlist);
+
   Token parseWhen(bool isTopLevel);
   Token parseWith();
 
@@ -254,6 +260,7 @@ private:
 
   Token parseParameter(ParamType* expected, bool autoCompleteTypes);
 
+  Token parseSlot();
 
   Token parseLinkageType();
 

@@ -31,6 +31,7 @@ enum ErrCodes {
   E_MissingApos = 0x000e,
   E_UnexpectedQuote = 0x000f,
   E_MissingPipe = 0x0010,
+  E_BadSlotList = 0x0011,
 
   // notation errors
   E_UnexpectedChar = 0x0100,
