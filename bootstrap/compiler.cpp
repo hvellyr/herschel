@@ -129,6 +129,27 @@ void Compiler::unreadToken(const Token& token)
 }
 
 
+void Compiler::pushCheckpoint()
+{
+  fState.fPort->pushCheckpoint(std::make_shared<CheckpointRecorder>());
+}
+
+
+void Compiler::popCheckpoint()
+{
+  fState.fPort->popCheckpoint();
+}
+
+
+void Compiler::unrollCheckpoint()
+{
+  if (auto cpr = fState.fPort->popCheckpoint()) {
+    for (auto iToken = cpr->fParked.rbegin(); iToken != cpr->fParked.rend(); ++iToken)
+      unreadToken(*iToken);
+  }
+}
+
+
 std::shared_ptr<AstNode> Compiler::process(std::shared_ptr<Port<Char>> port,
                                            const String& srcName)
 {

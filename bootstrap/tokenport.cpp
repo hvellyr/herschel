@@ -43,6 +43,26 @@ bool TokenPort::canSetCursor() const
 }
 
 
+void TokenPort::pushCheckpoint(std::shared_ptr<CheckpointRecorder> cpr)
+{
+  fCheckpoints.push_front(cpr);
+}
+
+
+std::shared_ptr<CheckpointRecorder> TokenPort::popCheckpoint()
+{
+  auto cpr = fCheckpoints.front();
+  fCheckpoints.pop_front();
+  return cpr;
+}
+
+
+CheckpointRecorder* TokenPort::currentCheckpoint()
+{
+  return !fCheckpoints.empty() ? fCheckpoints.front().get() : nullptr;
+}
+
+
 //----------------------------------------------------------------------------
 
 FileTokenPort::FileTokenPort(std::shared_ptr<Port<Octet>> port, const String& srcName,
@@ -78,6 +98,16 @@ bool FileTokenPort::isEof() const
 }
 
 
+Token FileTokenPort::recordToCheckpoint(const Token& token)
+{
+  if (auto cpr = currentCheckpoint()) {
+    cpr->fParked.push_back(token);
+  }
+
+  return token;
+}
+
+
 Token FileTokenPort::read()
 {
   if (!fTokenizer)
@@ -85,9 +115,9 @@ Token FileTokenPort::read()
 
   Token value;
   if (readFromUnreadBuffer(&value, 1) == 1)
-    return value;
+    return recordToCheckpoint(value);
 
-  return fTokenizer->nextToken();
+  return recordToCheckpoint(fTokenizer->nextToken());
 }
 
 

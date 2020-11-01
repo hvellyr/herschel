@@ -112,6 +112,9 @@ private:
 
   Token nextToken();
   void unreadToken(const Token& token);
+  void pushCheckpoint();
+  void popCheckpoint();
+  void unrollCheckpoint();
 
   std::shared_ptr<AstNode> processImpl(std::shared_ptr<Port<Char>> port,
                                        const String& srcName, bool doTrace);

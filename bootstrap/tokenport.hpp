@@ -17,9 +17,19 @@
 
 #include <list>
 #include <memory>
+#include <vector>
+#include <list>
 
 
 namespace herschel {
+
+class CheckpointRecorder {
+public:
+  CheckpointRecorder() = default;
+
+  std::vector<Token> fParked;
+};
+
 
 class TokenPort : public Port<Token> {
 public:
@@ -29,6 +39,13 @@ public:
   void flush() override;
 
   bool canSetCursor() const override;
+
+  void pushCheckpoint(std::shared_ptr<CheckpointRecorder> cpr);
+  std::shared_ptr<CheckpointRecorder> popCheckpoint();
+  CheckpointRecorder* currentCheckpoint();
+
+private:
+  std::list<std::shared_ptr<CheckpointRecorder>> fCheckpoints;
 };
 
 
@@ -46,6 +63,7 @@ public:
 
 private:
   void setTokenizer(std::shared_ptr<Tokenizer> tokenizer);
+  Token recordToCheckpoint(const Token& token);
 
   String fSrcName;
   std::shared_ptr<Tokenizer> fTokenizer;
