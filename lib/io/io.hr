@@ -5,7 +5,16 @@
 --
 -- This source code is released under the BSD License.
 
-import "io/port.hr"
-import "io/stdio.hr"
+library io
+    ~ basic IO facilities ~
+
+include public (
+    "port.hr",
+    "stdio.hr"
+    )
+
+include (-- private
+    "impl/port.hr",
+    )
 
 -- end of port

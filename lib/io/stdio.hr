@@ -5,12 +5,7 @@
 --
 -- This source code is released under the BSD License.
 
-import "io/port.hr"
-
-module io
-
 export public (*)
-
 
 def *stdout* : ^OutPort<Octet> = nil
 

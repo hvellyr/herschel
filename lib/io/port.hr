@@ -5,11 +5,9 @@
 --
 -- This source code is released under the BSD License.
 
-module io
-
 export public (*)
 
-import "lang/numbers.hr"
+import lang
 
 
 ------------------------------------------------------------------------------
