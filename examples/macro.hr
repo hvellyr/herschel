@@ -11,3 +11,4 @@ def macro co-sel-2
 
 def m = co-sel(Colors.green)
 def m2 = co-sel-2(Colors.red)
+def m3 = co-sel-2(Colors.red, 4)
