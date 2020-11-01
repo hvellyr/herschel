@@ -80,7 +80,7 @@ private:
   friend struct OperatorParamSyntaxMatcher;
   friend struct AnyParamParamSyntaxMatcher;
   friend struct SpecParamParamSyntaxMatcher;
-  friend struct ParamListParamSyntax;
+  friend struct ParamListParamSyntaxMatcher;
 
   friend class ExternCParser;
 

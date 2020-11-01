@@ -4316,7 +4316,7 @@ struct SpecParamParamSyntaxMatcher : public ParameterSyntaxMatcher {
 };
 
 
-struct ParamListParamSyntax : public ParameterSyntaxMatcher {
+struct ParamListParamSyntaxMatcher : public ParameterSyntaxMatcher {
   bool match(FirstPass* pass, const String& paramName, NamedReplacementMap* bindings,
              SyntaxTreeNode& followSet) override
   {
@@ -4356,7 +4356,7 @@ bool FirstPass::matchParameter(const Token& macroParam, NamedReplacementMap* bin
     paramsMap.insert(
         std::make_pair(kMacro_param, makeMatcher<AnyParamParamSyntaxMatcher>()));
     paramsMap.insert(
-        std::make_pair(kMacro_paramlist, makeMatcher<ParamListParamSyntax>()));
+        std::make_pair(kMacro_paramlist, makeMatcher<ParamListParamSyntaxMatcher>()));
     paramsMap.insert(std::make_pair(
         kMacro_posParam, makeMatcher<SpecParamParamSyntaxMatcher>(kPositional)));
     paramsMap.insert(std::make_pair(kMacro_namedParam,
