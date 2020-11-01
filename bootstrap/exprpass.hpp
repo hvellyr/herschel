@@ -51,6 +51,7 @@ public:
   //! Push back \c token into the input stream.  \c token will be the next
   //! token to returned by \c nextToken().
   void unreadToken(const Token& token);
+  void unreadTokens(const TokenVector& tokens);
 
   //! Start the parse run.
   Token parse();

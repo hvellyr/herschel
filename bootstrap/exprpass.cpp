@@ -91,6 +91,15 @@ void FirstPass::unreadToken(const Token& token)
 }
 
 
+void FirstPass::unreadTokens(const TokenVector& tokens)
+{
+  for (auto iToken = tokens.rbegin(); iToken != tokens.rend(); ++iToken) {
+    fCompiler.unreadToken(*iToken);
+  }
+  nextToken();
+}
+
+
 Token FirstPass::scanUntilTopExprAndResume()
 {
   while (fToken != kEOF && fToken != kDefId && fToken != kModuleId &&
