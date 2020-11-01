@@ -26,7 +26,6 @@ include public (
     "sliceable.hr",
     --   "sys.hr",
     "string.hr",
-    --   "types.hr",
     --   "ctypes.hr"
     )
 

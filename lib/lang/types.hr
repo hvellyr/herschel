@@ -13,7 +13,6 @@ export public (OrdinalOrEof, CharOrEof, OrdinalOrFalse,
 -- Common Union types
 ------------------------------------------------------------------------------
 
-when ignore {
 def type OrdinalOrEof : (Ordinal | Eof)
     ~ A union type as typically used to either return the number of
     successful processed items or the end of the resource.  A typical usage
@@ -26,6 +25,7 @@ def type OrdinalOrEof : (Ordinal | Eof)
     @end example ~
 
 
+when ignore {
 def type CharOrEof : (Char | Eof)
     ~ A union type as typically used to either return a read character or
     the end of the resource.  A typical usage looks like

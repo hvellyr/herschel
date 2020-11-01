@@ -32,26 +32,23 @@
 
 module examples
 
-import "io/io.hr"
---import "app.hr"
+import io
 
 def macro with-input-file
-{
-  { with-input-file(?fname:expr, ?cc:name) ?body:expr } ->
-    {
-      {
-        let f = io.CharPort(io.FilePort(file: ?fname,
-                                        mode: FilePortType.read))
-        on exit(rv) {
-          f.close
-          rv
-        }
-        for (?cc : Char in f) {
-          ?body
-        }
-      }
-    }
-}
+  | « with-input-file(?fname:expr, ?cc:name) ?body:expr »
+    -> «
+         {
+           let f = io.CharPort(io.FilePort(file: ?fname,
+                                           mode: FilePortType.read))
+           -- on exit(rv) {
+           --   f.close
+           --   rv
+           -- }
+           for (?cc : Char in f) {
+             ?body
+           }
+         }
+       »
 
 
 def char semi = 003bh
@@ -74,7 +71,7 @@ def .app.main(args @ String[])
              outln("%s: %d" % #[file, count-semicola(file)])
            }
     | else {
-             outln(port: io|stderr,
+             outln(port: io.*stderr*,
                    "Usage: count-semicola.hr FILE")
            }
 
