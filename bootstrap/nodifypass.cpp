@@ -540,8 +540,7 @@ Type SecondPass::parseTypeSpecImpl2(const Token& expr, bool isValue, bool forceO
         FunctionSignature sign(!K(isGeneric), String(), Type(), funcParams);
         return Type::makeFunction(sign);
       }
-      else if (expr.count() == 2 && expr[1].isNested() &&
-               expr[1].leftToken() == kBracketOpen) {
+      else if (expr[1].isNested() && expr[1].leftToken() == kBracketOpen) {
         // array
         Type baseType = parseTypeSpec(expr[0]);
 
