@@ -805,7 +805,14 @@ Token Tokenizer::nextTokenImpl()
         nextChar();
         return Token(beginSrcpos, kMacroOpen2);
       }
-      return readIdentifier(beginSrcpos, String(), kMacroParam, !K(acceptGenerics));
+      else {
+        auto param = readIdentifier(beginSrcpos, String(), kMacroParam, !K(acceptGenerics));
+        if (param.idValue().isEmpty()) {
+          HR_LOG(kError, beginSrcpos, E_BadMacroPattern) << "empty macro parameter";
+          return Token();
+        }
+        return param;
+      }
 
     case '.':
       nextChar();
