@@ -9,6 +9,7 @@ library lang
     ~ defines the core language library ~
 
 include public (
+    "compiler.hr",
     "runtime.hr",
     "types.hr",
     "numbers.hr",

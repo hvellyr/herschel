@@ -81,25 +81,6 @@ private:
 
   NodeList parseTypeDef(const Token& expr, size_t ofs, bool isType, bool isLocal,
                         VizType vizType);
-  std::shared_ptr<AstNode>
-  generateConstructor(std::shared_ptr<Scope> recScope, const Token& typeExpr,
-                      const String& fullTypeName, const Type& defType,
-                      const NodeList& defaultApplyParams, const NodeList& slotDefs);
-  std::shared_ptr<AstNode>
-  generateInitFunctorConstructor(std::shared_ptr<Scope> recScope, const Token& typeExpr,
-                                 const String& fullTypeName, const Type& defTypeIn,
-                                 const NodeList& defaultApplyParams,
-                                 const NodeList& slotDefs);
-  std::shared_ptr<AstNode> generateDestructor(std::shared_ptr<Scope> recScope,
-                                              const Token& typeExpr,
-                                              const String& fullTypeName,
-                                              const Type& defTypeIn,
-                                              const NodeList& slotDefs);
-  std::shared_ptr<AstNode> generateCopyFunction(std::shared_ptr<Scope> recScope,
-                                                const Token& typeExpr,
-                                                const String& fullTypeName,
-                                                const Type& defTypeIn,
-                                                const NodeList& slotDefs);
 
   std::shared_ptr<AstNode> parseAliasDef(const Token& expr, size_t ofs, bool isLocal,
                                          VizType vizType);

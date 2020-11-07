@@ -1,0 +1,103 @@
+-- This file is part of the herschel package
+--
+-- Copyright (c) 2020 Gregor Klinke
+-- All rights reserved.
+--
+-- This source code is released under the BSD License.
+
+export public (*)
+
+
+def macro __ctor-param-name
+  | « __ctor-param-name(?n:name) » ->                « __prm_ ## ?n »
+
+
+def macro __ctor-param
+  | « __ctor-param(?n:name ?ty:typespec*) » ->       « ?n -> __ctor-param-name(?n) ?ty =
+                                                                 __builtin-null-value(?{ty.type}) »
+  | « __ctor-param(?n:name ?ty:typespec* =
+                   ?init:expr) » ->                  « ?n -> __ctor-param-name(?n) ?ty = ?init »
+
+def macro __ctor-params
+  | « __ctor-params(?s:slot) » ->                    « __ctor-param(?s) »
+  | « __ctor-params(?s:slot, ?sl:slotlist) » ->      « __ctor-param(?s), __ctor-params(?sl) »
+
+
+def macro __slot-inits
+  | « __slot-inits(?s:slot) » ->                     « __builtin-init-move(self. ?{s.name},
+                                                                           __ctor-param-name(?{s.name})) »
+  | « __slot-inits(?s:slot, ?sl:slotlist) » ->       « __builtin-init-move(self. ?{s.name},
+                                                                           __ctor-param-name(?{s.name}))
+                                                       __slot-inits(?sl) »
+
+def macro __slot-deinits
+  | « __slot-deinits(?s:slot) » ->                   « __builtin-deinit(self. ?{s.name}) »
+  | « __slot-deinits(?s:slot, ?sl:slotlist) » ->     « __builtin-deinit(self. ?{s.name})
+                                                       __slot-deinits( ?sl ) »
+
+def macro __init-slot-copies
+  | « __init-slot-copies(?s:slot) » ->               « __builtin-init-copy(self. ?{s.name},
+                                                                           rhs. ?{s.name}) »
+  | « __init-slot-copies(?s:slot, ?sl:slotlist) » -> « __builtin-init-copy(self. ?{s.name},
+                                                                           rhs. ?{s.name})
+                                                       __init-slot-copies( ?sl ) »
+
+def macro __init-slot-moves
+  | « __init-slot-moves(?s:slot) » ->                « __builtin-init-move(self. ?{s.name},
+                                                                           rhs. ?{s.name}) »
+  | « __init-slot-moves(?s:slot, ?sl:slotlist) » ->  « __builtin-init-move(self. ?{s.name},
+                                                                           rhs. ?{s.name})
+                                                       __init-slot-moves( ?sl ) »
+
+def macro __record-impl
+  | « def __record-impl ?typenm:name ?isa:typelist* ?doc:docstr* ( ?sl:slotlist ) »
+    -> « def record ?typenm ?isa ?doc ( ?sl )
+
+         def init(self : ^?typenm, __ctor-params( ?sl )) -> ^?typenm {
+           __slot-inits( ?sl )
+           self
+         }
+
+         def deinit(self : ^?typenm) {
+           __slot-deinits( ?sl )
+         }
+
+         def init-copy(self : ^?typenm, rhs : ^?typenm) -> ^?typenm {
+           __init-slot-copies( ?sl )
+           self
+         }
+
+         def init-move(self : ^?typenm, rhs : ^?typenm) -> ^?typenm {
+           __init-slot-moves( ?sl )
+           self
+         }
+
+         def copy(lhs : ^?typenm, rhs : ^?typenm) -> ^?typenm {
+           let t : ?typenm = uninitialized
+           init-copy(t, rhs)
+           deinit(lhs)
+           init-move(lhs, t)
+           lhs
+         }
+
+         def move(lhs : ^?typenm, rhs : ^?typenm) -> ^?typenm {
+           let t : ?typenm = uninitialized
+           init-move(t, rhs)
+           deinit(lhs)
+           init-move(lhs, t)
+           lhs
+         }
+
+         def null-value(self @ Type< ?typenm >) -> ?typenm {
+           ?typenm()
+         }
+       »
+
+def macro __slots
+  | « __slots() » -> « »
+  | « __slots(?s:slot) » -> « ?s »
+  | « __slots(?s:slot, ?sl:slotlist) » -> « ?s, __slots(?sl) »
+
+def macro xrecord
+  | « def xrecord ?typenm:name ?isa:typelist* ?doc:docstr* ( ?ps:slotlist ) »
+    -> « def __record-impl ?typenm ?isa ?doc ( __slots (?ps) ) »
