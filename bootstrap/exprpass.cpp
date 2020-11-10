@@ -3624,8 +3624,6 @@ MacroType FirstPass::dertermineMacroPatternType(const Token& macroName,
             it++;
             if (it == pattern.end())
               return kMacro_Function;
-            else
-              return kMacro_Stmt;
           }
         }
       }
@@ -4532,7 +4530,6 @@ TokenVector FirstPass::parseMakeMacroCall(const Token& expr, const TokenVector& 
 
   case kMacro_Def: parseDoMatchSyntaxDef(&filtered, expr, *syntaxTable, isLocal); break;
 
-  case kMacro_Stmt:
   case kMacro_Function:
     parseDoMatchSyntaxFunc(&filtered, expr, args, *syntaxTable, shouldParseParams);
     break;

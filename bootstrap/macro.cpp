@@ -206,7 +206,6 @@ String toString(MacroType type)
   case kMacro_Invalid: return String("--invalid--");
   case kMacro_Any: return String("Any");
   case kMacro_Def: return String("Def");
-  case kMacro_Stmt: return String("Stmt");
   case kMacro_Function: return String("Function");
   }
 
