@@ -1,0 +1,16 @@
+def alias Foo = Int
+
+def xrecord xpair : Copyable (
+  a : Foo = 0,
+  b : String,
+  c : Float
+)
+
+def xrecord xtuple (
+  first : Int = 0,
+  second : Int = 0
+)
+
+def xrecord Ix (
+  m : Int
+)

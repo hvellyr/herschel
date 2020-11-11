@@ -1,0 +1,13 @@
+def define-foo(z : Int)
+  z
+
+def macro foo
+  | « let foo ?n:name (?p:param) » -> « define-foo(?{p.name}) »
+
+
+def main() {
+  let x = 42
+  let foo abc (x : Int)
+
+  0
+}

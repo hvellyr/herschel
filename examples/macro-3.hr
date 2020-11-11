@@ -1,0 +1,19 @@
+def macro foo
+  | « foo(Int) » -> « __POD__ »
+  | « foo(?ty1:type) » -> « ?ty1 »
+
+def macro _null-value
+  | « _null-value(__POD__) » ->  « 0 »
+  | « _null-value(?tyx:type) » -> « ?tyx() »
+
+
+def macro ix
+  | « let ix ?n:name (?p:param) » -> « let ?n : ?{p.type} = _null-value(foo(?{p.type})) »
+
+def main() {
+  let ix baba (v : Int)
+  let ix foorbar (v : String)
+--  let ix gaga (v : String)
+
+  42
+}
