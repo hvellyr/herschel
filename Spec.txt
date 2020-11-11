@@ -1,0 +1,1472 @@
+Herschel
+========
+
+Base type notations
+-------------------
+
+String
+
+    "abc"
+    "hello\space;world"
+    "hello\u0020h;world"
+
+
+Characters
+
+    \nl
+    \nbsp
+    \tab
+    \u0041h
+
+
+Numbers
+
+    100                     -- decimal
+    100h                    -- hexadecimal
+    100y                    -- binary
+    100q                    -- octal
+
+    1234                    -- integer
+    123.4                   -- real
+    12/34                   -- rational
+    12 + 34i                -- complex
+    12.3+34j                -- complex
+    1.23e-45                -- integer (exp.@ not.)
+
+
+Bools
+
+    true
+    false
+
+Others
+
+    nil
+    eof
+    unspecified
+
+
+Memory model
+------------
+
+1. types have value semantics; simply assigning makes copies (unless
+  the compiler can prove that moving it won't make a difference).  All
+  values in tail position can be moved.
+
+    def foo() {
+      let x = 42         -- x initialized to 42
+      let y = x          -- x moved into y
+      y                  -- y moved out
+    }
+
+    def foo(a) {
+      let x mut = a      -- a copied to x
+      ...
+
+      bar(a)             -- bar called with copy of a
+      a                  -- a moved out
+    }
+
+  - if the compiler can be sure that a called function will not modify
+    a variable value, it can call it with a reference (pointer) to the
+    variable.
+
+  - local copies of values can be avoided, if the new variable is only
+    a different name for the same value.
+
+2. types can be passed by reference explicitly:
+
+    def foo(a : ^Bar) {
+      display(a)
+    }
+
+  a is a pointer to a Bar variable.  Simply using it reads its value
+  (not the address!).  Assigning values to pointer variables, copies
+  (or moves) the value into the pointer destination.  Assigning
+  pointers to pointers lets both pointer refer to the same
+  destination:
+
+    let a = Student(...)
+    let b : ^ = a             -- let b point to a (with type deduction)
+
+    b.name = "Heinz"          -- change a through b
+    display(a.name)           -- => "Heinz"
+
+    b = Student(...)          -- copies a new Student value into a (through b)
+    let c : ^ = a             -- let c point to a
+    c = b                     -- copy value of b through c into a
+
+  pointers can never be reset to nil, not being uninitialized.  After
+  definition a pointer can only be rebound to a different location by
+  being assigned to another pointer.
+
+
+  Certain expressions use auto-dereferencing of references.  With two
+  bindings - p [pointer] and v [value] - they can be assigned with
+  references or not in the following way:
+
+   v1 = v2                   -- copy value of v2 to v1
+   v1 = p1                   -- copy value of p1.get() to v1
+   p1 = v1                   -- copy value of v1 into p1
+   p1 = p2                   -- copy value of p2.get() into p1
+
+  with two functions `foov(v:T)` and `foop(p:^T)` the same rules apply:
+
+   foov(v)                   -- call foov with a copy of v
+   foov(p)                   -- call foov with a copy of p.get()
+   foop(v)                   -- call foop with a reference to v
+   foop(p)                   -- call foop with p as reference
+
+
+  let a : Bar            -- default initialized stack value
+  let a = Bar()          -- default initialized stack value
+  let a : &Bar           -- shared pointer object (default initialized)
+  let a : & = Bar()      -- shared pointer object (default initialized)
+  let a = &Bar()         -- shared pointer object (default initialized)
+  let a : & = p          -- shared pointer object (copy p.get() to a; a + p have shared object)
+  let a : & = v          -- shared pointer object (copy v to a)
+  let a : ^              -- ERROR: uninitialized + untyped reference
+  let a : ^Bar           -- ERROR: uninitialized reference
+  let a : ^Bar = b       -- reference to variable
+  let a : ^ = b          -- reference to vaariable
+  let a = b              -- copy of value
+  let a : ^ = &Bar()     -- ERROR: reference to rvalue
+  let a : ^ = 5          -- ERROR: reference to rvalue
+
+
+
+For array, string, and heap allocation we need resetable pointers.
+Can we use "references" with some syntax to make pointers?  Here it
+goes: references can be reset:
+
+   p1^ = v1                  -- set p1 to refer to v1
+   p1^ = p2                  -- let p1 point to the same value as p2
+
+
+  careful!:
+
+    def foo(a:^) {
+      let b = Student()
+      a = b                  -- copies value of b through a into the caller
+    }
+
+    def foo(a:^) {
+      let b = Student()
+      a^ = b                 -- resets a to point to b.  original a is not accessible anymore
+    }
+
+    def foo() -> ^ {
+      let b = Student()
+      b                      -- ERROR: returns reference to local variable
+    }
+
+    def const sentinel
+    def record Obj ( _ref : ^ = sentinel )
+
+    def foo(o:^) {
+      let b = Student()
+      o._ref^ = b            -- ERROR: o._ref points to local variable
+    }
+
+3. ref-counted objects
+
+  Adding a & to a type makes it a ref-counted, heap-allocated type.
+  It's actually syntactic sugar and rewritten into SharedPtr<T> by the
+  compiler:
+
+    let a : &Foo          =>   let a : .lang.SharedPtr<Foo>
+    let a : & = Foo(42)   =>   let a : .lang.SharedPtr<Foo> = make-shared(Foo(42))
+
+  Assign and accessing is handled transparently by the compiler by the
+  access/cast operator:
+
+    def value(self @ ^.lang.SharedPtr<'T>, as-type : Type<'U>) -> ^'U {
+      self.cb.val as 'U
+    }
+
+  This value is used for instance when
+
+    let b : &String
+    let a : String = b
+
+
+4. copy vs. move
+
+  Value variables are normally copied() when assigned and moved() when
+  in tail position.
+
+  For the copying the compiler generates copy() methods for each
+  (complex) type.  The user has the chance to specify their own copy
+  code or hook into the copying process (on-copy).  Primitive
+  types (like int, char, bool, byte, float, or double) are copied with
+  system primitives (e.g. register or memory slot assignment).
+
+  For the moving the compiler generates move() methods for each
+  (complex) type.  Here the user has the chance, too, to override the
+  automatic creation or hook into the process (on-move).  The goal of
+  the move methods is to move all values from one place to another,
+  and leave the source instance in a state that a
+  deallocation/deinitialization doesn't destroy state now used by the
+  target instance).  Moving only makes a difference for reference or
+  shared objects; for complex types consisting of primitive types only
+  the move() method will typically be the same as the copy() method.
+
+  Copy function calls are generated as follows:
+
+  For an expression a = b
+
+      - a and b are the same base type: simply copy register/memory b
+        into a
+
+      - a and b are of different base type: ERROR
+
+      - a and/or b are references to the same base type: simply copy
+        the base value of b with appropriate de-referencing into a
+
+      - a and b are the same record type: call the concrete copy
+        operator .Foo.copy(a, b) (which sets a in place)
+
+      - a and b are different record types: ERROR
+
+      - a and/or b are references to the same record types: call the
+        concrete copy operator .Foo.copy(a, b) with appropriate
+        de-referencing
+
+      - a and b are of the Any type: call the generic function copy(a
+        @, b @), assign the ptr result
+
+      - a and/or b are references to the same interface or any type:
+        call the generic function copy(a @, b @), assign the ptr
+        result
+
+
+  Move function calls are generated as follows:
+
+  For an expression a = move(b):
+
+      - a and b are the same base type: simply copy register/memory b
+        into a
+
+      - a and b are of different base type: Error
+
+      - a and/or b are references to the same base type: simply copy
+        the base value of b with appropriate de-referencing into a
+
+      - a and b are the same record type call the concrete move
+        operator .Foo.move(a, b) (which sets a in place)
+
+      - a and b are different record types: ERROR
+
+      - a and b are references to the same record types: assign the
+        ptr of b to a [resetting of a is not necessary, since a move
+        source is always in tail position; and there won't be a
+        finalizer for a in the context].
+
+      - a or b are references to the same record types: call the
+        concrete move operator .Foo.move(a, b) with appropriate
+        de-referencing
+
+      - a and b are interfaces or any types: assign the ptr of b to a
+
+      - a and/or b are references to interface or any types: assign
+        the ptr of b to a
+
+
+4.1 Assignment operators
+
+  The normal assignment operator is `=`:
+
+    a = b
+    let x = y
+
+  The compiler will automatically decide whether the right hand side
+  is copied or moved.  This can be forced though with the copy
+  assignment operator:
+
+    a := b
+    let a := b
+
+  or move assignment operator
+
+    a <- b
+    let a <- b
+
+
+4.2 Creation details
+
+  Instances of primitive and complex types are normally allocated on
+  the stack.  The compiler will reserve enough space on the stack for
+  a given type.  When an instance is created copied or moved the
+  compiler will generate calls to the appropriate creation functions.
+
+  With a type like
+
+    def record Foo (name : String = "hello world", age : Int = 42)
+
+  the following usage
+
+    let a = Foo()
+
+  the compiler will generate code like
+
+    let a : Foo
+    .Foo.init(a)
+
+  With a usage like
+
+    let b = Foo()
+    ...
+    let a = b
+
+  the compiler will generate
+
+    let b : Foo
+    .Foo.init(b)
+    ...
+    let a : Foo
+    .Foo.copy(a, b)
+
+  `a` and `b` are technically uninitialized before the matching
+  `.init` calls (something the user normally can't do).
+
+
+4.3 Creation functions
+
+  Creation and copying of record types are with special creation
+  functions.
+
+    def record Foo (nm : String, age : Int)
+
+    -- constructor (implements `Foo()`)
+    def init .Foo.init(self : ^Foo, nm = "n.n.", age = 42)
+        with self.nm = nm,
+             self.age = age
+    {
+      self
+    }
+
+    -- copy constructor (implements `Foo(b)` or `let a = b`)
+    def init .Foo.copy(lhs : ^Foo, rhs : ^Foo) -> ^Foo
+        with lhs.nm = rhs.nm,
+             lhs.age = rhs.age
+    {
+      self
+    }
+
+    -- move constructor (implements `Foo(b)` or `let a = b`)
+    def init .Foo.move(self : ^Foo, rhs : ^Foo) -> ^Foo
+        with self.nm <- rhs.nm,
+             self.age <- rhs.age
+    {
+      self
+    }
+
+    -- copy assignment (implements `:=`)
+    def .Foo.copy!(lhs : ^Foo, rhs : ^Foo) -> ^Foo
+    {
+      lhs.nm = rhs.nm
+      lhs.age = rhs.age
+      lhs
+    }
+
+    -- move assignment (implements `<-`)
+    def .Foo.move!(lhs : ^Foo, rhs : ^Foo) -> ^Foo
+    {
+      lhs.nm <- rhs.nm
+      lhs.age <- rhs.age
+      lhs
+    }
+
+  The creation functions marked with `init` are called on
+  uninitialized memory; they support the `with init-list` phrase,
+  which allow to give explicit initialization of fields, without
+  unnecessary automatic initialization.
+
+  - Fields in this init phrase must be ordered like in the record
+    declaration.
+
+  - Field initializors must only access already initialized fields.
+
+  - Fields not explicitly given in the init phrase are automatically
+    filled in by the compiler
+
+
+4.4 Init details
+
+  With a record like
+
+    def record Foo (name : String = "hello world", age : Int = 42)
+
+  the compiler will generate the following copy code (unless provided
+  by the user):
+
+    def init .Foo.init(self : ^Foo, nm = "n.n.", age = 42)
+        with self.nm = nm,
+             self.age = age
+    {
+      .Foo.on-init(self)        -- <<opt>>
+      self
+    }
+
+  Calls which are marked with <<opt>> are auto generated by the
+  compiler, but dropped if there's no matching method implementation
+  provided in the code.
+
+
+4.5 Copy details
+
+  With a record like
+
+    def record Foo (name : String = "hello world")
+
+  the compiler will generate the following copy code (unless provided
+  by the user):
+
+    def copy(a @ ^Foo, b @ ^Foo) -> ^Foo {
+      .Foo.copy(a, b)
+    }
+
+    def init .Foo.copy(self : ^Foo, b : ^Foo) -> ^Foo
+        with self.name = b.name
+    {
+      .Foo.on-copy(self)           -- <<opt>>
+      self
+    }
+
+    def .Foo.copy!(a : ^Foo, b : ^Foo) -> ^Foo
+    {
+      a.name = b.name
+      a
+    }
+
+
+4.6 Move details
+
+  With a record like
+
+    def record Foo (name : String = "hello world")
+
+  the compiler will generate the following move code (unless provided
+  by the user):
+
+    def move(a @ ^Foo, b @ ^Foo) -> ^Foo {
+      .Foo.move(a, b)
+    }
+
+    def init .Foo.move(self : ^Foo, b : ^Foo) -> ^Foo
+        with self.name <- b.name
+    {
+      .Foo.on-move(self)          -- <<opt>>
+      self
+    }
+
+    def .Foo.move!(a : ^Foo, b : ^Foo) -> ^Foo
+    {
+      a.name <- b.name
+      a
+    }
+
+  The compiler will only auto-generate them if they are not provided
+  by the user.  The call to the `on-move` hook function is removed if
+  no such function is defined.
+
+
+4.7. De-initialization
+
+  The compiler automatically created code for deinitializing value
+  based complex types when instances go out of scope.
+
+  With a record like
+
+    def record Foo (name : String = "hello world")
+
+  the example
+
+    {
+      let a = Foo()
+      ...
+    }
+
+  will generate
+
+    {
+      let a : Foo
+      .Foo.init(a)
+      ...
+      .Foo.deinit(a)
+    }
+
+  If the type of a local variable is an interface or Any a
+  `deinitialize()` call is issued.  So with
+
+    {
+      let a = get-something()   -- returns Any
+      ...
+    }
+
+
+    {
+      let a = get-something()
+      ...
+      deinitialize(a)
+    }
+
+  `deinit` and `deinitialize` calls are issued unless instances moved
+  away.
+
+  The compiler will generate appropriate deinit methods:
+
+    def deinitialize(self @ ^Foo) {
+      .Foo.deinit(self)
+    }
+
+    def .Foo.deinit(self : ^Foo) {
+      .String.deinit(self.name)
+      undefined
+    }
+
+  After a `deinit` call the passed instance is not initialized
+  anymore.
+
+
+
+
+
+
+
+
+-- heap allocation / deallocation?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5.1 Allocation
+
+  With this code
+
+    def record Foo (nm : String)
+
+    let a = Foo(nm: "hello")
+
+
+    -- def .Foo.on-init(self : ^Foo) -> Unspecified ...
+
+    def .Foo.init(self : ^Foo, nm -> _nm : String = "") {
+      self.nm = _nm
+      .Foo.on-init(self as ^Foo) <<opt>>
+      self
+    }
+
+    let a = .Foo.init(allocate(Foo), nm: "N.N.")
+
+
+5.2 Deallocation:
+
+    -- def pub generic deinitialize(self @ ^'T) -> ^'T ...
+
+    -- def .Foo.on-deinit(self : ^Foo) -> ^Foo ...
+
+    def deinitialize(self @ ^Foo) {
+      .Foo.on-deinit(self) <<opt>>
+      deinitialize(self.nm)
+      deallocate(self)
+      self
+    }
+
+    deallocate(deinitialize(a))
+
+  I.e. constructors and destructors are transitive.  In the phase
+  where user constructor hooks are run, all members are already
+  initialized (at least with default values).  In the phase where user
+  destructor hooks are run, all members are still initialized.
+
+
+
+6. Heap allocated objects
+
+  Instances of primitive and complex types are normally allocated on
+  the stack.  In some cases it is advisable to allocate objects
+  explicitly on the heap.  Objects allocated on the heap are not
+  automatically deinitialized when the scope is left.  They require
+  manual deallocation.
+
+    let x : ^ = allocate(Student, ...)
+
+  or
+
+    let x = allocate(Student, ...)
+
+  The return value of allocate() is always ^T.
+
+  Run the deinitialize() method and free the memory:
+
+    deallocate(x)
+
+  x must be a reference type.
+
+  To manage memory (without leaking) use Shared pointers.
+
+
+7. Shared pointers:
+
+  shared pointers are reference counted owner pointers holding a
+  value.  The reference counter is not intrusive, but organized by the
+  pointer itself.
+
+    let a = &Bar()
+    let b = a                 -- a and b point to the same object, with shared
+                                 ownership.
+
+    let a = Bar()
+    let b : & = a             -- a is copied into the shared pointer of b. a is
+                                 still a value.
+
+    let a : &Bar              -- ERROR: a is a shared ptr, but is not initialized.
+    let a : & = Bar()         -- Ok.
+
+    let a : (&Bar | Nil) = nil  -- shared ptr to a Bar|Nil initialized to nil.
+    let a : (&Bar | Nil)      -- ERROR: a is uninitialized
+
+This (&Bar | Nil) pattern can be used for typical usecases like:
+
+    def alias Bar? : Variant<Bar, Nil>
+    def alias Bar? : Variant<^Bar, Nil>
+    def alias Bar? : Variant<&Bar, Nil>
+
+    def alias Bar*OrError : &Bar | Error
+    def alias Bar/OrError : ^Bar | Error
+
+    def alias Nilable<T> : Variant<T, Nil>
+    def alias Bar? : Nilable<Bar>
+    def alias Bar*? : Nilable<&Bar>
+    def alias Bar/? : Nilable<^Bar>
+
+
+    def foo(a : (&Bar | Nil))
+    def foo(a : (^Bar | Nil))
+
+
+7.2. A possible shared pointer implementation
+
+  A shared pointer implementation:
+
+    def record SharedObjBlock<T> (
+      ref-count : Int,
+      val : T
+    )
+
+    def const shared-block-sentinel = SharedObjBlock<Any>
+
+    def record SharedPtr<T> (
+      cb : ^SharedObjBlock<T> = shared-block-sentinel as SharedObjBlock<T>
+    )
+
+    -- named constructor
+    def make-shared(o : 'T) -> SharedPtr<'T> {
+      SharedPtr<'T>(cb: allocate(SharedObjBlock<'T>, ref-count: 1, val: o))
+    }
+
+    -- copy constructor
+    def copy(rhs @ ^SharedPtr<'T>) -> SharedPtr<'T> {
+      SharedPtr<'T>(cb: {
+                          incr!(rhs.cb.ref-count)
+                          rhs.cb
+                        })
+    }
+
+    -- destructor
+    def deinitialize(self @ ^SharedPtr<'T>) {
+      if (cb.ref-count == 1) {
+        deallocate(lhs.cb)
+        --lhs.data = nil
+      }
+      else
+        decr!(self.cb.ref-count)
+      self
+    }
+
+    -- cast operator
+    def value(self @ ^SharedPtr<'T>, as-type : Type<'U>) -> ^'U {
+      self.cb.val as 'U
+    }
+
+
+8. Automatic heap allocation
+
+  For .lang.Any types all non primitive types are automatically boxed,
+  i.e. kept on the heap.  The compiler will generate automatic boxing
+  and unboxing code where necessary.
+
+
+Cast
+----
+
+  a = b as Int
+
+for base types (Int, Bool, Float) this is handled automatically by the
+compiler; for complex types the user can hook into the cast process
+(and allow even "impossible" casts), by implementing the `value()`
+method:
+
+    def value(self @ ^Foo, as-type : Type<'U>) -> ^'U {
+      self.value as 'U
+    }
+
+  The cast operator is used when a is assigned to a primitive like:
+
+    let si = Foo(42)
+    let a : Int = si                -- let a : Int = value(si, Type<Int>)
+    let a = si as Int               -- let a : Int = value(si, Type<Int>)
+    let a = si as Float             -- let a : Int = value(si, Type<Float>)
+
+
+Operators
+---------
+
+  all operators are translated into function calls:
+
+    a = b       =>    set!(a, b)
+
+    a == b      =>    equal?(a, b)
+    a <> b      =>    not(equal?(a, b))
+    a > b       =>    greater?(a, b)
+    a >= b      =>    greater-equal?(a, b)
+    a < b       =>    less?(a, b)
+    a <= b      =>    less-equal?(a, b)
+    a <=> b     =>    compare(a, b)
+
+    a + b       =>    add(a, b)
+    a - b       =>    subtract(a, b)
+    a * b       =>    multiply(a, b)
+    a / b       =>    divide(a, b)
+    a ** b      =>    power(a, b)
+
+    a mod b     =>    modulo(a, b)
+    a OR b      =>    bitwise-or(a, b)
+    a XOR b     =>    bitwise-xor(a, b)
+    a AND b     =>    bitwise-and(a, b)
+    a or b      =>    logical-or(a, b)
+    a and b     =>    logical-and(a, b)
+    a << b      =>    shift-left(a, b)
+    a >> b      =>    shift-right(a, b)
+
+    a ++ b      =>    concat(a, b)
+
+    a += b      =>    a = add(a, b)
+    a -= b      =>    a = subtract(a, b)
+    a *= b      =>    a = multiply(a, b)
+    a /= b      =>    a = divide(a, b)
+    a **= b     =>    a = power(a, b)
+    a ++= b     =>    a = concat(a, b)
+    a OR= b     =>    a = bitwise-or(a, b)
+    a AND= b    =>    a = bitwise-and(a, b)
+    a XOR= b    =>    a = bitwise-xor(a, b)
+    a or= b     =>    a = logical-or(a, b)
+    a and= b    =>    a = logical-and(a, b)
+
+    not a       =>    not(a)
+    - a         =>    negate(a)
+
+    a .. b      =>    range(a, b)
+    a .. b by c =>    range(a, b, c)
+
+    a as X      =>    value(a, Type<X>)     -- if a is a SharedPtr
+
+    a[x]        =>    slice(a, x)
+    a[x] = y    =>    slice!(a, x, y)
+    a[f..l]     =>    slice*(a, f, l)
+
+    let a, b ... = e     =>  {
+                               let tmp = e
+                               a = slice(tmp, 0)
+                               b = slice-rest(tmp, 1) }
+    a, b ... = e         =>  {
+                               let tmp = e
+                               a = slice(tmp, 0)
+                               b = slice-rest(tmp, 1)
+                             }
+
+
+
+Parameterized functions
+-----------------------
+
+    def reduce-left(proc : 'F, initial : 'K, range : 'R) -> 'K
+    {
+      let t mut = initial
+      while (not empty?(range)) {
+        t = proc(t, first(range))
+        range = subrange(1, size(range))
+      }
+      t
+    }
+
+and recursive reduce-right
+
+    def reduce-right(proc : 'F, initial : 'K, range : 'R) -> 'K
+    {
+      let loop(val : 'K, range : 'R) -> 'K
+        if (empty?(range))
+          val
+        else
+          loop(proc(val, last(range)), subrange(0, size(range) - 1))
+
+       loop(initial, range)
+    }
+
+
+Record types
+------------
+
+    def record Subject (
+      title : String
+    )
+    def record Student (
+      name : String = "",
+      birthday : Date = make<Date>(16, 5, 1971),
+      subjects : Subject[]
+    )
+
+
+    def main()
+      let s = Student("Walter", Data(16, 5, 1982), #[Subject("math"), Subject("history")])
+
+      display("Name: ", s.name,
+              " age: ", now() - s.birthday,
+              " subjects: ", reduce-left(fn(full, sj) { full + sj.title + ", " },
+                                         "",
+                                         s.subjects),
+              \nl)
+
+
+Types and type inheriting
+-------------------------
+
+    def type Port<T>
+
+    def type InPort<T> : Port<T>
+
+    def type OutPort<T> : Port<T>
+
+    def type SeekablePort<T> : Port<T>
+
+    def type RandomAccessPort<T> : InPort<T>, OutPort<T>, SeekablePort<T>
+
+
+    def record FilePort : RandomAccessPort<Octet>
+    (
+      fd : Int
+    )
+
+    def open(port : ^FilePort,
+             name-or-uri : variant<String, Uri>,
+             mode : FileMode, umask : UInt32) -> ^FilePort ...
+
+
+Parameterized record types
+--------------------------
+
+    def record Pair<K, V> (
+      key : K,
+      value : V
+    )
+
+    def record ValueMap<K, V> (
+      data : Pair<K, V>[]
+    )
+
+
+    -- type deduction
+    Pair(42, "hello")        equiv.   Pair<Int, String>(42, "hello")
+
+
+Variant and optional types
+--------------------------
+
+    (A | B | C)                 -- Union<A, B, C>
+    (A & B & C)                 -- Intersection<A, B, C>
+
+    def alias String? : (String | Nil)
+
+
+
+
+Enum types
+----------
+
+    def enum Color (
+      red, yellow, green, blue, black
+    )
+
+    def draw(obj, color : Color) ...
+
+    def main()
+      draw(Box(), Color.green)
+
+
+Mixin types
+-----------
+
+    def type BitmaskType<T>
+
+    def enum FileType : UInt32, BitmaskType<FileType> (
+      read = 1 << 0,
+      write = 1 << 1,
+      append = 1 << 2,
+      create = 1 << 3,
+      exclusive = 1 << 4,
+    )
+
+
+    def bitwise-or(lhs : BitmaskType<T>, rhs : BitmaskType<T>) -> T
+      ((lhs as UInt32) OR (rhs as UInt32)) as T
+
+
+
+Modules
+-------
+
+Define a module:
+
+    def module io
+    {
+      import (string)
+      export (Port, InPort, OutPort, SeekablePort, RandomAccessPort,
+              FilePort)
+      include ("io.hr", "file-port.hr")
+
+      def const val = 42
+    }
+
+import -> load a module by name (declarations and library dependency)
+export -> export symbols; instead of explicitly listing the symbols
+          here, mark declarations in the included files as "pub"
+include -> technically include the listed files
+
+module makes a loadable module and defines a namespace
+
+Accessing symbols in the namespace:
+
+    foo.val
+
+    with ns foo {
+      val
+    }
+
+Modules compile typically into static or dynamic libraries.
+
+
+- (open)dylan has:
+  - an application uses libraries; libraries (a set of modules) use
+    modules; modules (a set of bindings) have bindings.
+  - library interchange format (.lid) - a kind of makefile for dylan
+  - namespaces in dylan are organized by the "define module" statement.
+
+- diesel:
+  - an application uses a single source file rooted tree.  From there
+    all includes take off; multiple include requests are handled
+    correctly; modules are used for import/export and namespaces.
+
+
+
+- think big & complete, but less obscure (than with herschel1):
+
+    library xyz
+
+  declares a component as a standalone piece of reusable software.
+  When compiled will be represented as one .dll, .dylib, or .so.  Apps
+  and other libraries can depend on a library ("import (xxx)").
+  Libraries are build by "include"ing source files; it's possible to
+  specify public "interface" (for declarations and macros) and
+  implementation files.  Libraries can use other libraries
+  ("import").
+
+    module xyz
+
+  defines the scope of visibility of bindings and their namespace.
+  Modules can depend on other libraries ("import").
+
+  Bindings inside a module need to be exported ("export").
+
+    export (foo, bar, baz)
+
+  exports three symbols to the enclosing module/library, independent
+  of how deep nested modules are.
+
+    export public (foo, bar, baz)
+
+  exports the bindings to all nesting modules and libraries.
+
+  When a library is "imported" the import machinery figures out which
+  header files are to be read: These are the source files imported via
+  "include public".  (The source files imported with "include" and
+  "include tests" are only read when building/compiling the library or
+  its test runner itself).
+
+
+  Example:
+
+    in "vehicles.hrm":
+
+      library vehicle {
+        import lang                        -- depend on lang library
+
+        include public "vehicle.hr"        -- reads real source files, all code
+                                           -- imported "public" is useable as
+                                           -- interface from outside.
+        include private "impl/vehicle.hr"  -- implementation files
+
+        include tests "tests/vehicle.hr"
+      }
+
+
+    in "vehicle.hr":
+
+      export public *
+
+      def type Vehicle
+      def record Car : Vehicle { ... }
+      def record Truck : Vehicle { ... }
+
+      def generic serial-number(v @ 'T) -> String
+          where T isa Vehicle ...
+
+      def generic owner(v @ 'T) -> String
+          where T isa Vehicle ...
+      def generic owner!(v @ 'T, o : String) -> 'T ...
+      def generic tax(v @ 'T) -> String
+          where T isa Vehicle ...
+
+      def generic capacity(v @ 'T) -> Int
+          where T isa Truck ...
+
+
+    in "impl/vehicle.hr":
+
+      def serial-number(v @ Car) -> String
+          v.props["serial-number"] as String
+
+      def serial-number(v @ Truck) -> String
+          v.props["serial-number"] as String
+
+      def capacity(v @ Truck) -> Int
+          v.capacity
+
+
+   in "tests/vehicle.hr":
+
+     import (lang, tests)
+
+     def test ("car can be sold", "vehicle, setter") {
+       let iut = Car()
+       iut.owner!("Carl Higgins")
+
+       check(iut.owner() == "Carl Higgins")
+
+       iut.owner!("Thomas Müller")
+       check(iut.owner() == "Carl Higgins")
+     }
+
+
+  application xyz
+
+  declares an application, i.e. a standalone executable program.  The
+  name ("xyz") opens a namespace (like for the "library"
+  construction).  It might be used by the compiler for naming the
+  resulting executable.  Additional parameters could be given as keyed
+  arguments; which arguments are used depends on the compiler,
+  platforms, and target format.
+
+    application b99 (
+      name: "beer99",
+      bundled?: false,            -- use on Mac to make a bundled app
+      icon: "../resources/icon.?"
+    )
+
+  All of this is optional and might be ignored by the compiler or
+  overwritten by compiler options.  The "application" keyword is
+  mainly the marker for the compiler that it is should compile and
+  link an executable.
+
+
+
+
+export, importing
+-----------------
+
+    def pub foo() ...
+    def pub const length = 42
+
+or:
+
+    export (foo, length)
+
+
+
+Expressions
+-----------
+
+Function calls:
+
+    foo(a, b, c)
+    foo(a, bar(mar(42), gaz()))
+
+if/else
+
+    if (foo())
+      expr
+    else if (bar())
+      expr
+    else
+      expr
+
+select
+
+    select (foo())
+      | v1 -> expr
+      | v2, v3, v4 -> expr
+      | else -> expr
+
+loops
+
+    while (condition)
+      expr
+
+    while (condition)
+      expr
+    else
+      expr
+
+    for (v : type in range-expr)
+      expr
+
+    for (v : type in range-expr)
+      expr
+    else
+      expr
+
+  with range-expr: something which is of type Slicable, e.g.
+
+     #[1, 2, 3]
+     0..42
+
+
+Type match
+----------
+
+    match (foo())
+      | v1 : Type -> expr
+      | v2, v3, v4 : Type2 -> expr
+      | else : Any -> expr
+
+
+Example
+    def fibonacci(num : Int) -> Int
+      if (num <= 1)
+         1
+      else
+         fibonacci(num - 1) + fibonacci(num - 2)
+
+
+    def main(args ... : String[])
+      match (to-int(args[1]))
+        | num : Int -> fibonacci(to-int(num))
+        | _ : Error -> {
+                         display("requires number input", \nl)
+                         0
+                       }
+
+
+Functions
+---------
+
+  standalone function:
+
+    def foo(a : Int, b : String, c ...) -> Bool
+      body
+
+  type overload with function selected at compile time by best type match:
+
+    def make-sound(a : Animal)     [1]
+    def make-sound(a : Mamal)      [2]
+    def make-sound(a : Dog)        [3]
+    def make-sound(a : Fish)       [4]
+
+
+    make-sound(Dog())      => variant [3] is called
+    make-sound(Spider())   => variant [1] is called
+    make-sound(Cat())      => variant [2] is called
+    make-sound(Shark())    => variant [4] is called
+
+  generic method (selected at runtime).  Matching parameters are
+  notated with the @ separator (instead of the :).
+
+    def generic draw(a @ GfxObject)
+
+    def method draw(a @ Square)
+    def method draw(a @ Line)
+
+  When multiple parameters match it's multiple dispatch:
+
+    def generic connect(inp @ Port, outp @ Port)
+
+    def method connect(inp @ AudioPort, outp @ AudioPort)
+    def method connect(inp @ MidiPort, outp @ AudioPort)
+    def method connect(inp @ AudioPort, outp @ MidiPort)
+
+
+  typical getter & setter method for OOP style:
+
+    def generic foo(self @ ^MyObject) -> T
+    def generic foo!(self mut @ ^MyObject, val : T) -> ^MyObject
+
+  keyed (named) parameters:
+
+    def foo(name -> nm : string = "hello", age -> y : Int) ...
+    def foo(name -> nm mut : ^&Int = "N.N.") ...
+
+    ... and at the call site:
+
+    foo(name: "world", age: 92)
+
+  keyed arguments can't be combined with generic functions.
+
+　signature definition of functions in headers:
+
+    def foo(a, b) ...
+    def foo(a, b) -> Int ...
+    def generic foo(a @ Bar) ...
+
+
+Anonymous functions:
+--------------------
+
+  fn(a, b) -> C expr
+
+type is:
+  Fn(A, B) -> C
+
+
+Namespaces:
+-----------
+
+   module moo
+
+     def record Xyz ( slot )
+
+     def gaz() {
+       ixwick.ext.bar()
+     }
+
+   module ixwick
+
+     module ext
+
+       def bar() ...
+
+
+     module io
+
+       def record Abc ( name, prof )
+
+       def foo() {
+         let a = Abc()
+         a.name = ext.bar()
+
+         let b = moo.Xyz()
+         b.slot = moo.gaz()
+       }
+
+
+    def ixwick.io.zaza() ...
+
+
+  with namespace a.b.c {
+    def x() ...
+  }
+
+
+Macros:
+-------
+
+  def macro nm
+    | « nm1 » -> « ... »
+    | « nm2 » -> « ... »
+
+  Each pattern nm1, nm2, ... must contain the macro-name in the right position.  Macro forms can be:
+
+  def <macroname> ...
+  <macroname> (...)
+
+
+  Parse patterns:
+
+    ?xxx:<parameter-type>
+
+    possible patterns:
+
+    expr
+    name
+    op | operator
+
+    type
+       Matches '<type>' and fails if no such token stream is found.
+
+    typespec
+       Matches ': <type>' and fails if no spec is found.  The macro
+       variable contains the leading ':'.
+
+       parts:
+         spec   '<type>'
+
+    typespec*
+       Like typespec, but also succeeds and returns an empty
+       replacement stream when no type is found.
+
+    typelist
+       Matches a typespec list ': <type> {, <type}`.  Fails if no type
+       is found.
+
+       parts:
+         specs  '<type> {, <type>}'
+
+    typelist*
+       Like typelist, but also succeeds and returns an empty replacement
+       stream when no typelist is found.
+
+    param
+       Matches a typical parameter spec:
+
+         <key> -> <name> [ : <type> ] [ = <default-expr> ]
+         <name> [ : <type> ]
+         <name> [ @ <type> ]
+         <...> [ : <type> ]
+
+       parts:
+         key    '<key>' (or ø)
+         name   '<name>'
+         type   '<type>' (or ø)
+         init   '<expr>' (or ø)
+
+    paramlist
+       Matches a (possible empty) list of comma separated parameter
+       specifications.
+
+    slot
+       Matches a slot specification: '<name> [ : <type> ] [ = <init-expr> ]'
+
+       parts:
+         name   '<name>'
+         type   '<type>' (or ø)
+         init   '<expr>' (or ø)
+
+    slotlist
+      Matches a (possible empty) list of comma separated slot
+      specifications.
+
+
+    docstr*
+       Matches a documentation string ('~...~').  This succeeds also
+       when no documentation string is found, returns an empty
+       replacement stream.
+
+  Parse variables
+
+    ?xxx        replace with the parsed tokens
+    xxx ## abc  concat two symbol into a new
+    xxx ## "42" concat non symbol chars to symbol into a new
+    ?"abc"      introduce variable name 'abc' as string
+    ?( )?       instead of « »
+
+    ?{abc.def}  access part 'def' from parsed variable 'abc'.  For the
+                parts see the patterns.
+
+
+Encoding in C namespace
+-----------------------
+
+Function overloading requires encoding parameter types into the C
+function name.  LLVM IR requires "simple" names, so we need one name
+for each function variant.
+
+We already use the QN mangling to encode special characters.  E.g.
+
+  encode->string!
+
+becomes
+
+  __QNencode/2d/3estring/21
+
+So our pattern is:
+
+For functions:
+
+  1. Start with __Q
+  2. Encode function type: M = generic, F = normal function
+  2. add a N, then the namespaces with each step prefixed with the length
+  3. add the symbol, prefixed with the length
+  4. add a S, encode return type
+  5. encode types of parameters
+
+encode one type
+
+  Use shortcuts for builtin types:
+
+  Bool         b
+  Int8         c
+  UInt8        o
+  Int16        s
+  UInt16       w
+  Int32        i
+  UInt32       u
+  Int64        I
+  UInt64       U
+  Float32      f
+  Float64      F
+  Float128     D
+  String       S
+  Unspecified  v
+  Eof          e
+  Nil          n
+
+  add a 'r' for reference to the type
+  add a 'R' for ref-counted type
+  add a 'A' for array
+
+  user       _[TREIU]N{ns}(sym)generics?
+
+  parameters can use a namespace shortcut: if parameter types are in
+  the same namespace as the function's use a Ns for the {Ns} part simply.
+
+  if the type is generic the generic type params are added recursively
+  enclosed in a P...x group.
+
+  Intersection and Union types are ended with x
+
+Example:
+
+  .io.foo(: .io.Port<Octet>, : Float32[]) -> BoolOrEof
+
+  _QFN2io3fooS_Ubex_TNs4PortPoxAf
+
+
+For global variables
+
+  1. Start with __Q
+     1. var type: V = variable
+  2. add the namespaces and symbol each prefixed with the length as digits
+
+For types:
+
+  1. Start with __Q
+     1. type kind: T = type, R = record, E = enum, I = intersection, U = union
