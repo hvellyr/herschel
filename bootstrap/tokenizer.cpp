@@ -109,18 +109,18 @@ int Tokenizer::nextChar()
   if (fCC == EOF)
     throw AnnotatedEofException(srcpos());
 
+  if (isEOL(fCC)) {
+    fLineCount++;
+    fColumnCount = 0;
+  }
+
   try {
-    int c = fPort->read();
-    if (isEOL(c)) {
-      fLineCount++;
-      fColumnCount = 1;
-    }
-    fCC = c;
+    fCC = fPort->read();
     fColumnCount++;
   }
   catch (const EofException&) {
     fCC = EOF;
-    fColumnCount = 1;
+    fColumnCount = 0;
   }
   return fCC;
 }
