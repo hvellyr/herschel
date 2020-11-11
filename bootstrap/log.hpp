@@ -74,6 +74,12 @@ public:
     fMsgBuffer << (val ? "true" : "false");
     return *this;
   }
+
+  LineLogger& operator<<(const SrcPos& srcpos)
+  {
+    fMsgBuffer << srcpos.toString().to_string();
+    return *this;
+  }
 };
 
 
