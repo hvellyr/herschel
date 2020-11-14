@@ -120,45 +120,4 @@ Token FileTokenPort::read()
   return recordToCheckpoint(fTokenizer->nextToken());
 }
 
-
-//----------------------------------------------------------------------------
-
-InternalTokenPort::InternalTokenPort(const std::list<Token>& tokens)
-{
-  fTokens.assign(tokens.begin(), tokens.end());
-}
-
-
-InternalTokenPort::InternalTokenPort(const TokenVector& tokens)
-{
-  fTokens.assign(tokens.begin(), tokens.end());
-}
-
-
-bool InternalTokenPort::isOpen() const
-{
-  return true;
-}
-
-
-bool InternalTokenPort::isEof() const
-{
-  return !hasUnreadData() && fTokens.empty();
-}
-
-
-Token InternalTokenPort::read()
-{
-  Token value;
-  if (readFromUnreadBuffer(&value, 1) == 1)
-    return value;
-
-  if (fTokens.empty())
-    throw EofException();
-
-  Token t = fTokens.front();
-  fTokens.pop_front();
-  return t;
-}
-
 }  // namespace herschel

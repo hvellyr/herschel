@@ -69,19 +69,4 @@ private:
   std::shared_ptr<Tokenizer> fTokenizer;
 };
 
-
-class InternalTokenPort : public TokenPort {
-public:
-  InternalTokenPort(const std::list<Token>& tokens);
-  InternalTokenPort(const TokenVector& tokens);
-
-  bool isOpen() const override;
-  bool isEof() const override;
-
-  Token read() override;
-
-private:
-  std::list<Token> fTokens;
-};
-
 }  // namespace herschel

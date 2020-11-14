@@ -88,27 +88,4 @@ TEST_CASE("TokenPort file token port", "[port][data-port][token-port]")
   REQUIRE(p->isEof());
 }
 
-
-TEST_CASE("InternalTokenPort", "[port][data-port][token-port]")
-{
-  SrcPos sp;
-
-  std::list<Token> tokens;
-  tokens.push_back(Token(sp, kSymbol, String("def")));
-  tokens.push_back(Token(sp, kSymbol, String("const")));
-  tokens.push_back(Token(sp, kSymbol, String("x")));
-  tokens.push_back(Token(sp, kAssign));
-  tokens.push_back(Token(sp, kRational, Rational(2, 3)));
-
-  auto p = std::make_shared<InternalTokenPort>(tokens);
-
-  REQUIRE(p->read() == Token(sp, kSymbol, String("def")));
-  REQUIRE(p->read() == Token(sp, kSymbol, String("const")));
-  REQUIRE(p->read() == Token(sp, kSymbol, String("x")));
-  REQUIRE(p->read() == Token(sp, kAssign));
-  REQUIRE(p->read() == Token(sp, kRational, Rational(2, 3)));
-
-  REQUIRE(p->isEof());
-}
-
 }  // namespace herschel
