@@ -420,17 +420,20 @@ public:
 
   String toString() const override
   {
-    String result;
+    if (!fChildren.empty()) {
+      String result;
 
-    result = result + "%(";
+      result = result + "%(";
 
-    for (unsigned int i = 0; i < fChildren.size(); i++) {
-      String childstr = fChildren[i].toString();
-      result = result + childstr + " ";
+      for (unsigned int i = 0; i < fChildren.size(); i++) {
+        String childstr = fChildren[i].toString();
+        result = result + childstr + " ";
+      }
+      result = result + "%)";
+      return result;
     }
-    result = result + "%)";
 
-    return result;
+    return String("%()");
   }
 
   TokenVector fChildren;
