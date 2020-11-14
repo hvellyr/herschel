@@ -71,6 +71,7 @@ public:
   void setNode(const Token& token, std::shared_ptr<SyntaxTreeNode> node);
   void setEndNode(const TokenVector& replacement);
   bool hasEndSet() const;
+  bool hasSoleEndSet() const;
 
   String toString() const;
 
@@ -93,7 +94,15 @@ enum MacroParamType {
   kMacro_namedParam,
   kMacro_restParam,
   kMacro_paramlist,
-  kMacro_operator
+  kMacro_operator,
+  kMacro_type,
+  kMacro_typespec,
+  kMacro_typespec_opt,
+  kMacro_typelist,
+  kMacro_typelist_opt,
+  kMacro_slot,
+  kMacro_slotlist,
+  kMacro_docstr,
 };
 
 MacroParamType macroParamType(const Token& token, String* paramName);

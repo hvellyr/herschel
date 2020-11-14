@@ -33,6 +33,33 @@ class SyntaxTreeNode;
 using NamedReplacementMap = std::map<String, TokenVector>;
 
 
+class MatchResult {
+public:
+  MatchResult()
+      : fSuccess(true)
+      , fErrorCode(0)
+  {
+  }
+
+  MatchResult(const SrcPos& pos, int errorCode, const String& msg)
+      : fSuccess(false)
+      , fPos(pos)
+      , fErrorCode(errorCode)
+      , fError(msg)
+  {
+  }
+
+  static MatchResult kOk;
+
+  explicit operator bool() { return fSuccess; }
+
+  bool fSuccess;
+  SrcPos fPos;
+  int fErrorCode;
+  String fError;
+};
+
+
 //! The first pass in compiling.  It read the raw token stream and digests
 //! it into token expressions.  Macros definitions are identified and
 //! registered and calls to macros are resolved in this pass.  The result is
@@ -75,12 +102,19 @@ private:
   friend struct SelectPatternParser;
   friend struct TypeParser;
 
+  friend struct ParameterSyntaxMatcher;
   friend struct ExprParamSyntaxMatcher;
+  friend struct TypeParamSyntaxMatcher;
+  friend struct TypeSpecParamSyntaxMatcher;
+  friend struct TypeListParamSyntaxMatcher;
   friend struct NameParamSyntaxMatcher;
   friend struct OperatorParamSyntaxMatcher;
   friend struct AnyParamParamSyntaxMatcher;
   friend struct SpecParamParamSyntaxMatcher;
   friend struct ParamListParamSyntaxMatcher;
+  friend struct SlotParamSyntaxMatcher;
+  friend struct SlotListParamSyntaxMatcher;
+  friend struct DocStringParamSyntaxMatcher;
 
   friend class ExternCParser;
 
@@ -88,6 +122,7 @@ private:
 
   TokenVector parseQualifiedName(bool acceptLeadingDot);
 
+  void parseTops(Token& seq);
   TokenVector parseTop();
   Token parseLibrary();
   Token parseApplication();
@@ -121,7 +156,8 @@ private:
   Token parseExprRec(const TokenVector& exprs, OperatorType op1, const SrcPos& op1Srcpos,
                      bool hasRest);
 
-  Token parseTypeSpec(bool onlyNestedConstraints, bool needParans);
+  Token parseTypeSpec(bool onlyNestedConstraints, bool needParans,
+                      bool acceptEmpty = false);
   Token parseSymbolOrSimpleType(const Token& baseType);
   Token parseGroupType();
   Token parseFunctionType();
@@ -142,10 +178,8 @@ private:
   Token parseAccess(const Token& expr);
   Token parseSlice(const Token& expr);
 
-  Token parseParamCall(const Token& expr, const TokenVector& preScannedArgs,
-                       bool parseParams);
-  Token parseFunctionCall(const Token& expr, const TokenVector& preScannedArgs,
-                          bool parseParams);
+  Token parseParamCall(const Token& expr);
+  Token parseFunctionCall(const Token& expr);
   void parseFuncallArgs(TokenVector* args);
   void parseAppArgs(TokenVector* argsVector);
 
@@ -173,8 +207,8 @@ private:
                             bool exceptEmptyList = true);
 
   bool parseRecordSlotsFull(TokenVector* exprlist, TokenType startToken,
-                            TokenType endToken, bool skipFirst,
-                            bool eatLast);
+                            TokenType endToken, bool skipFirst, bool eatLast,
+                            bool firstUnexpectedEnds);
   bool parseRecordSlots(TokenVector* exprlist);
 
   Token parseWhen(bool isTopLevel);
@@ -213,7 +247,8 @@ private:
   template <typename ParseFunctor>
   void parseSequence(ParseFunctor functor, TokenType startToken, TokenType endToken,
                      bool hasSeparator, ErrCodes errorCode, Token& result, zstring ctx,
-                     bool skipFirst = true, bool eatLast = true);
+                     bool skipFirst = true, bool eatLast = true,
+                     bool firstUnexpectedEnds = false);
   template <typename ParseFunctor>
   void parseChoiceSequence(ParseFunctor functor, TokenType choiceToken, Token& result);
   template <typename ParseFunctor>
@@ -235,19 +270,14 @@ private:
 
   //@{ Macro calls
 
-  TokenVector parseMakeMacroCall(const Token& expr, const TokenVector& args,
-                                 const Macro* macro, bool shouldParseParams,
-                                 bool isLocal);
+  TokenVector parseMakeMacroCall(const Token& expr, const Macro* macro, bool isLocal);
 
-  bool parseDoMatchSyntaxDef(TokenVector* result, const Token& expr,
+  void parseDoMatchSyntaxDef(TokenVector* result, const Token& expr,
                              SyntaxTable& syntaxTable, bool isLocal);
-  bool parseDoMatchSyntaxFunc(TokenVector* filtered, const Token& expr,
-                              const TokenVector& args, SyntaxTable& syntaxTable,
-                              bool shouldParseParams);
+  void parseDoMatchSyntaxFunc(TokenVector* filtered, const Token& expr,
+                              SyntaxTable& syntaxTable);
 
-  bool parseExprStream(TokenVector* result, bool isTopLevel);
-
-  bool matchSyntax(TokenVector* result, SyntaxTable& syntaxTable);
+  void matchSyntax(TokenVector* result, const String& macroInAction, SyntaxTable& syntaxTable);
   bool replaceMatchBindings(TokenVector* result, const TokenVector& replacement,
                             const NamedReplacementMap& bindings);
   bool replaceSangHashIds(TokenVector* result, const TokenVector& source);
@@ -255,8 +285,8 @@ private:
                                       const NamedReplacementMap& bindings, bool& found);
   //@}
 
-  bool matchParameter(const Token& macroParam, NamedReplacementMap* bindings,
-                      SyntaxTreeNode& followSet);
+  MatchResult matchParameter(const Token& macroParam, NamedReplacementMap* bindings,
+                             SyntaxTreeNode& followSet);
 
   Token parseParameter(ParamType* expected, bool autoCompleteTypes);
 
@@ -273,6 +303,7 @@ private:
   bool fEvaluateExprs = true;
   bool fInLibrary = false;
   bool fInApplication = false;
+  std::set<String> fInMacroEval;
 };
 
 

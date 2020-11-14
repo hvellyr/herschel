@@ -3547,6 +3547,9 @@ NodeList SecondPass::parseExpr(const Token& expr)
     HR_LOG(kError, expr.srcpos(), E_UnexpectedToken)
         << "Unexpected token: " << expr.toString();
     return NodeList();
+
+  case kContinuation: // hr_invalid("");
+    break;
   }
 
   return NodeList();

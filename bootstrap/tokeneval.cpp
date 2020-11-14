@@ -514,6 +514,9 @@ Token TokenEvalContext::evalToken(const Token& expr) const
       throw UndefinedSymbolException(expr.idValue());
     return value;
   } break;
+
+  case kContinuation:
+    throw NotSupportedException(__FUNCTION__);
   }
 
   return Token();

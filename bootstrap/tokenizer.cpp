@@ -806,6 +806,33 @@ Token Tokenizer::nextTokenImpl()
         nextChar();
         return Token(beginSrcpos, kMacroOpen2);
       }
+      else if (fCC == '{') {
+        nextChar();
+        Token param =
+            readIdentifier(beginSrcpos, String(), kMacroParam, !K(acceptGenerics));
+        Token part;
+        if (fCC == '.') {
+          nextChar();
+          part = readIdentifier(beginSrcpos, String(), kSymbol, !K(acceptGenerics));
+          if (part.isEmpty()) {
+            HR_LOG(kWarn, beginSrcpos, E_BadMacroPattern) << "empty macro parameter part";
+          }
+        }
+        if (fCC != '}') {
+          HR_LOG(kError, srcpos(), E_MissingBraceClose) << "Missing } in ?\"-notation";
+        }
+        else
+          nextChar();
+
+        if (param.idValue().isEmpty()) {
+          HR_LOG(kError, beginSrcpos, E_BadMacroPattern) << "empty macro parameter";
+          return Token();
+        }
+
+        return part.isEmpty()
+          ? param
+          : Token(beginSrcpos, kMacroParam, param.idValue() + "." + part.idValue());
+      }
       else {
         auto param = readIdentifier(beginSrcpos, String(), kMacroParam, !K(acceptGenerics));
         if (param.idValue().isEmpty()) {

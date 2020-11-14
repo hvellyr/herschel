@@ -78,6 +78,12 @@ bool SyntaxTreeNode::hasEndSet() const
 }
 
 
+bool SyntaxTreeNode::hasSoleEndSet() const
+{
+  return fHasEndPattern && fNodes.empty();
+}
+
+
 const TokenVector& SyntaxTreeNode::replacement() const
 {
   hr_assert(fHasEndPattern);
@@ -241,6 +247,22 @@ MacroParamType macroParamType(const Token& token, String* paramName)
       return kMacro_body;
     else if (type == String("operator") || type == String("op"))
       return kMacro_operator;
+    else if (type == String("type"))
+      return kMacro_type;
+    else if (type == String("typespec"))
+      return kMacro_typespec;
+    else if (type == String("typespec*"))
+      return kMacro_typespec_opt;
+    else if (type == String("typelist"))
+      return kMacro_typelist;
+    else if (type == String("typelist*"))
+      return kMacro_typelist_opt;
+    else if (type == String("slot"))
+      return kMacro_slot;
+    else if (type == String("slotlist"))
+      return kMacro_slotlist;
+    else if (type == String("docstr*"))
+      return kMacro_docstr;
   }
   return kMacro_unknown;
 }

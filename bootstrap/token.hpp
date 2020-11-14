@@ -68,7 +68,7 @@ zstring operatorName(OperatorType type);
 
 class Token;
 
-enum ExprType { kSeq, kNested, kPunct, kLit, kId };
+enum ExprType { kSeq, kNested, kContinuation, kPunct, kLit, kId };
 
 
 enum TokenType {
@@ -182,6 +182,9 @@ enum TokenType {
   kWhileId,
   kWithId,
   kUninitialized,
+
+  kContinuationExpr,  // macro has pushed new stuff, bail out of stack
+                      // and start over
 };
 
 
@@ -247,6 +250,8 @@ public:
 
   static Token newUniqueSymbolToken(const SrcPos& where, zstring prefix);
 
+  static Token sInvalid();
+
   bool operator==(const Token& other) const;
   bool operator!=(const Token& other) const;
 
@@ -263,6 +268,7 @@ public:
 
   bool isSeq() const;
   bool isNested() const;
+  bool isContinuation() const;
   bool isLit() const;
   bool isId() const;
   bool isSymbol() const;

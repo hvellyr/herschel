@@ -618,6 +618,12 @@ Token::Token(const Token& other)
 }
 
 
+Token Token::sInvalid()
+{
+  return Token(SrcPos(), kInvalid);
+}
+
+
 Token Token::newInt(const SrcPos& where, int bitwidth, int64_t value)
 {
   Token token;
@@ -669,7 +675,9 @@ bool Token::operator<(const Token& other) const
       return fImpl->operator<(other);
       break;
     case kId:
+    case kContinuation:
       switch (fType) {
+      case kContinuationExpr:
       case kSymbol:
       case kMacroParam:
       case kMacroParamAsStr:
@@ -756,7 +764,7 @@ String Token::toString() const
   case kSeq:
   case kNested:
   case kLit: hr_assert(fImpl); return fImpl->toString();
-
+  case kContinuation: return String("<con>");
   case kId:
     switch (fType) {
     case kSymbol: return fImpl->toString();
@@ -809,6 +817,7 @@ ExprType Token::type() const
     return kSeq;
   case kNestedExpr:  // kNestedExpr
     return kNested;
+  case kContinuationExpr: return kContinuation;
 
   case kPlus:  // kPunctExpr
   case kMinus:
@@ -921,6 +930,7 @@ bool Token::isEmpty() const
   switch (type()) {
   case kSeq:
   case kNested: return children().empty();
+  case kContinuation: return true;
   default: return false;
   }
 }
@@ -935,6 +945,12 @@ bool Token::isSeq() const
 bool Token::isNested() const
 {
   return fType == kNestedExpr && fImpl;
+}
+
+
+bool Token::isContinuation() const
+{
+  return fType == kContinuationExpr;
 }
 
 
@@ -1385,6 +1401,7 @@ void Token::toPort(Port<Octet>& port) const
     hr_assert(fImpl);
     fImpl->toPort(port);
     break;
+  case kContinuation: hr_invalid(""); break;
   case kId:
     switch (fType) {
     case kSymbol: return fImpl->toPort(port);
@@ -1601,6 +1618,7 @@ std::ostream& operator<<(std::ostream& os, ExprType type)
   switch (type) {
   case kSeq: os << "ExprType::kSeq"; break;
   case kNested: os << "ExprType::kNested"; break;
+  case kContinuation: os << "ExprType::kContinuation"; break;
   case kPunct: os << "ExprType::kPunct"; break;
   case kLit: os << "ExprType::kLit"; break;
   case kId: os << "ExprType::kId"; break;
