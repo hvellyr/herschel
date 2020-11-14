@@ -72,7 +72,7 @@ namespace herschel {
 #define MID_whereid "where"
 #define MID_whileid "while"
 #define MID_withid "with"
-
+#define MID_uninitialized "uninitialized"
 
 //--------------------------------------------------------------------------
 // names of known keywords

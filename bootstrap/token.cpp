@@ -787,6 +787,7 @@ String Token::toString() const
     case kWhereId: return String(MID_whereid);
     case kWhileId: return String(MID_whileid);
     case kWithId: return String(MID_withid);
+    case kUninitialized: return String(MID_uninitialized);
 
     default: hr_invalid("");
     }
@@ -902,7 +903,8 @@ ExprType Token::type() const
   case kWhenId:
   case kWhereId:
   case kWhileId:
-  case kWithId: return kId;
+  case kWithId:
+  case kUninitialized: return kId;
 
   default: HR_LOG(kError) << "Type: " << fType; hr_invalid("");
   }

@@ -273,6 +273,7 @@ Token Tokenizer::readSymbolOrOperator(bool acceptGenerics)
         {String(MID_whereid), kWhereId},
         {String(MID_whileid), kWhileId},
         {String(MID_withid), kWithId},
+        {String(MID_uninitialized), kUninitialized},
 
         {String(), kInvalid},  // sentinel
     };

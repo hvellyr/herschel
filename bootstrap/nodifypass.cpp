@@ -1598,7 +1598,10 @@ std::shared_ptr<AstNode> SecondPass::parseVarDef(const Token& expr, VardefFlags 
   std::shared_ptr<AstNode> initExpr;
   if (ofs + 1 < expr.count() && seq[ofs] == kAssign) {
     if (!fCompiler.isParsingInterface() || flags == kConstVar || flags == kConfigVar) {
-      initExpr = singletonNodeListOrNull(parseExpr(seq[ofs + 1]));
+      if (seq[ofs + 1] == kUninitialized)
+        initExpr = makeUndefNode(fScope);
+      else
+        initExpr = singletonNodeListOrNull(parseExpr(seq[ofs + 1]));
     }
     ofs += 2;
   }

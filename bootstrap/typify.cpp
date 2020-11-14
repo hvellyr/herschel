@@ -1595,9 +1595,14 @@ void Typifier::setupBindingNodeType(std::shared_ptr<BindingNode> node, zstring e
         annotateTypeConv(node->initExpr(), node->type());
       }
       else if (!node->initExpr()->type().isDef()) {
-        HR_LOG(kError, node->initExpr()->srcpos(), E_TypeMismatch)
+        if (std::dynamic_pointer_cast<UndefNode>(node->initExpr())) {
+          node->initExpr()->setDstType(bindty);
+        }
+        else {
+          HR_LOG(kError, node->initExpr()->srcpos(), E_TypeMismatch)
             << "Undefined type in " << errdesc << " initialization";
-        node->initExpr()->setDstType(Type::makeAny());
+          node->initExpr()->setDstType(Type::makeAny());
+        }
       }
       else if (!isContravariant(bindty, node->initExpr()->type(), *node->scope(),
                                 node->srcpos())) {

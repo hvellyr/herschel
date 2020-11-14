@@ -181,6 +181,7 @@ enum TokenType {
   kWhereId,
   kWhileId,
   kWithId,
+  kUninitialized,
 };
 
 
