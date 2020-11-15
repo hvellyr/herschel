@@ -14,6 +14,7 @@
 
 #include "annotate.hpp"
 #include "ast.hpp"
+#include "codegen-utils.hpp"
 #include "errcodes.hpp"
 #include "log.hpp"
 #include "port.hpp"
@@ -25,6 +26,7 @@
 #include "symbol.hpp"
 #include "traverse.hpp"
 #include "typectx.hpp"
+#include "typeprops.hpp"
 #include "utils.hpp"
 #include "xmlrenderer.hpp"
 
@@ -378,6 +380,132 @@ namespace {
     }
     return result;
   }
+
+
+  bool replaceBuiltinDeinit(Typifier* typf, std::shared_ptr<ApplyNode> node)
+  {
+    if (node->children().size() != 1) {
+      HR_LOG(kError, node->srcpos(), E_BadParameterList)
+          << "Not matching count of params.  Expected 1 found "
+          << node->children().size();
+      return true;
+    }
+
+    auto arg = node->children()[0];
+    auto ty = arg->type();
+
+    auto realty = arg->scope()->lookupType(ty);
+
+    if (realty.isPlainType()) {
+      typf->replaceNode(nullptr);
+      return true;
+    }
+    else if (realty.isRecord()) {
+      node->setBase(typf->typifyNode(
+          makeSymbolNode(arg->scope(), arg->srcpos(), Names::kDeinitFuncName)));
+    }
+    else {
+      node->setBase(typf->typifyNode(
+          makeSymbolNode(arg->scope(), arg->srcpos(), String("deinitialize"))));
+    }
+
+    return false;
+  }
+
+
+  bool replaceBuiltinNullValue(Typifier* typf, std::shared_ptr<ApplyNode> node)
+  {
+    if (node->children().size() != 1) {
+      HR_LOG(kError, node->srcpos(), E_BadParameterList)
+          << "Not matching count of params.  Expected 1 found "
+          << node->children().size();
+      return true;
+    }
+
+    auto arg = node->children()[0];
+    auto ty = arg->type();
+
+    if (!ty.isClassTypeOf()) {
+      HR_LOG(kError, node->srcpos(), E_TypeMismatch) << "parameter type mismatch " << ty;
+      return true;
+    }
+
+    auto realty = arg->scope()->lookupType(ty.classTypeOfType());
+
+    if (realty.isPlainType()) {
+      auto defnd = realty.typeProperty().makeNullValueNode();
+      defnd->setScope(arg->scope());
+      typf->replaceNode(typf->typifyNode(defnd));
+      return true;
+    }
+
+    auto initnd = generateInstantiateCall(arg->srcpos(), arg->scope(), ty, {});
+
+    {
+      Annotator an{typf->fCompiler};
+      initnd = an.annotateNode(initnd);
+    }
+
+    typf->replaceNode(typf->typifyNode(initnd));
+    return true;
+  }
+
+
+  bool replaceBuiltinInitMoveCopy(Typifier* typf, std::shared_ptr<ApplyNode> node,
+                                  const String& mvcpFuncName)
+  {
+    if (node->children().size() != 2) {
+      HR_LOG(kError, node->srcpos(), E_BadParameterList)
+          << "Not matching count of params.  Expected 2 found "
+          << node->children().size();
+      return true;
+    }
+
+    auto arg = node->children()[0];
+    auto ty = arg->type();
+
+    auto realty = arg->scope()->lookupType(ty);
+
+    std::shared_ptr<AstNode> replacend;
+    if (realty.isRecord()) {
+      auto initmovend =
+          makeApplyNode(node->scope(), node->srcpos(),
+                        makeSymbolNode(node->scope(), node->srcpos(), mvcpFuncName));
+      initmovend->appendNodes(node->children());
+      replacend = initmovend;
+    }
+    else {
+      replacend = makeAssignNode(node->scope(), node->srcpos(), node->children()[0],
+                                 node->children()[1]);
+    }
+
+    {
+      Annotator an{typf->fCompiler};
+      replacend = an.annotateNode(replacend);
+    }
+
+    typf->replaceNode(typf->typifyNode(replacend));
+    return true;
+  }
+
+
+  bool checkForAndReplaceBuiltinFunctions(Typifier* typf, std::shared_ptr<ApplyNode> node)
+  {
+    if (node->simpleCallName() == "__builtin-deinit") {
+      return replaceBuiltinDeinit(typf, node);
+    }
+    else if (node->simpleCallName() == "__builtin-null-value") {
+      return replaceBuiltinNullValue(typf, node);
+    }
+    else if (node->simpleCallName() == "__builtin-init-move") {
+      return replaceBuiltinInitMoveCopy(typf, node, Names::kInitMoveFuncName);
+    }
+    else if (node->simpleCallName() == "__builtin-init-copy") {
+      return replaceBuiltinInitMoveCopy(typf, node, Names::kInitCopyFuncName);
+    }
+
+    return false;
+  }
 }  // namespace
 
 
@@ -389,6 +517,9 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
     typf->typifyNodeList(node->children());
 
     if (node->isSimpleCall()) {
+      if (checkForAndReplaceBuiltinFunctions(typf, node))
+        return;
+
       auto funcNode =
           node->scope()->lookupFunction(node->simpleCallName(), K(showAmbiguousSymDef));
 

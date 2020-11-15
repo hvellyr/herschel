@@ -365,6 +365,9 @@ public:
 
   // predefined function, variable, and keyarg names
   const static String kInitFuncName;
+  const static String kDeinitFuncName;
+  const static String kInitMoveFuncName;
+  const static String kInitCopyFuncName;
   const static String kValueKeyargName;
   const static String kNullValueFuncName;
   const static String kOnInitFuncName;

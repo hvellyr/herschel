@@ -112,6 +112,9 @@ const String Names::kSignalKeyword = String(MID_signalKeyword);
 
 
 const String Names::kInitFuncName = String("init");
+const String Names::kDeinitFuncName = String("deinit");
+const String Names::kInitMoveFuncName = String("init-move");
+const String Names::kInitCopyFuncName = String("init-copy");
 const String Names::kValueKeyargName = String("value");
 const String Names::kNullValueFuncName = String("null-value");
 const String Names::kOnInitFuncName = String("on-init");
