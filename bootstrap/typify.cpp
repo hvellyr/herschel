@@ -92,9 +92,7 @@ namespace {
         expr = an.annotateNode(freeExpr);
       }
 
-      typf->typifyNode(expr);
-
-      return expr;
+      return typf->typifyNode(expr);
     }
 
     return {};
@@ -104,10 +102,22 @@ namespace {
 
 template <typename T>
 struct NodeTypifier {
-  static void typify(Typifier* typf, T node)
+  static void typify(Typifier* typf, T node) { typf->typifyNodeList(node->children()); }
+};
+
+
+template <>
+struct NodeTypifier<std::shared_ptr<TypeDefNode>> {
+  static void typify(Typifier* typf, std::shared_ptr<TypeDefNode> node)
   {
-    typf->typifyNodeList(node->child_nodes());
+    typf->typifyNodeList(node->slots());
   }
+};
+
+
+template <>
+struct NodeTypifier<std::shared_ptr<UndefNode>> {
+  static void typify(Typifier* typf, std::shared_ptr<UndefNode> node) {}
 };
 
 
@@ -147,7 +157,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<ArrayTypeNode>> {
   static void typify(Typifier* typf, std::shared_ptr<ArrayTypeNode> node)
   {
-    typf->typifyNode(node->typeNode());
+    node->setTypeNode(typf->typifyNode(node->typeNode()));
 
     auto symnd = std::dynamic_pointer_cast<SymbolNode>(node->typeNode());
     auto type = (symnd ? symnd->type() : node->typeNode()->type());
@@ -172,7 +182,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<DefNode>> {
   static void typify(Typifier* typf, std::shared_ptr<DefNode> node)
   {
-    typf->typifyNode(node->defNode());
+    node->setDefNode(typf->typifyNode(node->defNode()));
     node->setType(node->defNode()->type());
   }
 };
@@ -182,7 +192,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<LetNode>> {
   static void typify(Typifier* typf, std::shared_ptr<LetNode> node)
   {
-    typf->typifyNode(node->defNode());
+    node->setDefNode(typf->typifyNode(node->defNode()));
     if (auto nd = std::dynamic_pointer_cast<DelayTypeAnnotatable>(node->defNode())) {
       if (nd->isTypeSpecDelayed())
         return;
@@ -199,7 +209,7 @@ struct NodeTypifier<std::shared_ptr<VardefNode>> {
     typf->fLastUsedScope->registerVar(node->srcpos(), node->name(), node);
 
     if (node->initExpr())
-      typf->typifyNode(node->initExpr());
+      node->setInitExpr(typf->typifyNode(node->initExpr()));
 
     if (!node->isTypeSpecDelayed())
       typf->setupBindingNodeType(node, "variable");
@@ -216,10 +226,12 @@ struct NodeTypifier<std::shared_ptr<FuncDefNode>> {
 
     typf->typifyNodeList(node->params());
     if (node->body()) {
-      typf->typifyNode(node->body());
+      node->setBody(typf->typifyNode(node->body()));
 
-      if (!node->body()->type().isDef())
-        node->body()->setType(Type::makeAny());
+      if (node->body()) {
+        if (!node->body()->type().isDef())
+          node->body()->setType(Type::makeAny());
+      }
     }
 
     typf->setupFunctionNodeType(node);
@@ -259,7 +271,7 @@ struct NodeTypifier<std::shared_ptr<FunctionNode>> {
   {
     typf->typifyNodeList(node->params());
     if (node->body()) {
-      typf->typifyNode(node->body());
+      node->setBody(typf->typifyNode(node->body()));
 
       if (!node->body()->type().isDef())
         node->body()->setType(Type::makeAny());
@@ -331,7 +343,7 @@ struct NodeTypifier<std::shared_ptr<ParamNode>> {
     typf->fLastUsedScope->registerVar(node->srcpos(), node->name(), node);
 
     if (node->initExpr())
-      typf->typifyNode(node->initExpr());
+      node->setInitExpr(typf->typifyNode(node->initExpr()));
 
     typf->setupBindingNodeType(node, "parameter");
 
@@ -373,7 +385,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<ApplyNode>> {
   static void typify(Typifier* typf, std::shared_ptr<ApplyNode> node)
   {
-    typf->typifyNode(node->base());
+    node->setBase(typf->typifyNode(node->base()));
     typf->typifyNodeList(node->children());
 
     if (node->isSimpleCall()) {
@@ -394,7 +406,6 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             typf->checkAllocateArraySignature(node);
           }
 
-          // HR_LOG(kInfo, node->srcpos()) << "varNode->type()? [-1] " << funcNode->type().functionSignature();
           node->setFunSign(funcNode->type().functionSignature());
         }
         else {
@@ -404,17 +415,16 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             auto newBase =
                 makeSymbolNode(node->scope(), node->srcpos(), bestFuncNode.fName);
             newBase->setRefersTo(kFunction, !K(isShared));
-            typf->typifyNode(newBase);
-            node->setBase(newBase);
+            node->setBase(typf->typifyNode(newBase));
             node->setRefFunction(bestFuncNode.fNode);
 
             // it could be that the function is only defined later,
-            // and therefore its node hasn't been typify'ed yet.  To
+            // and therefore its node hasn't been typify'ed yet.  Do
             // this lazily here.
             if (!bestFuncNode.fNode->type().isFunction()) {
-              typf->typifyNode(bestFuncNode.fNode);
+              auto tmpNode = typf->typifyNode(bestFuncNode.fNode);
+              hr_assert(bestFuncNode.fNode == tmpNode);
             }
-            // HR_LOG(kInfo, node->srcpos()) << "varNode->type()? [0] " << bestFuncNode.fNode->type().functionSignature();
             node->setFunSign(bestFuncNode.fNode->type().functionSignature());
 
             typf->reorderArguments(node, bestFuncNode.fNode.get());
@@ -463,7 +473,6 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
               // HR_LOG(kInfo, varNode->srcpos()) << "typify applynode " << varNode->type().typeName();
               auto apply = makeApplyNode(
                   node->scope(), node->srcpos(),
-                  // TODO(gck) ?
                   makeSymbolNode(node->scope(), node->srcpos(), Names::kLangInitFunctor));
               apply->appendNode(
                   makeTypeNode(node->scope(), node->srcpos(), varNode->type()));
@@ -485,7 +494,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
               createNode = an.annotateNode(initExpr);
             }
 
-            typf->typifyNode(createNode);
+            createNode = typf->typifyNode(createNode);
 
             // TODO: check function signature of the type constructor
             node->setBase(createNode);
@@ -552,7 +561,9 @@ template <>
 struct NodeTypifier<std::shared_ptr<WeakNode>> {
   static void typify(Typifier* typf, std::shared_ptr<WeakNode> node)
   {
-    typf->typifyNodeList(node->child_nodes());
+    if (node->refNode())
+      node->setRefNode(typf->typifyNode(node->refNode()));
+
     if (node->isObsolete())
       node->reset();
   }
@@ -563,7 +574,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<AssignNode>> {
   static void typify(Typifier* typf, std::shared_ptr<AssignNode> node)
   {
-    typf->typifyNode(node->rvalue());
+    node->setRvalue(typf->typifyNode(node->rvalue()));
 
     if (node->isTypeSpecDelayed()) {
       auto symNode = std::dynamic_pointer_cast<SymbolNode>(node->lvalue());
@@ -599,7 +610,7 @@ struct NodeTypifier<std::shared_ptr<AssignNode>> {
       vardefNode->setTypeSpecDelayed(false);
     }
     else
-      typf->typifyNode(node->lvalue());
+      node->setLvalue(typf->typifyNode(node->lvalue()));
 
     Type ltype = node->lvalue()->type();
     Type rtype = node->rvalue()->type();
@@ -637,8 +648,8 @@ struct NodeTypifier<std::shared_ptr<BinaryNode>> {
   {
     Type retty;
 
-    typf->typifyNode(node->left());
-    typf->typifyNode(node->right());
+    node->setLeft(typf->typifyNode(node->left()));
+    node->setRight(typf->typifyNode(node->right()));
 
     auto leftty = node->left()->type();
     auto rightty = node->right()->type();
@@ -898,7 +909,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<SlotRefNode>> {
   static void typify(Typifier* typf, std::shared_ptr<SlotRefNode> node)
   {
-    typf->typifyNode(node->base());
+    node->setBase(typf->typifyNode(node->base()));
 
     Type basety =
         (node->base()->type().isDef()
@@ -948,7 +959,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<UnaryNode>> {
   static void typify(Typifier* typf, std::shared_ptr<UnaryNode> node)
   {
-    typf->typifyNode(node->base());
+    node->setBase(typf->typifyNode(node->base()));
 
     switch (node->op()) {
     case kUnaryOpNegate: node->setType(node->base()->type()); break;
@@ -983,12 +994,12 @@ template <>
 struct NodeTypifier<std::shared_ptr<IfNode>> {
   static void typify(Typifier* typf, std::shared_ptr<IfNode> node)
   {
-    typf->typifyNode(node->test());
+    node->setTest(typf->typifyNode(node->test()));
     typf->annotateTypeConv(node->test(), Type::makeBool());
 
-    typf->typifyNode(node->consequent());
+    node->setConsequent(typf->typifyNode(node->consequent()));
     if (node->alternate())
-      typf->typifyNode(node->alternate());
+      node->setAlternate(typf->typifyNode(node->alternate()));
 
     if (node->alternate()) {
       Type cotype = node->consequent()->type();
@@ -1041,7 +1052,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<KeyargNode>> {
   static void typify(Typifier* typf, std::shared_ptr<KeyargNode> node)
   {
-    typf->typifyNode(node->value());
+    node->setValue(typf->typifyNode(node->value()));
     node->setType(node->value()->type());
   }
 };
@@ -1052,19 +1063,21 @@ struct NodeTypifier<std::shared_ptr<SelectNode>> {
   static void typify(Typifier* typf, std::shared_ptr<SelectNode> node)
   {
     // TODO
-    typf->typifyNode(node->test());
+    node->setTest(typf->typifyNode(node->test()));
     if (node->comparator())
-      typf->typifyNode(node->comparator());
+      node->setComparator(typf->typifyNode(node->comparator()));
 
     for (size_t i = 0; i < node->mappings().size(); i++) {
       if (node->mappings()[i].fTestValues.empty()) {
-        typf->typifyNode(node->mappings()[i].fConsequent);
+        node->mappings()[i].fConsequent =
+            typf->typifyNode(node->mappings()[i].fConsequent);
       }
       else {
         for (size_t j = 0; j < node->mappings()[i].fTestValues.size(); j++)
-          typf->typifyNode(node->mappings()[i].fTestValues[j]);
+          node->mappings()[i].fTestValues[j] =
+              typf->typifyNode(node->mappings()[i].fTestValues[j]);
       }
-      typf->typifyNode(node->mappings()[i].fConsequent);
+      node->mappings()[i].fConsequent = typf->typifyNode(node->mappings()[i].fConsequent);
     }
   }
 };
@@ -1084,10 +1097,10 @@ template <>
 struct NodeTypifier<std::shared_ptr<RangeNode>> {
   static void typify(Typifier* typf, std::shared_ptr<RangeNode> node)
   {
-    typf->typifyNode(node->from());
-    typf->typifyNode(node->to());
+    node->setFrom(typf->typifyNode(node->from()));
+    node->setTo(typf->typifyNode(node->to()));
     if (node->by()) {
-      typf->typifyNode(node->by());
+      node->setBy(typf->typifyNode(node->by()));
     }
 
     Type fromType = node->from()->type();
@@ -1136,8 +1149,8 @@ template <>
 struct NodeTypifier<std::shared_ptr<WhileNode>> {
   static void typify(Typifier* typf, std::shared_ptr<WhileNode> node)
   {
-    typf->typifyNode(node->test());
-    typf->typifyNode(node->body());
+    node->setTest(typf->typifyNode(node->test()));
+    node->setBody(typf->typifyNode(node->body()));
 
     typf->annotateTypeConv(node->test(), Type::makeBool());
 
@@ -1209,8 +1222,8 @@ struct NodeTypifier<std::shared_ptr<DictNode>> {
       hr_assert(pair);
       hr_assert(pair->op() == kOpMapTo);
 
-      typf->typifyNode(pair->left());
-      typf->typifyNode(pair->right());
+      pair->setLeft(typf->typifyNode(pair->left()));
+      pair->setRight(typf->typifyNode(pair->right()));
 
       mapCommonType(keyType, *pair->left());
       mapCommonType(valueType, *pair->right());
@@ -1264,7 +1277,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<CastNode>> {
   static void typify(Typifier* typf, std::shared_ptr<CastNode> node)
   {
-    typf->typifyNode(node->base());
+    node->setBase(typf->typifyNode(node->base()));
 
     if (!node->type().isOpen()) {
       Type type = node->scope()->lookupType(node->type());
@@ -1382,7 +1395,7 @@ struct NodeTypifier<std::shared_ptr<ScopeNode>> {
     ScopeGuard scopeGuard(typf->fLastUsedScope,
                           makeScope(node->fLevel, typf->fLastUsedScope));
 
-    typf->typifyNodeList(node->child_nodes());
+    typf->typifyNodeList(node->children());
 
     if (!node->children().empty()) {
       node->setType(node->children().back()->type());
@@ -1395,7 +1408,7 @@ template <>
 struct NodeTypifier<std::shared_ptr<ApplicationNode>> {
   static void typify(Typifier* typf, std::shared_ptr<ApplicationNode> node)
   {
-    typf->typifyNodeList(node->child_nodes());
+    typf->typifyNodeList(node->children());
 
     if (!node->children().empty()) {
       node->setType(node->children().back()->type());
@@ -1413,17 +1426,39 @@ Typifier::Typifier(Compiler& compiler)
 }
 
 
-void Typifier::typifyNode(std::shared_ptr<AstNode> node)
+std::shared_ptr<AstNode> Typifier::typifyNode(std::shared_ptr<AstNode> node)
 {
   dispatchNode<void>(node,
                      [&](auto nd) { NodeTypifier<decltype(nd)>::typify(this, nd); });
+  auto retv = (fNewNode || fRemoveNode) ? fNewNode : node;
+  fNewNode = nullptr;
+  fRemoveNode = false;
+  return retv;
 }
 
 
-void Typifier::typifyNodeList(const NodeList& nl)
+void Typifier::typifyNodeList(NodeList& nl)
 {
-  for (size_t i = 0; i < nl.size(); i++)
-    typifyNode(nl[i]);
+  const size_t nlsize = nl.size();
+
+  bool stripRemoved = false;
+  for (size_t i = 0; i < nlsize; i++) {
+    nl[i] = typifyNode(nl[i]);
+    stripRemoved |= (nl[i] == nullptr);
+  }
+
+  nl.erase(
+      std::remove_if(nl.begin(), nl.end(), [](const auto& nd) { return nd == nullptr; }),
+      nl.end());
+}
+
+
+void Typifier::replaceNode(std::shared_ptr<AstNode> newNode)
+{
+  hr_assert(!fNewNode);
+
+  fNewNode = newNode;
+  fRemoveNode = (fNewNode == nullptr);
 }
 
 
@@ -1600,7 +1635,7 @@ void Typifier::setupBindingNodeType(std::shared_ptr<BindingNode> node, zstring e
         }
         else {
           HR_LOG(kError, node->initExpr()->srcpos(), E_TypeMismatch)
-            << "Undefined type in " << errdesc << " initialization";
+              << "Undefined type in " << errdesc << " initialization";
           node->initExpr()->setDstType(Type::makeAny());
         }
       }

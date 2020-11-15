@@ -62,7 +62,7 @@ namespace {
       }
       {
         auto ty = Typifier{compiler};
-        ty.typifyNode(nd);
+        nd = ty.typifyNode(nd);
       }
 
       if (auto applyNd = std::dynamic_pointer_cast<ApplyNode>(nd)) {

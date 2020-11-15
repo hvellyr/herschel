@@ -16,8 +16,8 @@
 #include "compiler.hpp"
 #include "token.hpp"
 
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 namespace herschel {
 
@@ -54,10 +54,11 @@ public:
   bool isNodeCallToGenericFunction(const AstNode* node) const;
 
   /*! Typify @p node */
-  void typifyNode(std::shared_ptr<AstNode> node);
+  std::shared_ptr<AstNode> typifyNode(std::shared_ptr<AstNode> node);
+  void replaceNode(std::shared_ptr<AstNode> newNode);
 
   /*! Typify each node in @p nl sequentially */
-  void typifyNodeList(const NodeList& nl);
+  void typifyNodeList(NodeList& nl);
 
   /*! Compute the function signature type for a FunctionNode @p node
    * including return type and parameter types. */
@@ -121,6 +122,8 @@ public:
 
   std::unordered_map<const MoveableBinding*, SymbolNode*> fBindings;
   std::shared_ptr<Scope> fLastUsedScope;
+  bool fRemoveNode = false;
+  std::shared_ptr<AstNode> fNewNode;
 };
 
 
