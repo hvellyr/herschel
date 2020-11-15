@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "ast.hpp"
 #include "typeenum.hpp"
 #include "typeprops.hpp"
 // #include "codegen-tools.hpp"
@@ -67,6 +68,12 @@ public:
   // {
   //   return llvm::Type::getFloatTy(typeUtils->context());
   // }
+
+  std::shared_ptr<AstNode> makeNullValueNode() const override
+  {
+    return std::make_shared<RealNode>(SrcPos(), 0.0, !K(isImaginary),
+                                      Type::makeFloat32());
+  }
 };
 
 
@@ -89,6 +96,12 @@ public:
   // {
   //   return llvm::Type::getDoubleTy(typeUtils->context());
   // }
+
+  std::shared_ptr<AstNode> makeNullValueNode() const override
+  {
+    return std::make_shared<RealNode>(SrcPos(), 0.0, !K(isImaginary),
+                                      Type::makeFloat64());
+  }
 };
 
 
@@ -111,6 +124,12 @@ public:
   // {
   //   return llvm::Type::getFP128Ty(typeUtils->context());
   // }
+
+  std::shared_ptr<AstNode> makeNullValueNode() const override
+  {
+    return std::make_shared<RealNode>(SrcPos(), 0.0, !K(isImaginary),
+                                      Type::makeFloat128());
+  }
 };
 
 }  // namespace herschel

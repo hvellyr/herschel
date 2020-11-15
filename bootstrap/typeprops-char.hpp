@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "ast.hpp"
 #include "typeenum.hpp"
 #include "typeprops.hpp"
 // #include "codegen-tools.hpp"
@@ -61,6 +62,11 @@ public:
   {
     return std::unique_ptr<TypeEnumMaker>(new CharTypeEnumMaker);
   }
+
+  std::shared_ptr<AstNode> makeNullValueNode() const override
+  {
+    return std::make_shared<CharNode>(SrcPos(), Char(0));
+  }
 };
 
 
@@ -100,6 +106,11 @@ public:
   std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const override
   {
     return std::unique_ptr<TypeEnumMaker>(new Int8TypeEnumMaker);
+  }
+
+  std::shared_ptr<AstNode> makeNullValueNode() const override
+  {
+    return std::make_shared<CharNode>(SrcPos(), Char(0));
   }
 };
 

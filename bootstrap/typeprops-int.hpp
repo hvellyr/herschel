@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "ast.hpp"
 #include "typeenum.hpp"
 #include "typeprops.hpp"
 // #include "codegen-tools.hpp"
@@ -48,6 +49,13 @@ class BaseIntTypeProperty : public TypeProperty {
   std::unique_ptr<TypeEnumMaker> makeBaseTypeEnumMaker() const override
   {
     return std::unique_ptr<TypeEnumMaker>(new EnumMaker);
+  }
+
+  std::shared_ptr<AstNode> makeNullValueNode() const override
+  {
+    return std::make_shared<IntNode>(SrcPos(), 0, !K(isImaginary),
+                                     issigned ? Type::makeInt(bitsize)
+                                              : Type::makeUInt(bitsize));
   }
 };
 

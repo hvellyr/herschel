@@ -21,6 +21,7 @@ class Type;
 }  // namespace llvm
 
 namespace herschel {
+class AstNode;
 // class CodegenTools;
 // class CodegenTypeUtils;
 
@@ -75,6 +76,7 @@ public:
   //! Return the bitsize for this type.  Returns \c 0 if not a number.
   virtual int typeBitsize() const = 0;
 
+  virtual std::shared_ptr<AstNode> makeNullValueNode() const = 0;
   //@}
 
 
@@ -125,6 +127,8 @@ public:
   {
     return nullptr;
   }
+
+  std::shared_ptr<AstNode> makeNullValueNode() const override { return nullptr; }
 };
 
 }  // namespace herschel
