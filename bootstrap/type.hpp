@@ -180,6 +180,10 @@ public:
   static Type makeRational(bool isValue = true);
   //! Creates a new lang.Float32 type instance.
   static Type makeFloat32(bool isValue = true);
+  //! Creates a new lang.Float64 type instance.
+  static Type makeFloat64(bool isValue = true);
+  //! Creates a new lang.Float128 type instance.
+  static Type makeFloat128(bool isValue = true);
   //! Creates a new lang.String type instance.
   static Type makeString(bool isValue = true);
   //! Creates a new lang.Bool type instance.

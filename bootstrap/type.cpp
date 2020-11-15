@@ -994,6 +994,18 @@ Type Type::makeFloat32(bool isValue)
 }
 
 
+Type Type::makeFloat64(bool isValue)
+{
+  return makeTypeRef(Names::kFloat64TypeName, isValue);
+}
+
+
+Type Type::makeFloat128(bool isValue)
+{
+  return makeTypeRef(Names::kFloat128TypeName, isValue);
+}
+
+
 Type Type::makeString(bool isValue)
 {
   return makeTypeRef(Names::kStringTypeName, isValue);
