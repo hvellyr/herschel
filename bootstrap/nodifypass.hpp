@@ -158,15 +158,6 @@ private:
 
   std::shared_ptr<AstNode> generateArrayAlloc(const Token& expr,
                                               std::shared_ptr<AstNode> typeNode);
-  std::shared_ptr<AstNode> generateAlloc(const Token& expr, const Type& type);
-  std::shared_ptr<AstNode> generateAlloc(const SrcPos& srcpos, const Type& type,
-                                         const TokenVector& args);
-  std::shared_ptr<AstNode>
-  generateInitObjectCall(const SrcPos& srcpos, std::shared_ptr<AstNode> newObjAllocExpr,
-                         const Type& type, const TokenVector& argTokens);
-  std::shared_ptr<AstNode>
-  generateInitObjectCall(const SrcPos& srcpos, std::shared_ptr<AstNode> newObjAllocExpr,
-                         const Type& type, const NodeList& params);
 
 
   //@{ Parsing functions

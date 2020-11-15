@@ -10,6 +10,7 @@
 
 #include "nodifypass.hpp"
 
+#include "codegen-utils.hpp"
 #include "compiler.hpp"
 #include "errcodes.hpp"
 #include "log.hpp"
@@ -696,7 +697,7 @@ std::shared_ptr<AstNode> SecondPass::createDefaultInitExpr(const SrcPos& srcpos,
   auto ty = fScope->lookupType(type);
 
   if (ty.isRecord()) {
-    return generateAlloc(srcpos, type, {});
+    return generateInstantiateCall(srcpos, fScope, type, {});
   }
   else {
     // null-value(Type<type>)
@@ -2203,83 +2204,6 @@ std::shared_ptr<AstNode> SecondPass::generateArrayAlloc(const Token& expr,
 }
 
 
-std::shared_ptr<AstNode>
-SecondPass::generateInitObjectCall(const SrcPos& srcpos,
-                                   std::shared_ptr<AstNode> newObjAllocExpr,
-                                   const Type& type, const NodeList& params)
-{
-  //---
-  std::shared_ptr<AstNode> funcNode;
-  if (type.isOpen()) {
-    auto apply = makeApplyNode(fScope, srcpos,
-                               makeSymbolNode(fScope, srcpos, Names::kLangInitFunctor));
-    apply->appendNode(makeTypeNode(fScope, srcpos, type));
-    funcNode = apply;
-  }
-  else {
-    String initName = qualifyId(type.typeName(), Names::kInitFuncName);
-    funcNode = makeSymbolNode(fScope, srcpos, initName);
-  }
-
-  auto initExpr = makeApplyNode(fScope, srcpos, funcNode);
-  initExpr->appendNode(newObjAllocExpr);
-  initExpr->appendNodes(params);
-
-  return initExpr;
-}
-
-
-std::shared_ptr<AstNode>
-SecondPass::generateInitObjectCall(const SrcPos& srcpos,
-                                   std::shared_ptr<AstNode> newObjAllocExpr,
-                                   const Type& type, const TokenVector& argTokens)
-{
-  return generateInitObjectCall(srcpos, newObjAllocExpr, type,
-                                parseFunCallArgs(argTokens));
-}
-
-
-std::shared_ptr<AstNode> SecondPass::generateAlloc(const Token& expr, const Type& type)
-{
-  return generateAlloc(expr.srcpos(), type, expr[1].children());
-}
-
-
-std::shared_ptr<AstNode> SecondPass::generateAlloc(const SrcPos& srcpos, const Type& type,
-                                                   const TokenVector& args)
-{
-  auto ty = fScope->lookupType(type);
-  if (ty.isRecord() && ty.isValueType()) {
-    ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), !K(doPropIntern),
-                            kScopeL_Local);
-
-    auto block = makeBlockNode(fScope, srcpos);
-    auto localVarSym = uniqueName("init");
-    auto localVar = makeVardefNode(fScope, srcpos, localVarSym, kNormalVar, K(isLocal),
-                                   type, nullptr);
-    fScope->registerVar(srcpos, localVarSym, localVar);
-    auto localVarNd = makeLetNode(fScope, localVar);
-
-    block->appendNode(localVarNd);
-    block->appendNode(generateInitObjectCall(
-        srcpos, makeSymbolNode(fScope, srcpos, localVarSym), type, args));
-    block->appendNode(makeSymbolNode(fScope, srcpos, localVarSym));
-
-    block->markReturnNode(fScope);
-
-    return makeScopeNode(fScope, srcpos, block, !K(doExport), K(isInnerScope),
-                         !K(doPropIntern), kScopeL_Local);
-  }
-  else {
-    auto newObjAllocExpr = makeApplyNode(
-        fScope, srcpos, makeSymbolNode(fScope, srcpos, Names::kLangAllocate));
-    newObjAllocExpr->appendNode(makeTypeNode(fScope, srcpos, type));
-
-    return generateInitObjectCall(srcpos, newObjAllocExpr, type, args);
-  }
-}
-
-
 NodeList SecondPass::parseFunCallArgs(const TokenVector& args)
 {
   NodeList parsedArgs;
@@ -2321,8 +2245,10 @@ std::shared_ptr<AstNode> SecondPass::parseFunCall(const Token& expr)
     return generateArrayAlloc(expr, first);
   }
   else if (std::dynamic_pointer_cast<TypeNode>(first)) {
-    return generateAlloc(
-        expr, std::dynamic_pointer_cast<TypeNode>(first)->type().classTypeOfType());
+    return generateInstantiateCall(
+        expr.srcpos(), fScope,
+        std::dynamic_pointer_cast<TypeNode>(first)->type().classTypeOfType(),
+        parseFunCallArgs(expr[1].children()));
   }
   else {
     if (auto symNode = std::dynamic_pointer_cast<SymbolNode>(first)) {
@@ -2334,7 +2260,8 @@ std::shared_ptr<AstNode> SecondPass::parseFunCall(const Token& expr)
           return nullptr;
         }
 
-        return generateAlloc(expr.srcpos(), referedType, expr[1].children());
+        return generateInstantiateCall(expr.srcpos(), fScope, referedType,
+                                       parseFunCallArgs(expr[1].children()));
       }
     }
   }
@@ -3548,7 +3475,7 @@ NodeList SecondPass::parseExpr(const Token& expr)
         << "Unexpected token: " << expr.toString();
     return NodeList();
 
-  case kContinuation: // hr_invalid("");
+  case kContinuation:  // hr_invalid("");
     break;
   }
 

@@ -84,6 +84,7 @@ LIBHRC_SOURCES =         \
 	annotate.cpp        \
 	annotate2.cpp       \
 	ast.cpp             \
+	codegen-utils.cpp   \
 	compilepass.cpp     \
 	compiler.cpp        \
 	exprpass.cpp        \
@@ -114,6 +115,7 @@ LIBHRC_HEADERS =         \
 	annotate.hpp        \
 	annotate2.hpp       \
 	ast.hpp             \
+	codegen-utils.hpp   \
 	compilepass.hpp     \
 	compiler.hpp        \
 	errcodes.hpp        \
