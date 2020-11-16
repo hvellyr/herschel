@@ -48,6 +48,7 @@ TEST_CASE("Token simple tokens", "[token]")
   REQUIRE(Token(sp, kSymbol, "abc").idValue() == String("abc"));
   REQUIRE(Token(sp, kMacroParam, String("abc")).idValue() == String("abc"));
   REQUIRE(Token(sp, kMacroParamAsStr, String("abc")).idValue() == String("abc"));
+  REQUIRE(Token(sp, kMacroParamAsKeyword, String("abc")).idValue() == String("abc"));
   REQUIRE(Token(sp, kString, String("abc")).stringValue() == String("abc"));
   REQUIRE(Token(sp, kDocString, String("abc")).stringValue() == String("abc"));
   REQUIRE(Token(sp, kKeyword, String("abc")).stringValue() == String("abc"));
@@ -237,6 +238,16 @@ TEST_CASE("Token macro name as string", "[token][string][macros]")
   SrcPos sp;
   Token t = Token(sp, kMacroParamAsStr, "abc");
   REQUIRE(t == kMacroParamAsStr);
+  REQUIRE(t.macroParamName() == String("abc"));
+  REQUIRE(t.macroParamType() == String());
+}
+
+
+TEST_CASE("Token macro name as keyword", "[token][keyword][macros]")
+{
+  SrcPos sp;
+  Token t = Token(sp, kMacroParamAsKeyword, "abc");
+  REQUIRE(t == kMacroParamAsKeyword);
   REQUIRE(t.macroParamName() == String("abc"));
   REQUIRE(t.macroParamType() == String());
 }

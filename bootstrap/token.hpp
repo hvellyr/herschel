@@ -154,6 +154,7 @@ enum TokenType {
   kKeyarg,
   kMacroParam,
   kMacroParamAsStr,
+  kMacroParamAsKeyword,
 
   // reserved identifiers
   kDefId,

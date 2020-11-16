@@ -553,7 +553,7 @@ Token::Token(const SrcPos& where, TokenType ttype, const String& str)
     , fSrcPos(where)
 {
   if (ttype == kSymbol || ttype == kKeyarg || ttype == kMacroParam ||
-      ttype == kMacroParamAsStr)
+      ttype == kMacroParamAsStr || ttype == kMacroParamAsKeyword)
     fImpl.reset(new IdTokenImpl(str));
   else
     fImpl.reset(new StringTokenImpl(ttype, str));
@@ -566,7 +566,7 @@ Token::Token(const SrcPos& where, TokenType ttype, zstring str)
     , fSrcPos(where)
 {
   if (ttype == kSymbol || ttype == kKeyarg || ttype == kMacroParam ||
-      ttype == kMacroParamAsStr)
+      ttype == kMacroParamAsStr || ttype == kMacroParamAsKeyword)
     fImpl.reset(new IdTokenImpl(String(str)));
   else
     fImpl.reset(new StringTokenImpl(ttype, String(str)));
@@ -681,6 +681,7 @@ bool Token::operator<(const Token& other) const
       case kSymbol:
       case kMacroParam:
       case kMacroParamAsStr:
+      case kMacroParamAsKeyword:
       case kKeyarg: return fImpl->operator<(other);
       case kDefId:
       case kElseId:
@@ -771,6 +772,8 @@ String Token::toString() const
     case kMacroParam:
     case kMacroParamAsStr:
       return String("?") + static_cast<const IdTokenImpl&>(*fImpl).fStr;
+    case kMacroParamAsKeyword:
+      return String("#?") + static_cast<const IdTokenImpl&>(*fImpl).fStr;
     case kKeyarg: return static_cast<const IdTokenImpl&>(*fImpl).fStr + ":";
 
     case kDefId: return String(MID_defid);
@@ -904,6 +907,7 @@ ExprType Token::type() const
   case kApplicationId:
   case kMacroParam:
   case kMacroParamAsStr:
+  case kMacroParamAsKeyword:
   case kMatchId:
   case kModuleId:
   case kNamespaceId:
@@ -1126,6 +1130,7 @@ String Token::idValue() const
   case kSymbol:
   case kMacroParam:
   case kMacroParamAsStr:
+  case kMacroParamAsKeyword:
   case kKeyarg: return static_cast<const IdTokenImpl&>(*fImpl).fStr;
   default: hr_invalid("");
   }
@@ -1413,6 +1418,10 @@ void Token::toPort(Port<Octet>& port) const
       xml::displayTagAttr(port, "id", "type='strparm'",
                           static_cast<const IdTokenImpl&>(*fImpl).fStr);
       break;
+    case kMacroParamAsKeyword:
+      xml::displayTagAttr(port, "id", "type='keywparm'",
+                          static_cast<const IdTokenImpl&>(*fImpl).fStr);
+      break;
     case kKeyarg:
       xml::displayTagAttr(port, "id", "type='keyarg'",
                           static_cast<const IdTokenImpl&>(*fImpl).fStr);
@@ -1488,7 +1497,7 @@ bool Token::isCharOrUnitName() const
 
 String Token::macroParamName() const
 {
-  if (fType != kMacroParam && fType != kMacroParamAsStr)
+  if (fType != kMacroParam && fType != kMacroParamAsStr && fType != kMacroParamAsKeyword)
     throw NotSupportedException(__FUNCTION__);
 
   String str = idValue();
@@ -1501,7 +1510,7 @@ String Token::macroParamName() const
 
 String Token::macroParamType() const
 {
-  if (fType != kMacroParam && fType != kMacroParamAsStr)
+  if (fType != kMacroParam && fType != kMacroParamAsStr && fType != kMacroParamAsKeyword)
     throw NotSupportedException(__FUNCTION__);
 
   String str = idValue();

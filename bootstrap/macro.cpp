@@ -25,9 +25,11 @@ SyntaxTreeNode::SyntaxTreeNode()
 
 std::shared_ptr<SyntaxTreeNode> SyntaxTreeNode::findNode(const Token& token) const
 {
-  if (token == kMacroParam || token == kMacroParamAsStr) {
+  if (token == kMacroParam || token == kMacroParamAsStr ||
+      token == kMacroParamAsKeyword) {
     for (const auto& pair : fNodes) {
-      if (pair.first == kMacroParam || pair.first == kMacroParamAsStr)
+      if (pair.first == kMacroParam || pair.first == kMacroParamAsStr ||
+          pair.first == kMacroParamAsKeyword)
         return pair.second;
       else if (pair.first == token)
         return pair.second;
@@ -45,7 +47,8 @@ std::shared_ptr<SyntaxTreeNode> SyntaxTreeNode::findNode(const Token& token) con
 std::shared_ptr<SyntaxTreeNode> SyntaxTreeNode::findMacroParam(Token* macroParam) const
 {
   for (const auto& pair : fNodes) {
-    if (pair.first == kMacroParam || pair.first == kMacroParamAsStr) {
+    if (pair.first == kMacroParam || pair.first == kMacroParamAsStr ||
+        pair.first == kMacroParamAsKeyword) {
       *macroParam = pair.first;
       return pair.second;
     }
@@ -221,7 +224,8 @@ String toString(MacroType type)
 
 MacroParamType macroParamType(const Token& token, String* paramName)
 {
-  hr_assert(token == kMacroParam || token == kMacroParamAsStr);
+  hr_assert(token == kMacroParam || token == kMacroParamAsStr ||
+            token == kMacroParamAsKeyword);
 
   String str = token.idValue();
   String name;

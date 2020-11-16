@@ -686,6 +686,45 @@ Token Tokenizer::readString(const SrcPos& startPos, int endChar, TokenType type)
 }
 
 
+Token Tokenizer::readMacroParam(const SrcPos& beginSrcpos, TokenType paramType)
+{
+  if (fCC == '{') {
+    nextChar();
+    Token param = readIdentifier(beginSrcpos, String(), paramType, !K(acceptGenerics));
+    Token part;
+    if (fCC == '.') {
+      nextChar();
+      part = readIdentifier(beginSrcpos, String(), kSymbol, !K(acceptGenerics));
+      if (part.isEmpty()) {
+        HR_LOG(kWarn, beginSrcpos, E_BadMacroPattern) << "empty macro parameter part";
+      }
+    }
+    if (fCC != '}') {
+      HR_LOG(kError, srcpos(), E_MissingBraceClose) << "Missing } in ?\"-notation";
+    }
+    else
+      nextChar();
+
+    if (param.idValue().isEmpty()) {
+      HR_LOG(kError, beginSrcpos, E_BadMacroPattern) << "empty macro parameter";
+      return Token();
+    }
+
+    return part.isEmpty()
+               ? param
+               : Token(beginSrcpos, paramType, param.idValue() + "." + part.idValue());
+  }
+
+  auto param = readIdentifier(beginSrcpos, String(), paramType, !K(acceptGenerics));
+  if (param.idValue().isEmpty()) {
+    HR_LOG(kError, beginSrcpos, E_BadMacroPattern) << "empty macro parameter";
+    return Token();
+  }
+
+  return param;
+}
+
+
 Token Tokenizer::nextToken()
 {
   Token t = nextTokenImpl();
@@ -795,6 +834,7 @@ Token Tokenizer::nextTokenImpl()
         }
         else
           nextChar();
+
         if (param.idValue().isEmpty()) {
           HR_LOG(kError, beginSrcpos, E_BadMacroPattern) << "empty macro parameter";
           return Token();
@@ -806,41 +846,8 @@ Token Tokenizer::nextTokenImpl()
         nextChar();
         return Token(beginSrcpos, kMacroOpen2);
       }
-      else if (fCC == '{') {
-        nextChar();
-        Token param =
-            readIdentifier(beginSrcpos, String(), kMacroParam, !K(acceptGenerics));
-        Token part;
-        if (fCC == '.') {
-          nextChar();
-          part = readIdentifier(beginSrcpos, String(), kSymbol, !K(acceptGenerics));
-          if (part.isEmpty()) {
-            HR_LOG(kWarn, beginSrcpos, E_BadMacroPattern) << "empty macro parameter part";
-          }
-        }
-        if (fCC != '}') {
-          HR_LOG(kError, srcpos(), E_MissingBraceClose) << "Missing } in ?\"-notation";
-        }
-        else
-          nextChar();
 
-        if (param.idValue().isEmpty()) {
-          HR_LOG(kError, beginSrcpos, E_BadMacroPattern) << "empty macro parameter";
-          return Token();
-        }
-
-        return part.isEmpty()
-          ? param
-          : Token(beginSrcpos, kMacroParam, param.idValue() + "." + part.idValue());
-      }
-      else {
-        auto param = readIdentifier(beginSrcpos, String(), kMacroParam, !K(acceptGenerics));
-        if (param.idValue().isEmpty()) {
-          HR_LOG(kError, beginSrcpos, E_BadMacroPattern) << "empty macro parameter";
-          return Token();
-        }
-        return param;
-      }
+      return readMacroParam(beginSrcpos, kMacroParam);
 
     case '.':
       nextChar();
@@ -860,6 +867,8 @@ Token Tokenizer::nextTokenImpl()
       case '[': return makeTokenAndNext(beginSrcpos, kLiteralArrayOpen);
       case '(': return makeTokenAndNext(beginSrcpos, kLiteralVectorOpen);
       case '#': return makeTokenAndNext(beginSrcpos, kSangHash);
+      case '?': nextChar(); return readMacroParam(beginSrcpos, kMacroParamAsKeyword);
+
       default:
         if (isSymbolChar(fCC))
           return readIdentifier(beginSrcpos, String(), kKeyword, !K(acceptGenerics));

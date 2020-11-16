@@ -1382,14 +1382,17 @@ Macros:
 
   Parse variables
 
-    ?xxx        replace with the parsed tokens
     xxx ## abc  concat two symbol into a new
     xxx ## "42" concat non symbol chars to symbol into a new
-    ?"abc"      introduce variable name 'abc' as string
-    ?( )?       instead of « »
-
+    ?abc        replace with the parsed variable 'abc'
     ?{abc.def}  access part 'def' from parsed variable 'abc'.  For the
                 parts see the patterns.
+    ?"abc"      replace with the parsed variable 'abc' as string
+    #?abc       replace with the parsed variable 'abc' as keyword
+    #?{abc.def} replace with part 'def' from parsed variable 'abc' as keyword
+
+    ?( )?       instead of « »
+
 
 
 Encoding in C namespace

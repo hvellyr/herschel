@@ -502,7 +502,7 @@ TEST_CASE("Tokenizer macro vars", "[tokenize][macros]")
 {
   SrcPos sp;
 
-  static zstring test = "##  ?val:name ?\"abc\" ?\"\" ";
+  static zstring test = "##  ?val:name ?{s.name} ?\"abc\" #?abc #?{abc.def} ?\"\"";
   Tokenizer tnz(
       std::make_shared<CharPort>(std::make_shared<DataPort>((Octet*)test, strlen(test))),
       String("n.n."));
@@ -510,7 +510,10 @@ TEST_CASE("Tokenizer macro vars", "[tokenize][macros]")
   try {
     REQUIRE(tnz.nextToken() == Token(sp, kSangHash));
     REQUIRE(tnz.nextToken() == Token(sp, kMacroParam, "val:name"));
+    REQUIRE(tnz.nextToken() == Token(sp, kMacroParam, "s.name"));
     REQUIRE(tnz.nextToken() == Token(sp, kMacroParamAsStr, "abc"));
+    REQUIRE(tnz.nextToken() == Token(sp, kMacroParamAsKeyword, "abc"));
+    REQUIRE(tnz.nextToken() == Token(sp, kMacroParamAsKeyword, "abc.def"));
 
     {
       LogSurpressor beSilent;

@@ -4314,7 +4314,8 @@ bool FirstPass::replaceMatchBindings(TokenVector* result, const TokenVector& tem
     case kLit: replacement.push_back(token); break;
     case kContinuation: hr_invalid(""); break;
     case kId:
-      if (token == kMacroParam || token == kMacroParamAsStr) {
+      if (token == kMacroParam || token == kMacroParamAsStr ||
+          token == kMacroParamAsKeyword) {
         bool found = false;
         const TokenVector& replTokens = findReplaceToken(token, bindings, found);
 
@@ -4323,6 +4324,10 @@ bool FirstPass::replaceMatchBindings(TokenVector* result, const TokenVector& tem
             if (token == kMacroParamAsStr) {
               replacement.push_back(
                   Token(replTokens[0].srcpos(), kString, replTokens[0].toString()));
+            }
+            else if (token == kMacroParamAsKeyword) {
+              replacement.push_back(
+                  Token(replTokens[0].srcpos(), kKeyword, replTokens[0].toString()));
             }
             else
               replaceMatchBindings(&replacement, replTokens, bindings);
