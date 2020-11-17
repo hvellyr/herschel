@@ -45,33 +45,43 @@ int main(int argc, char** argv)
   std::vector<String> files;
 
   std::string prog_name(argv[0]);
-  cxxopts::Options options(prog_name, " <inputs> - herschel compiler");
-  options.add_options()("h;help", "Print help and exit")(
-      "V;version", "Print version and exit")("v;verbose", "Be verbose")(
-      "d;outdir", "Output all generated files to DIR",
-      cxxopts::value<std::string>())("o;output", "", cxxopts::value<std::string>())(
-      "T;trace",
-      "Trace various aspects: tokenizer pass1 pass2 annotate transform typify "
+  cxxopts::Options options_decl(prog_name, " <inputs> - herschel compiler");
+  options_decl.add_options()
+    ("h,help", "Print help and exit")
+    ("V,version", "Print version and exit")
+    ("v,verbose", "Be verbose")
+    ("d,outdir", "Output all generated files to DIR",
+      cxxopts::value<std::string>())
+    ("o,output", "", cxxopts::value<std::string>())
+    ("T,trace", "Trace various aspects: tokenizer pass1 pass2 annotate transform typify "
       "import macro codedump typeconv",
-      cxxopts::value<std::string>())("D;define", "Define config VAR to be VALUE",
-                                     cxxopts::value<std::vector<std::string>>())(
-      "I;input", "Add DIR to the input searchlist",
-      cxxopts::value<std::vector<std::string>>())(
-      "isys", "Root to the system library", cxxopts::value<std::vector<std::string>>())(
-      "P;parse", "Only parse the source files")("s;emit-bc",
-                                                "Only compile the source files, no link")(
-      "c;emit-llvm", "Compile to LLVM IR, no link")("O;optimize", "Optimize code more")(
-      "On;optimize-off", "Turn off any (even basic) optimization")
+      cxxopts::value<std::string>())
+    ("D,define", "Define config VAR to be VALUE",
+                                     cxxopts::value<std::vector<std::string>>())
+    ("I,input", "Add DIR to the input searchlist",
+      cxxopts::value<std::vector<std::string>>())
+    ("isys", "Root to the system library", cxxopts::value<std::vector<std::string>>())
+    ("P,parse", "Only parse the source files")
+    ("s,emit-bc", "Only compile the source files, no link")
+    ("c,emit-llvm", "Compile to LLVM IR, no link")
+    ("O,optimize", "Optimize code more")
+    ("optimize-off", "Turn off any (even basic) optimization")
+    ("On", "Turn off any (even basic) optimization")
 #if defined(UNITTESTS)
-      ("dont-import", "")("parse-1", "")("parse-2", "")("parse-3", "")("parse-4", "")
+    ("dont-import", "")
+    ("parse-1", "")
+    ("parse-2", "")
+    ("parse-3", "")
+    ("parse-4", "")
 #endif
-          ("f;file", "Input file", cxxopts::value<std::vector<std::string>>());
+    ("f,file", "Input file", cxxopts::value<std::vector<std::string>>());
 
   setupDefaultPath();
 
+  auto options = cxxopts::ParseResult{};
   try {
-    options.parse_positional("file");
-    options.parse(argc, argv);
+    options_decl.parse_positional("file");
+    options = options_decl.parse(argc, argv);
   }
   catch (const std::exception& opt) {
     HR_LOG(kError) << opt.what();
@@ -79,7 +89,7 @@ int main(int argc, char** argv)
   }
 
   if (options.count("help")) {
-    std::cout << options.help({""}) << std::endl;
+    std::cout << options_decl.help({""}) << std::endl;
     return 0;
   }
   if (options.count("version")) {
@@ -130,7 +140,7 @@ int main(int argc, char** argv)
   if (options.count("optimize")) {
     Properties::setOptimizeLevel(kOptLevelBasic);
   }
-  if (options.count("optimize-off")) {
+  if (options.count("optimize-off") || options.count("On")) {
     Properties::setOptimizeLevel(kOptLevelNone);
   }
 
