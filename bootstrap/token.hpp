@@ -191,6 +191,8 @@ enum TokenType {
 
 class TokenImpl {
 public:
+  virtual ~TokenImpl() {}
+
   virtual bool operator==(const Token& other) const = 0;
   virtual bool operator<(const Token& other) const = 0;
 
