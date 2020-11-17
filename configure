@@ -487,12 +487,12 @@ abs_llvm_config_path=$(cd "$llvm_config_dir" && pwd 2>/dev/null)/"$llvm_config_f
 
 
 llvm_version=$("$abs_llvm_config_path" --version 2>/dev/null)
-if test "x$llvm_version" \< x"8.0.0"; then
-  echo "${ECHO_T}no matching installation found"
-  failure=yes
-else
+# if test "x$llvm_version" \< x"8.0.0"; then
+#   echo "${ECHO_T}no matching installation found: {$llvm_version}"
+#   failure=yes
+# else
   echo "${ECHO_T}$llvm_version"
-fi
+# fi
 
 if test "x$failure" = xno; then
   echo $ECHO_N "Check llvm bindir... $ECHO_C"
