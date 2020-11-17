@@ -247,7 +247,7 @@ size_t DataPort::write(const Octet* data, size_t items)
   }
 
   if (fPos > fLength)
-    ::memset(fData + fLength, fPos - fLength, 0);
+    ::memset(fData + fLength, 0, fPos - fLength);
 
   ::memcpy(fData + fPos, data, items);
 
