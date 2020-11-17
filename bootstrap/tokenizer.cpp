@@ -678,7 +678,7 @@ Token Tokenizer::readString(const SrcPos& startPos, int endChar, TokenType type)
   catch (const AnnotatedEofException& ae) {
     HR_LOG(kError, ae.srcpos(), E_UnterminatedString)
         << "File ended before end of string.  Began on line " << startPos.lineNumber();
-    HR_LOG(kError, startPos), "String started here";
+    HR_LOG(kError, startPos) << "String started here";
     throw;
   }
 
