@@ -11,8 +11,14 @@
 #pragma once
 
 #include "config-local.h"
-#include "sysconf.hpp"
 #include "version.h"
+
+#if defined(OS_mac)
+#  include <stdint.h>
+#elif defined(OS_linux)
+#elif defined(OS_win)
+#  include <inttypes.h>
+#endif
 
 namespace herschel {
 //! Type abstraction for a byte.
