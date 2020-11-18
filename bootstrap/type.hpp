@@ -14,6 +14,7 @@
 
 #include "log.hpp"
 #include "optional.hpp"
+#include "str.hpp"
 #include "token.hpp"
 
 #include <map>
