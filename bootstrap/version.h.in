@@ -1,0 +1,9 @@
+/* Don't edit this file.  It has been created automatically. */
+#pragma once
+
+#define PACKAGE "@name@"
+#define VERSION "@version@"
+#define COPYRIGHTYEAR "@copyright_year@"
+#define COPYRIGHTOWNER "@copyright_owner@"
+
+#define HR_BASE_REVISION ""

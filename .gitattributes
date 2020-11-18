@@ -22,6 +22,7 @@ mkinstalldirs  text
 *.1            text
 *.7            text
 *.bin          binary
+*.build        text
 *.c            text
 *.cpp          text
 *.el           text
@@ -32,6 +33,7 @@ mkinstalldirs  text
 *.hr           text
 *.html         text
 *.ipp          text
+*.h.in         text
 *.md           text
 *.mk           text
 *.mm           text
