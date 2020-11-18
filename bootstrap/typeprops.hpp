@@ -30,6 +30,8 @@ class AstNode;
 //! Float64, String, etc., but not for user defined types.
 class TypeProperty {
 public:
+  virtual ~TypeProperty() {}
+
   virtual bool isValid() const { return true; }
 
   // //@{ Code generation

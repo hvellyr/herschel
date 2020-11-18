@@ -26,6 +26,8 @@ class AstNode;
 template <typename TIn, typename TOut>
 class CompilePass {
 public:
+  virtual ~CompilePass() {}
+
   //! Apply the compile pass to \p src and return a transformed value.  If
   //! \p doTrace is \c true render a trace of the transformed return value.
   virtual TOut apply(TIn src, bool doTrace) = 0;

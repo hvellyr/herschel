@@ -58,6 +58,8 @@ public:
   Compiler(bool isParsingInterface);
   Compiler(bool isParsingInterface, std::shared_ptr<Scope> rootScope);
 
+  virtual ~Compiler() {}
+
   virtual std::shared_ptr<AstNode> process(std::shared_ptr<Port<Char>> port,
                                            const String& srcName);
 
