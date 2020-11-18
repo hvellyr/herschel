@@ -354,8 +354,7 @@ bool Scope::hasScopeForFile(const String& absPath) const
 
 void Scope::addImportedScope(const String& absPath, std::shared_ptr<Scope> scope)
 {
-  auto it = fImportedScopes.find(absPath);
-  hr_assert(it == fImportedScopes.end());
+  hr_assert(fImportedScopes.find(absPath) == fImportedScopes.end());
   fImportedScopes.insert(std::make_pair(absPath, scope));
 }
 
