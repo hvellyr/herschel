@@ -910,7 +910,6 @@ String uniqueName(zstring prefix)
 }
 
 
-#if defined(UNITTESTS)
 std::ostream& operator<<(std::ostream& os, const String& str)
 {
   os << "\"" << (zstring)StrHelper(str) << "\"";
@@ -927,6 +926,5 @@ std::ostream& operator<<(std::ostream& os, char c)
   os << "'" << tmp << "'";
   return os;
 }
-#endif
 
 }  // namespace herschel

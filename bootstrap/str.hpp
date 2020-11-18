@@ -270,10 +270,8 @@ String xmlEncode(const String& str);
 //! <, and '
 String xmlEncode(zstring str);
 
-#if defined(UNITTESTS)
 std::ostream& operator<<(std::ostream& os, const String& str);
 std::ostream& operator<<(std::ostream& os, char c);
-#endif
 
 }  // namespace herschel
 
