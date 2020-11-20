@@ -49,6 +49,26 @@ def macro __init-slot-moves
                                                                            rhs. ?{s.name})
                                                        __init-slot-moves( ?sl ) »
 
+
+
+def macro __init-slot-functor
+  | « __init-slot-functor(?s:slot) » ->                « ?{s.name} ## ":" {
+                                                           let __tmp_prm_ ## ?{s.name} = assoc(rest-args, #?{s.name})
+                                                           if (isa?(__tmp_prm_ ## ?{s.name}, Type<?{s.type}>)) {
+                                                             __tmp_prm_ ## ?{s.name} as ?{s.type}
+                                                           }
+                                                           else {
+                                                             __builtin-null-value(?{s.type})
+                                                           }
+                                                         }
+                                                       »
+
+def macro __init-slot-functors
+  | « __init-slot-functors(?s:slot) » ->               « __init-slot-functor(?s) »
+  | « __init-slot-functors(?s:slot, ?sl:slotlist) » -> « __init-slot-functor(?s),
+                                                         __init-slot-functors( ?sl ) »
+
+
 def macro __record-impl
   | « def __record-impl ?typenm:name ?isa:typelist* ?doc:docstr* ( ?sl:slotlist ) »
     -> « def record ?typenm ?isa ?doc ( ?sl )
@@ -91,7 +111,16 @@ def macro __record-impl
          def null-value(self @ Type< ?typenm >) -> ?typenm {
            ?typenm()
          }
+
+         def init-functor(ty @ Type< ?typenm >)
+               -> Function(o : ^?typenm, rest-args...) -> ^?typenm {
+           function(t : ^?typenm, rest-args...) -> ^?typenm {
+             init(t, __init-slot-functors( ?sl ))
+             t
+           }
+         }
        »
+
 
 def macro __slots
   | « __slots() » -> « »
