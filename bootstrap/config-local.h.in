@@ -1,0 +1,19 @@
+#pragma once
+
+#define HR_VERSION "@version@"
+
+#define HR_INSTDIR_prefix "@prefix@"
+#define HR_INSTDIR_bindir "@bindir@"
+#define HR_INSTDIR_libdir "@libdir@"
+#define HR_INSTDIR_pkglibdir "@pkglibdir@"
+#define HR_INSTDIR_includedir "@includedir@"
+#define HR_INSTDIR_pkgincludedir "@pkgincludedir@"
+#define HR_INSTDIR_datadir "@datadir@"
+#define HR_INSTDIR_pkgdatadir "@pkgdatadir@"
+
+#define HR_LLVM_EXE ""
+
+
+#mesondefine OS_mac
+#mesondefine OS_linux
+#mesondefine OS_win

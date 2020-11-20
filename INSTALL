@@ -1,15 +1,10 @@
 Requirements
 
   for the code itself:
-    - c and c++ (tested with gcc 4.0.1 and 4.2.1 on Mac OS X, 4.5.0 on
-      mingw/linux; clang 2.8 on Mac OS X)
-    - llvm 2.9 (http://www.llvm.org)
+    - a c++14 compatible compiler
 
   for building and testing:
-    - a shell (posix compliant shell)
-    - sed
-    - GNU make (tested with GNU make 3.81)
-    - python (tested with python 2.5.1)
+    - meson (https://mesonbuild.com/)
 
   for the documentation:
     - texinfo (the makefile refers to texi2pdf and makeinfo).  For the PDF
@@ -17,58 +12,3 @@ Requirements
 
 
 Developed on Mac OS X (10.5 and 10.6), Linux, and Windows XP.
-
-
-Build on Unix (incl. Mac OS X):
-
-  1. build llvm (e.g. in ~/tmp/llvm-build)
-
-      $ mkdir $TMP_DIR/llvm-build
-      $ cd $TMP_DIR/llvm-build
-      $ $LLVM_SRC_ROOT/configure
-      $ make
-
-     or just get a precompiled binary from the llvm site (if available) and
-     install it whereever you prefer.
-
-  2. run the configure script from within the build directory.  Herschel
-     can be build in a separate build directory:
-
-     $ cd my-build
-     $ ../herschel/configure
-
-     See the "--help" option to that script to check different
-     configuration possibilities.  If you have llvm installed in a location
-     which is not in your search path (esp. the "llvm-config" tool) you
-     have to specify this information with the "--with-llvm-config" option:
-
-     $ ./configure --with-llvm-config=~/Dev/llvm-build2.8/Release/bin/llvm-config
-
-  3. review the settings in $HERSCHEL_ROOT/config.mk; probably create a
-     config-local.mk and overwrite settings there.
-
-  4. go to $HERSCHEL_ROOT and type 'make'
-
-      $ make
-
-     This should build the compiler, runtime libraries, prepare the
-     documentation, and runs the unit tests (if configured so).  To run the
-     complete test suite type
-
-      $ make tests
-
-     from the toplevel development folder.  To create the documentation type
-
-      $ make docs.
-
-     If everything went smooth you can find the created tools and
-     documentation in the 'temp' folder.
-
-  5. Install: TBD
-
-
-Build on Windows XP:
-
-  - only tested with mingw32.  You need at least version
-    mingw-get-inst-20100909, i.e. gcc 4.5.0.  gcc 4.4.0 shows some strange
-    inconsistency in the default c++ library setup.
