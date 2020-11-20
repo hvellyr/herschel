@@ -34,8 +34,7 @@ bool SetupUnix::exeFromDevpath(zstring /*exeName*/, const String& exedir,
                                Paths& paths) const
 {
   static std::vector<String> possible_paths = {
-      String("/temp/debug/"),
-      String("/temp/release/"),
+      String("/output/bootstrap/"),
   };
 
   for (const auto& subpath : possible_paths) {
