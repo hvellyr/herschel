@@ -1644,6 +1644,51 @@ Token FirstPass::parseAnonFun()
 struct FuncallArgsParser {
   bool operator()(FirstPass* pass, Token& result)
   {
+    if (!withRetryAfterMacroExpansion([&]() {
+          if (pass->fToken == kSymbol && !pass->fToken.isKeyArg()) {
+            auto symbolToken = pass->fToken;
+            pass->nextToken();
+
+            if (pass->fToken == kParanOpen) {
+              pass->nextToken();
+
+              if (const auto* macro = pass->fScope->lookupMacro(symbolToken.srcpos(),
+                                                                symbolToken.idValue(),
+                                                                K(showAmbiguousSymDef))) {
+                if (macro->type() == kMacro_Function) {
+                  Token macroName =
+                      Token(symbolToken.srcpos(), baseName(symbolToken.idValue()));
+                  TokenVector exprs =
+                      pass->parseMakeMacroCall(macroName, macro, K(isLocal));
+                  if (exprs.size() == 1) {
+                    if (exprs[0].isContinuation())
+                      return Retry::kRetry;
+
+                    pass->fToken = exprs[0];
+                  }
+                  else {
+                    hr_invalid("");
+                    return Retry::kError;
+                  }
+                }
+                else {
+                  HR_LOG(kError, pass->fToken.srcpos(), E_UnexpectedToken)
+                      << "Unexpected macro call";
+                  return Retry::kError;
+                }
+              }
+              else
+                pass->unreadToken(pass->fToken);
+            }
+            else {
+              pass->unreadToken(pass->fToken);
+              pass->fToken = symbolToken;
+            }
+          }
+          return Retry::kDone;
+        }))
+      return false;
+
     if (pass->fToken.isKeyArg()) {
       Token key = pass->fToken;
       pass->nextToken();
@@ -4224,9 +4269,16 @@ bool FirstPass::replaceSangHashIds(TokenVector* result, const TokenVector& sourc
                 idx += 2;
                 continue;
               }
+              else if (source[idx + 2] == kKeyarg) {
+                token = Token(token.srcpos(), kKeyarg,
+                              token.idValue() + source[idx + 2].idValue());
+                hasFreeToken = true;
+                idx += 2;
+                continue;
+              }
               else if (source[idx + 2] == kString) {
-                token = Token(token.srcpos(),
-                              token.idValue() + source[idx + 2].stringValue());
+                token = Token::newSymbolOrKeyarg(
+                    token.srcpos(), token.idValue() + source[idx + 2].stringValue());
                 hasFreeToken = true;
                 idx += 2;
                 continue;
