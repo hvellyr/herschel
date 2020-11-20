@@ -1384,6 +1384,7 @@ Macros:
 
     xxx ## abc  concat two symbol into a new
     xxx ## "42" concat non symbol chars to symbol into a new
+    abc ## ":"  concat to produce a keyarg
     ?abc        replace with the parsed variable 'abc'
     ?{abc.def}  access part 'def' from parsed variable 'abc'.  For the
                 parts see the patterns.
@@ -1392,7 +1393,6 @@ Macros:
     #?{abc.def} replace with part 'def' from parsed variable 'abc' as keyword
 
     ?( )?       instead of « »
-
 
 
 Encoding in C namespace

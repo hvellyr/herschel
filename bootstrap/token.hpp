@@ -252,7 +252,7 @@ public:
   Token& operator=(const Token& other);
 
   static Token newUniqueSymbolToken(const SrcPos& where, zstring prefix);
-
+  static Token newSymbolOrKeyarg(const SrcPos& where, const String& str);
   static Token sInvalid();
 
   bool operator==(const Token& other) const;

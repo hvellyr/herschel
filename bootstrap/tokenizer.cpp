@@ -181,11 +181,10 @@ Token Tokenizer::readIdentifier(const SrcPos& startPos, const String& prefix,
   catch (const EofException&) {
   }
 
-  String identifier = idBuffer.toString();
-  if (type == kSymbol && identifier.endsWith(String(":")))
-    return Token(startPos, kKeyarg, identifier.part(0, identifier.length() - 1));
+  if (type == kSymbol)
+    return Token::newSymbolOrKeyarg(startPos, idBuffer.toString());
   else
-    return Token(startPos, type, identifier);
+    return Token(startPos, type, idBuffer.toString());
 }
 
 

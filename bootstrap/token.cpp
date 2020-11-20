@@ -510,6 +510,15 @@ Token Token::newUniqueSymbolToken(const SrcPos& where, zstring prefix)
 }
 
 
+Token Token::newSymbolOrKeyarg(const SrcPos& where, const String& identifier)
+{
+  if (identifier.endsWith(String(":")))
+    return Token(where, kKeyarg, identifier.part(0, identifier.length() - 1));
+  else
+    return Token(where, kSymbol, identifier);
+}
+
+
 Token::Token()
     : fType(kSeqExpr)
     , fImpl(new SeqTokenImpl)
