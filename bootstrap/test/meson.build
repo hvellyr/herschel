@@ -31,7 +31,7 @@ hr_test_sources = [
 bootstrap_test_executable = executable('boostrap-test',
                                        hr_test_sources,
                                        include_directories : [cxxopts_inc, configuration_inc,
-                                                              sysconf_inc, catch_inc],
+                                                              catch_inc],
                                        dependencies: [hrc_platform_dep],
                                        link_with : hrlib)
 

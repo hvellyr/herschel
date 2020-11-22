@@ -91,14 +91,14 @@ endif
 
 hrlib = shared_library('hr',
                        libhr_sources,
-                       include_directories : [configuration_inc, sysconf_inc],
+                       include_directories : [configuration_inc],
                        dependencies: [hrc_platform_dep],
                        install : false)
 
 hrc_sources = ['hrc.cpp']
 hrc_executable = executable('hrc',
                             hrc_sources,
-                            include_directories : [cxxopts_inc, configuration_inc, sysconf_inc],
+                            include_directories : [cxxopts_inc, configuration_inc],
                             dependencies: [hrc_platform_dep],
                             link_with : hrlib)
 

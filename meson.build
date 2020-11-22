@@ -43,7 +43,6 @@ endif
 
 
 cxxopts_inc = include_directories('third-party/cxxopts/include')
-sysconf_inc = include_directories('build')
 catch_inc = include_directories('third-party/catch/include')
 
 
