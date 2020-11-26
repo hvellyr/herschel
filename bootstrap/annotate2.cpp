@@ -46,7 +46,7 @@ namespace {
   std::shared_ptr<AstNode> wrapAsCopy(Compiler& compiler,
                                       std::shared_ptr<AstNode> valExpr)
   {
-    auto wrapNode = [&](std::shared_ptr<AstNode> expr) {
+    auto wrapNode = [&](std::shared_ptr<AstNode> expr, const String& operation) {
       auto scope = expr->scope();
       auto srcpos = expr->srcpos();
 
@@ -60,7 +60,7 @@ namespace {
       auto localVarNd = makeLetNode(scope, localVar);
       block->appendNode(localVarNd);
 
-      auto symNd = makeSymbolNode(scope, srcpos, Names::kCopyFuncName);
+      auto symNd = makeSymbolNode(scope, srcpos, operation);
       symNd->setRefersTo(kFunction, !K(isShared));
 
       auto copyExpr = makeApplyNode(expr->scope(), expr->srcpos(), symNd);
@@ -97,8 +97,12 @@ namespace {
     };
 
     auto tryWrapNode = [&](std::shared_ptr<AstNode> expr) {
-      if (!expr->isTempValue() && !isMoveable(expr))
-        return wrapNode(expr);
+      if (!expr->isTempValue()) {
+        if (isMoveable(expr))
+          return wrapNode(expr, Names::kMoveFuncName);
+        else
+          return wrapNode(expr, Names::kCopyFuncName);
+      }
       return expr;
     };
 

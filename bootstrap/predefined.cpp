@@ -120,6 +120,6 @@ const String Names::kNullValueFuncName = String("null-value");
 const String Names::kOnInitFuncName = String("on-init");
 const String Names::kOnDeinitFuncName = String("on-deinit");
 const String Names::kCopyFuncName = String("copy");
-const String Names::kOnCopyFuncName = String("on-copy");
+const String Names::kMoveFuncName = String("move");
 
 }  // namespace herschel
