@@ -47,14 +47,36 @@ namespace {
                                       std::shared_ptr<AstNode> valExpr)
   {
     auto wrapNode = [&](std::shared_ptr<AstNode> expr) {
-      auto symNd = makeSymbolNode(expr->scope(), expr->srcpos(), Names::kCopyFuncName);
+      auto scope = expr->scope();
+      auto srcpos = expr->srcpos();
+
+      ScopeHelper scopeHelper(scope, !K(doExport), K(isInnerScope), !K(doPropIntern),
+                              kScopeL_Local);
+      auto block = makeBlockNode(scope, srcpos);
+      auto localVarSym = uniqueName("cpy");
+      auto localVar = makeVardefNode(scope, srcpos, localVarSym, kNormalVar, K(isLocal),
+                                     expr->type(), nullptr);
+      scope->registerVar(srcpos, localVarSym, localVar);
+      auto localVarNd = makeLetNode(scope, localVar);
+      block->appendNode(localVarNd);
+
+      auto symNd = makeSymbolNode(scope, srcpos, Names::kCopyFuncName);
       symNd->setRefersTo(kFunction, !K(isShared));
 
       auto copyExpr = makeApplyNode(expr->scope(), expr->srcpos(), symNd);
+      copyExpr->appendNode(makeSymbolNode(scope, srcpos, localVarSym));
       copyExpr->appendNode(expr);
       copyExpr->setType(expr->type());
+      block->appendNode(copyExpr);
 
-      std::shared_ptr<AstNode> nd = copyExpr;
+      block->appendNode(makeSymbolNode(scope, srcpos, localVarSym));
+      block->markReturnNode(scope);
+
+      std::shared_ptr<AstNode> nd =
+          makeScopeNode(scope, srcpos, block, !K(doExport), K(isInnerScope),
+                        !K(doPropIntern), kScopeL_Local);
+
+      //std::shared_ptr<AstNode> nd = copyExpr;
 
       {
         auto an = Annotator{compiler};
@@ -87,6 +109,23 @@ namespace {
     else
       return tryWrapNode(valExpr);
   }
+
+
+  std::shared_ptr<AstNode> wrapAsCopyIf(Compiler& compiler, const Type& destType,
+                                        std::shared_ptr<AstNode> expr)
+  {
+    if (destType.isValueType()) {
+      if (destType.isRecord()) {
+        return wrapAsCopy(compiler, expr);
+      }
+      else {
+        // TODO: handle ANY/union/etc.
+      }
+    }
+
+    return expr;
+  }
+
 }  // namespace
 
 
@@ -211,9 +250,7 @@ struct NodeAnnotator2<std::shared_ptr<ApplyNode>> {
       // rewrite arguments to copy/move where necessary
       auto& args = node->children();
       for (auto i = 0; i < args.size(); ++i) {
-        if (params[i].type().isValueType() && !params[i].type().isPlainType()) {
-          args[i] = wrapAsCopy(ann->fCompiler, args[i]);
-        }
+        args[i] = wrapAsCopyIf(ann->fCompiler, params[i].type(), args[i]);
       }
     }
 
@@ -229,9 +266,7 @@ struct NodeAnnotator2<std::shared_ptr<AssignNode>> {
   static void annotate(Annotator2* ann, std::shared_ptr<AssignNode> node)
   {
     ann->annotateNodeList(node->child_nodes());
-    if (node->lvalue()->type().isValueType()) {
-      node->setRvalue(wrapAsCopy(ann->fCompiler, node->rvalue()));
-    }
+    node->setRvalue(wrapAsCopyIf(ann->fCompiler, node->lvalue()->type(), node->rvalue()));
   }
 };
 
@@ -241,8 +276,8 @@ struct NodeAnnotator2<std::shared_ptr<VardefNode>> {
   static void annotate(Annotator2* ann, std::shared_ptr<VardefNode> node)
   {
     ann->annotateNodeList(node->child_nodes());
-    if (node->initExpr() && node->type().isValueType()) {
-      node->setInitExpr(wrapAsCopy(ann->fCompiler, node->initExpr()));
+    if (node->initExpr()) {
+      node->setInitExpr(wrapAsCopyIf(ann->fCompiler, node->type(), node->initExpr()));
     }
   }
 };
