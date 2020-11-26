@@ -10,10 +10,7 @@ export public (
     init-functor,
     type-of,
     isa?,
-    assoc-or,
     null-value,
-    on-copy,
-    destroy,
     Range)
 
 
