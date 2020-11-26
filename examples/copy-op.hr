@@ -1,5 +1,4 @@
---def on-copy(v : .lang.Int) -> .lang.Int { v }
-def on-copy(v : .lang.String) -> .lang.String { v }
+def foo(s : String) ...
 
 module foo
 
@@ -13,6 +12,8 @@ def bar() {
 
   let d = "hello world"
   let e = d
+
+  foo(d)
 
   c
 }

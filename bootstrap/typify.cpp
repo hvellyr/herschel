@@ -58,34 +58,45 @@ namespace {
 
       std::shared_ptr<AstNode> freeExpr;
 
-      if (node->type().isValueType()) {
-        auto deinitExpr = makeApplyNode(
-            node->scope(), node->srcpos(),
-            makeSymbolNode(node->scope(), node->srcpos(), Names::kLangDeinitialize));
-        auto bindingRefNd =
-            makeSymbolNode(node->scope(), node->srcpos(), binding->symbolName());
-        bindingRefNd->setIsInMovePos(true);
-        deinitExpr->appendNode(bindingRefNd);
+      auto ty = node->type();
+      if (ty.isValueType()) {
+        if (ty.isRecord()) {
+          auto deinitExpr = makeApplyNode(
+              node->scope(), node->srcpos(),
+              makeSymbolNode(node->scope(), node->srcpos(), Names::kDeinitFuncName));
+          auto bindingRefNd =
+              makeSymbolNode(node->scope(), node->srcpos(), binding->symbolName());
+          bindingRefNd->setIsInMovePos(true);
+          deinitExpr->appendNode(bindingRefNd);
 
-        freeExpr = deinitExpr;
+          freeExpr = deinitExpr;
 
-        binding->setWillBeMoved(true);
+          binding->setWillBeMoved(true);
+        }
+        else if (ty.isPlainType()) {
+          return {};
+        }
+        else {
+          // TODO handle ANY/union/etc.
+          return {};
+        }
       }
       else {
-        auto deallocExpr = makeApplyNode(
-            node->scope(), node->srcpos(),
-            makeSymbolNode(node->scope(), node->srcpos(), Names::kLangDeallocate));
-        auto deinitExpr = makeApplyNode(
-            node->scope(), node->srcpos(),
-            makeSymbolNode(node->scope(), node->srcpos(), Names::kLangDeinitialize));
-        auto bindingRefNd =
-            makeSymbolNode(node->scope(), node->srcpos(), binding->symbolName());
-        bindingRefNd->setIsInMovePos(true);
-        deinitExpr->appendNode(bindingRefNd);
-        deallocExpr->appendNode(deinitExpr);
-        freeExpr = deallocExpr;
+        // auto deallocExpr = makeApplyNode(
+        //     node->scope(), node->srcpos(),
+        //     makeSymbolNode(node->scope(), node->srcpos(), Names::kLangDeallocate));
+        // auto deinitExpr = makeApplyNode(
+        //     node->scope(), node->srcpos(),
+        //     makeSymbolNode(node->scope(), node->srcpos(), Names::kLangDeinitialize));
+        // auto bindingRefNd =
+        //     makeSymbolNode(node->scope(), node->srcpos(), binding->symbolName());
+        // bindingRefNd->setIsInMovePos(true);
+        // deinitExpr->appendNode(bindingRefNd);
+        // deallocExpr->appendNode(deinitExpr);
+        // freeExpr = deallocExpr;
 
-        binding->setWillBeMoved(true);
+        // binding->setWillBeMoved(true);
+        return {};
       }
 
       std::shared_ptr<AstNode> expr;
