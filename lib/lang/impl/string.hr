@@ -82,13 +82,13 @@ def compare(one @ String, two @ String) -> Int
 }
 
 
-def empty?(str @ String) -> Bool
+def empty?(str @ ^String) -> Bool
   str.num-items() == 0
 
-def length(str @ String) -> Int
+def length(str @ ^String) -> Int
   str.num-items()
 
-def concat(left @ String, right @ String) -> String
+def concat(left @ ^String, right @ ^String) -> String
 {
   let t = h7_allocate_string_n(left.num-items() + right.num-items(), \space) as String
   let j = 0
