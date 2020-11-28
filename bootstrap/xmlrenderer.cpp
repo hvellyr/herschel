@@ -445,6 +445,9 @@ struct NodeRenderer<std::shared_ptr<ParamNode>> {
     if (node.type().isDef())
       attrs << " ty='" << xmlEncode(node.type().typeId()) << "'";
 
+    if (node.willBeMoved())
+      attrs << " moved='t'";
+
     renderer->displayOpenTagAttrs("param", StrHelper(attrs.toString()));
 
     renderer->displayNode("init", node.initExpr());
