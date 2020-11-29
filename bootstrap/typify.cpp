@@ -308,6 +308,7 @@ struct NodeTypifier<std::shared_ptr<FuncDefNode>> {
 
     typf->setupFunctionNodeType(node);
 
+    // TODO: check the governing 'application' declaration
     if (node->name() == Names::kAppMain) {
       if (!node->retType().isAny()) {
         if (node->retType().typeId() != Names::kInt32TypeName) {
