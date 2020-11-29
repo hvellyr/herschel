@@ -1,0 +1,18 @@
+def outln(a : ^String) ...
+
+def foo(a : String) -> Int
+{
+  outln(a)
+
+  let b : String
+  outln(b)
+
+  outln(b + a)
+  0
+}
+
+
+def app.main() {
+  let t = String("abc")
+  foo(t)
+}

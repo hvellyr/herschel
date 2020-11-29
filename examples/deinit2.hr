@@ -1,0 +1,11 @@
+def outln(s : ^String) ...
+
+def foo = function(a : String) outln(a)
+
+def gaz = function(a : ^String) outln(a)
+
+def app.main() {
+  foo("42")
+  gaz("hello world")
+  0
+}
