@@ -139,8 +139,22 @@ public:
     bool fInOwnershipTransferContext = false;
   };
 
+  struct GenCode {
+    Typifier* fTypifier;
+    bool fLastValue;
+
+    GenCode(Typifier* typifier, bool value)
+        : fTypifier(typifier)
+        , fLastValue(fTypifier->fGenerateCode)
+    {
+      fTypifier->fGenerateCode = value;
+    }
+    ~GenCode() { fTypifier->fGenerateCode = fLastValue; }
+  };
+
   Compiler& fCompiler;  // backlink to owning compiler
   std::list<bool> fInOwnershipTransferContext;
+  bool fGenerateCode = true;
   std::unordered_map<const MoveableBinding*, BindingsUse> fBindings;
   std::shared_ptr<Scope> fLastUsedScope;
   bool fRemoveNode = false;

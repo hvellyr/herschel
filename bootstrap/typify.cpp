@@ -224,8 +224,10 @@ struct NodeTypifier<std::shared_ptr<VardefNode>> {
   {
     typf->fLastUsedScope->registerVar(node->srcpos(), node->name(), node);
 
-    if (node->initExpr())
+    if (node->initExpr()) {
+      Typifier::GenCode gen{typf, false};
       node->setInitExpr(typf->typifyNode(node->initExpr()));
+    }
 
     if (!node->isTypeSpecDelayed())
       typf->setupBindingNodeType(node, "variable");
@@ -259,12 +261,34 @@ namespace {
       return block;
     }
 
-    hr_invalid("unexpected node type");
+    hr_invalid("unexpected node type as function body");
     return {};
   }
+
+
+  void generateFinalizersForFuncParams(Typifier* typf, std::shared_ptr<AstNode> body,
+                                       const NodeList& params)
+  {
+    if (body) {
+      std::vector<std::shared_ptr<AstNode>> finalizers;
+      for (auto prmnd : params) {
+        if (auto finalizer = generateFinalizer(typf, prmnd)) {
+          finalizers.push_back(finalizer);
+        }
+      }
+
+      if (auto block = blockFromBody(body)) {
+        block->insertFinalizers(finalizers);
+      }
+      else {
+        hr_invalid("body is not a block");
+      }
+    }
+  }
+
 }  // namespace
 
-  
+
 template <>
 struct NodeTypifier<std::shared_ptr<FuncDefNode>> {
   static void typify(Typifier* typf, std::shared_ptr<FuncDefNode> node)
@@ -305,10 +329,13 @@ struct NodeTypifier<std::shared_ptr<FuncDefNode>> {
       typf->setBodyLastDstType(node->body(), node->retType());
     }
 
-    for (auto c : node->params()) {
-      trackMoveablePositions(typf, c);
+    if (typf->fGenerateCode) {
+      for (auto c : node->params()) {
+        trackMoveablePositions(typf, c);
+      }
+
+      generateFinalizersForFuncParams(typf, node->body(), node->params());
     }
-    // TODO(gck) finalizers for the params
   }
 };
 
@@ -332,10 +359,13 @@ struct NodeTypifier<std::shared_ptr<FunctionNode>> {
     if (node->body())
       typf->annotateTypeConv(node->body(), node->retType());
 
-    for (auto c : node->params()) {
-      trackMoveablePositions(typf, c);
+    if (typf->fGenerateCode) {
+      for (auto c : node->params()) {
+        trackMoveablePositions(typf, c);
+      }
+
+      generateFinalizersForFuncParams(typf, node->body(), node->params());
     }
-    // TODO(gck) finalizers for the params
   }
 };
 
@@ -357,41 +387,70 @@ struct NodeTypifier<std::shared_ptr<BlockNode>> {
     // of that binding
     hr_assert(node->children().size() >= 2);
 
+    //gck TODO
     {
-      Typifier::OwnershipContext ctx{typf, false};
-      typf->typifyNodeList(node->children());
+      auto& exprs = node->children();
+
+      bool stripRemoved = false;
+      for (size_t i = 0; i < exprs.size() - 1; i++) {
+        Typifier::OwnershipContext ctx{typf, false};
+        exprs[i] = typf->typifyNode(exprs[i]);
+        stripRemoved |= (exprs[i] == nullptr);
+      }
+
+      {
+        auto lastExprIdx = exprs.size() - 1;
+        Typifier::OwnershipContext ctx{typf, true};
+        exprs[lastExprIdx] = typf->typifyNode(exprs[lastExprIdx]);
+
+        // leaving out the last expression in a block is questionable
+        hr_assert(exprs[lastExprIdx] != nullptr);
+      }
+
+      exprs.erase(std::remove_if(exprs.begin(), exprs.end(),
+                                 [](const auto& nd) { return nd == nullptr; }),
+                  exprs.end());
     }
-    if (!node->children().empty()) {
-      // re-typify last expression to bring it into a ownership transfer context
-      Typifier::OwnershipContext ctx{typf, true};
-      node->children()[node->children().size() - 1] =
-          typf->typifyNode(node->children()[node->children().size() - 1]);
-    }
+
+    // {
+    //   Typifier::OwnershipContext ctx{typf, false};
+    //   typf->typifyNodeList(node->children());
+    // }
+    // if (!node->children().empty()) {
+    //   // re-typify last expression to bring it into a ownership transfer context
+    //   Typifier::OwnershipContext ctx{typf, true};
+    //   node->children()[node->children().size() - 1] =
+    //       typf->typifyNode(node->children()[node->children().size() - 1]);
+    // }
 
     node->setType(node->children().back()->type());
 
-    for (auto c : node->children()) {
-      if (auto letnd = std::dynamic_pointer_cast<LetNode>(c)) {
-        trackMoveablePositions(typf, letnd->defNode());
+    if (typf->fGenerateCode) {
+      for (auto c : node->children()) {
+        if (auto letnd = std::dynamic_pointer_cast<LetNode>(c)) {
+          trackMoveablePositions(typf, letnd->defNode());
+        }
       }
-    }
 
-    auto& ndChildren = node->children();
-    hr_assert(dynamic_cast<const SymbolNode*>(prev(ndChildren.end(), 1)->get()));
+      auto& ndChildren = node->children();
+      // the pre-last expression should be a local variable storing the
+      // return expression
+      hr_assert(dynamic_cast<const SymbolNode*>(prev(ndChildren.end(), 1)->get()));
 
-    std::vector<std::shared_ptr<AstNode>> finalizers;
-    for (auto c : ndChildren) {
-      if (auto letnd = std::dynamic_pointer_cast<LetNode>(c)) {
-        // we don't have to protect the letNode for the final return
-        // value, since trackMoveablePositions() above will have set
-        // the willBeMoved() flag on it, and thus it won't be
-        // destructed.
-        if (auto finalizer = generateFinalizer(typf, letnd->defNode()))
-          finalizers.push_back(finalizer);
+      std::vector<std::shared_ptr<AstNode>> finalizers;
+      for (auto c : ndChildren) {
+        if (auto letnd = std::dynamic_pointer_cast<LetNode>(c)) {
+          // we don't have to protect the letNode for the final return
+          // value, since trackMoveablePositions() above will have set
+          // the willBeMoved() flag on it, and thus it won't be
+          // destructed.
+          if (auto finalizer = generateFinalizer(typf, letnd->defNode()))
+            finalizers.push_back(finalizer);
+        }
       }
-    }
 
-    node->insertFinalizers(finalizers);
+      node->insertFinalizers(finalizers);
+    }
   }
 };
 
@@ -402,8 +461,10 @@ struct NodeTypifier<std::shared_ptr<ParamNode>> {
   {
     typf->fLastUsedScope->registerVar(node->srcpos(), node->name(), node);
 
-    if (node->initExpr())
+    if (node->initExpr()) {
+      Typifier::GenCode gen{typf, false};
       node->setInitExpr(typf->typifyNode(node->initExpr()));
+    }
 
     typf->setupBindingNodeType(node, "parameter");
 
@@ -769,7 +830,10 @@ template <>
 struct NodeTypifier<std::shared_ptr<AssignNode>> {
   static void typify(Typifier* typf, std::shared_ptr<AssignNode> node)
   {
-    node->setRvalue(typf->typifyNode(node->rvalue()));
+    {
+      Typifier::GenCode gen{typf, false};
+      node->setRvalue(typf->typifyNode(node->rvalue()));
+    }
 
     if (node->isTypeSpecDelayed()) {
       auto symNode = std::dynamic_pointer_cast<SymbolNode>(node->lvalue());
@@ -827,7 +891,7 @@ struct NodeTypifier<std::shared_ptr<AssignNode>> {
     }
 
     {
-      Typifier::OwnershipContext{typf, node->lvalue()->type().isValueType()};
+      Typifier::OwnershipContext ctx{typf, node->lvalue()->type().isValueType()};
       node->setRvalue(typf->typifyNode(node->rvalue()));
     }
 
@@ -1258,7 +1322,10 @@ template <>
 struct NodeTypifier<std::shared_ptr<KeyargNode>> {
   static void typify(Typifier* typf, std::shared_ptr<KeyargNode> node)
   {
-    node->setValue(typf->typifyNode(node->value()));
+    {
+      Typifier::GenCode gen{typf, false};
+      node->setValue(typf->typifyNode(node->value()));
+    }
     {
       Typifier::OwnershipContext ctx{typf, node->value()->type().isValueType()};
       node->setValue(typf->typifyNode(node->value()));
