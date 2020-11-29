@@ -41,8 +41,10 @@ namespace {
     if (auto binding = std::dynamic_pointer_cast<MoveableBinding>(node)) {
       auto iReferer = typf->fBindings.find(binding.get());
       if (iReferer != end(typf->fBindings)) {
-        iReferer->second->setIsInMovePos(true);
-        const_cast<MoveableBinding*>(iReferer->first)->setWillBeMoved(true);
+        Typifier::BindingsUse& use = iReferer->second;
+        use.fSymbol->setIsInMovePos(true);
+        const_cast<MoveableBinding*>(iReferer->first)
+            ->setWillBeMoved(use.fInOwnershipTransferContext);
       }
     }
   }
@@ -51,7 +53,7 @@ namespace {
                                              std::shared_ptr<AstNode> node)
   {
     if (auto binding = std::dynamic_pointer_cast<MoveableBinding>(node)) {
-      // things which will be moved are not subject to destruction
+      // things to be moved are not subject to destruction
       if (binding->willBeMoved()) {
         return nullptr;
       }
@@ -142,7 +144,8 @@ struct NodeTypifier<std::shared_ptr<SymbolNode>> {
                                                       K(showAmbiguousSymDef));
     if (var1) {
       if (auto bindnd = dynamic_cast<const MoveableBinding*>(var1)) {
-        typf->fBindings[bindnd] = node.get();
+        typf->fBindings[bindnd] =
+            Typifier::BindingsUse{node.get(), typf->isInOwnershipTransferContext()};
       }
     }
 
@@ -226,10 +229,42 @@ struct NodeTypifier<std::shared_ptr<VardefNode>> {
 
     if (!node->isTypeSpecDelayed())
       typf->setupBindingNodeType(node, "variable");
+
+    // re-typify the initExpr, since only now we have all type
+    // information for sure to decide on a possible ownership
+    // transfer.
+    {
+      Typifier::OwnershipContext ctx{typf, node->type().isValueType()};
+      if (node->initExpr())
+        node->setInitExpr(typf->typifyNode(node->initExpr()));
+    }
   }
 };
 
 
+namespace {
+  std::shared_ptr<BlockNode> blockFromBody(std::shared_ptr<AstNode> body)
+  {
+    if (auto scnd = std::dynamic_pointer_cast<ScopeNode>(body)) {
+      if (scnd->children().size() == 1) {
+        body = scnd->children()[0];
+      }
+      else {
+        hr_invalid("unexpected scope with multiple children");
+        return {};
+      }
+    }
+
+    if (auto block = std::dynamic_pointer_cast<BlockNode>(body)) {
+      return block;
+    }
+
+    hr_invalid("unexpected node type");
+    return {};
+  }
+}  // namespace
+
+  
 template <>
 struct NodeTypifier<std::shared_ptr<FuncDefNode>> {
   static void typify(Typifier* typf, std::shared_ptr<FuncDefNode> node)
@@ -319,7 +354,16 @@ struct NodeTypifier<std::shared_ptr<BlockNode>> {
     // of that binding
     hr_assert(node->children().size() >= 2);
 
-    typf->typifyNodeList(node->children());
+    {
+      Typifier::OwnershipContext ctx{typf, false};
+      typf->typifyNodeList(node->children());
+    }
+    if (!node->children().empty()) {
+      // re-typify last expression to bring it into a ownership transfer context
+      Typifier::OwnershipContext ctx{typf, true};
+      node->children()[node->children().size() - 1] =
+          typf->typifyNode(node->children()[node->children().size() - 1]);
+    }
 
     node->setType(node->children().back()->type());
 
@@ -344,7 +388,7 @@ struct NodeTypifier<std::shared_ptr<BlockNode>> {
       }
     }
 
-    ndChildren.insert(prev(ndChildren.end()), begin(finalizers), end(finalizers));
+    node->insertFinalizers(finalizers);
   }
 };
 
@@ -359,6 +403,12 @@ struct NodeTypifier<std::shared_ptr<ParamNode>> {
       node->setInitExpr(typf->typifyNode(node->initExpr()));
 
     typf->setupBindingNodeType(node, "parameter");
+
+    {
+      Typifier::OwnershipContext ctx{typf, node->type().isValueType()};
+      if (node->initExpr())
+        node->setInitExpr(typf->typifyNode(node->initExpr()));
+    }
 
     if (node->type().isDef()) {
       if (node->isSpecArg()) {
@@ -537,7 +587,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
       if (funcNode) {
         if (funcNode->hasSpecializedParams()) {
           typf->reorderArguments(node, funcNode.get());
-          typf->typifyNodeList(node->children());
+          typf->typifyApplyArguments(node, funcNode.get());
 
           Type type = typf->typifyMatchAndCheckParameters(
               node->srcpos(), node->children(), funcNode.get(), node->simpleCallName());
@@ -570,7 +620,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             node->setFunSign(bestFuncNode.fNode->type().functionSignature());
 
             typf->reorderArguments(node, bestFuncNode.fNode.get());
-            typf->typifyNodeList(node->children());
+            typf->typifyApplyArguments(node, bestFuncNode.fNode.get());
 
             Type type = typf->typifyMatchAndCheckParameters(
                 node->srcpos(), node->children(), bestFuncNode.fNode.get(),
@@ -751,28 +801,31 @@ struct NodeTypifier<std::shared_ptr<AssignNode>> {
       node->setTypeSpecDelayed(false);
       vardefNode->setTypeSpecDelayed(false);
     }
-    else
+    else {
+      Typifier::OwnershipContext ctx{typf, false};
       node->setLvalue(typf->typifyNode(node->lvalue()));
+    }
 
     Type ltype = node->lvalue()->type();
     Type rtype = node->rvalue()->type();
 
-    if (!ltype.isDef()) {
-      // infer the vardef type from rvalue expression
-      node->lvalue()->setType(node->rvalue()->type());
-    }
-    else if (!rtype.isDef()) {
+    if (!rtype.isDef()) {
       HR_LOG(kError, node->rvalue()->srcpos(), E_TypeMismatch)
           << "Undefined type in assignment right hand value";
+    }
+    else if (!ltype.isDef()) {
+      // infer the vardef type from rvalue expression
+      node->lvalue()->setType(rtype);
     }
     else if (!isCovariant(ltype, rtype, *node->scope(), node->srcpos()) &&
              !containsAny(rtype, node->srcpos())) {
       HR_LOG(kError, node->rvalue()->srcpos(), E_TypeMismatch)
           << "type mismatch in assignment: " << ltype.typeId() << " <- " << rtype;
     }
-    else if (!ltype.isDef()) {
-      // infer the vardef type from rvalue expression
-      node->lvalue()->setType(rtype);
+
+    {
+      Typifier::OwnershipContext{typf, node->lvalue()->type().isValueType()};
+      node->setRvalue(typf->typifyNode(node->rvalue()));
     }
 
     node->setType(rtype);
@@ -790,8 +843,11 @@ struct NodeTypifier<std::shared_ptr<BinaryNode>> {
   {
     Type retty;
 
-    node->setLeft(typf->typifyNode(node->left()));
-    node->setRight(typf->typifyNode(node->right()));
+    {
+      Typifier::OwnershipContext ctx{typf, false};
+      node->setLeft(typf->typifyNode(node->left()));
+      node->setRight(typf->typifyNode(node->right()));
+    }
 
     auto leftty = node->left()->type();
     auto rightty = node->right()->type();
@@ -1101,7 +1157,10 @@ template <>
 struct NodeTypifier<std::shared_ptr<UnaryNode>> {
   static void typify(Typifier* typf, std::shared_ptr<UnaryNode> node)
   {
-    node->setBase(typf->typifyNode(node->base()));
+    {
+      Typifier::OwnershipContext ctx{typf, false};
+      node->setBase(typf->typifyNode(node->base()));
+    }
 
     switch (node->op()) {
     case kUnaryOpNegate: node->setType(node->base()->type()); break;
@@ -1136,6 +1195,8 @@ template <>
 struct NodeTypifier<std::shared_ptr<IfNode>> {
   static void typify(Typifier* typf, std::shared_ptr<IfNode> node)
   {
+    Typifier::OwnershipContext ctx{typf, false};
+
     node->setTest(typf->typifyNode(node->test()));
     typf->annotateTypeConv(node->test(), Type::makeBool());
 
@@ -1195,6 +1256,10 @@ struct NodeTypifier<std::shared_ptr<KeyargNode>> {
   static void typify(Typifier* typf, std::shared_ptr<KeyargNode> node)
   {
     node->setValue(typf->typifyNode(node->value()));
+    {
+      Typifier::OwnershipContext ctx{typf, node->value()->type().isValueType()};
+      node->setValue(typf->typifyNode(node->value()));
+    }
     node->setType(node->value()->type());
   }
 };
@@ -1204,7 +1269,8 @@ template <>
 struct NodeTypifier<std::shared_ptr<SelectNode>> {
   static void typify(Typifier* typf, std::shared_ptr<SelectNode> node)
   {
-    // TODO
+    Typifier::OwnershipContext ctx{typf, false};
+
     node->setTest(typf->typifyNode(node->test()));
     if (node->comparator())
       node->setComparator(typf->typifyNode(node->comparator()));
@@ -1239,6 +1305,8 @@ template <>
 struct NodeTypifier<std::shared_ptr<RangeNode>> {
   static void typify(Typifier* typf, std::shared_ptr<RangeNode> node)
   {
+    Typifier::OwnershipContext ctx{typf, false};
+
     node->setFrom(typf->typifyNode(node->from()));
     node->setTo(typf->typifyNode(node->to()));
     if (node->by()) {
@@ -1291,6 +1359,8 @@ template <>
 struct NodeTypifier<std::shared_ptr<WhileNode>> {
   static void typify(Typifier* typf, std::shared_ptr<WhileNode> node)
   {
+    Typifier::OwnershipContext ctx{typf, false};
+
     node->setTest(typf->typifyNode(node->test()));
     node->setBody(typf->typifyNode(node->body()));
 
@@ -1329,6 +1399,8 @@ template <>
 struct NodeTypifier<std::shared_ptr<VectorNode>> {
   static void typify(Typifier* typf, std::shared_ptr<VectorNode> node)
   {
+    Typifier::OwnershipContext ctx{typf, true};
+
     NodeList& nl = node->children();
     typf->typifyNodeList(nl);
 
@@ -1355,6 +1427,8 @@ template <>
 struct NodeTypifier<std::shared_ptr<DictNode>> {
   static void typify(Typifier* typf, std::shared_ptr<DictNode> node)
   {
+    Typifier::OwnershipContext ctx{typf, true};
+
     Type keyType;
     Type valueType;
 
@@ -1394,6 +1468,8 @@ template <>
 struct NodeTypifier<std::shared_ptr<ArrayNode>> {
   static void typify(Typifier* typf, std::shared_ptr<ArrayNode> node)
   {
+    Typifier::OwnershipContext ctx{typf, true};
+
     NodeList& nl = node->children();
     typf->typifyNodeList(nl);
 
@@ -1419,7 +1495,10 @@ template <>
 struct NodeTypifier<std::shared_ptr<CastNode>> {
   static void typify(Typifier* typf, std::shared_ptr<CastNode> node)
   {
-    node->setBase(typf->typifyNode(node->base()));
+    {
+      Typifier::OwnershipContext ctx{typf, false};
+      node->setBase(typf->typifyNode(node->base()));
+    }
 
     if (!node->type().isOpen()) {
       Type type = node->scope()->lookupType(node->type());
@@ -2019,6 +2098,22 @@ void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node,
 }
 
 
+void Typifier::typifyApplyArguments(std::shared_ptr<ApplyNode> node,
+                                    const FunctionNode* funcNode)
+{
+  const NodeList& funcParams = funcNode->params();
+  NodeList& args = node->children();
+
+  hr_assert(args.size() == funcParams.size());
+
+  for (size_t i = 0; i < args.size(); i++) {
+    Typifier::OwnershipContext ctx{this, funcParams[i]->type().isValueType()};
+    args[i] = typifyNode(args[i]);
+    hr_assert(args[i] != nullptr);
+  }
+}
+
+
 Type Typifier::typifyMatchAndCheckParameters(const SrcPos& srcpos, const NodeList& args,
                                              const FunctionNode* funcNode,
                                              const String& funcName)
@@ -2233,6 +2328,13 @@ bool Typifier::checkBinaryFunctionCall(std::shared_ptr<BinaryNode> node,
   }
 
   return false;
+}
+
+
+bool Typifier::isInOwnershipTransferContext() const
+{
+  return !fInOwnershipTransferContext.empty() ? fInOwnershipTransferContext.front()
+                                              : false;
 }
 
 

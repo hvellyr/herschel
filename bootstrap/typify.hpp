@@ -82,6 +82,8 @@ public:
                          std::shared_ptr<AstNode> arg, int idx, const String& funcName);
 
   void reorderArguments(std::shared_ptr<ApplyNode> node, const FunctionNode* funcNode);
+  void typifyApplyArguments(std::shared_ptr<ApplyNode> node,
+                            const FunctionNode* funcNode);
 
   /*! Sequentially determine and check types for the arguments @p args
    * @p node which is to be applied to @p funcNode.
@@ -118,9 +120,28 @@ public:
    * has the value <tt>{ nullptr, 0 }</tt>; */
   KeyargReturn findKeyedArg(const NodeList& args, size_t argidx, const String& key);
 
-  Compiler& fCompiler;  // backlink to owning compiler
+  bool isInOwnershipTransferContext() const;
 
-  std::unordered_map<const MoveableBinding*, SymbolNode*> fBindings;
+  struct OwnershipContext {
+    Typifier* fTypifier;
+
+    OwnershipContext(Typifier* typifier, bool value)
+        : fTypifier(typifier)
+    {
+      fTypifier->fInOwnershipTransferContext.push_front(value);
+    }
+
+    ~OwnershipContext() { fTypifier->fInOwnershipTransferContext.pop_front(); }
+  };
+
+  struct BindingsUse {
+    SymbolNode* fSymbol = nullptr;
+    bool fInOwnershipTransferContext = false;
+  };
+
+  Compiler& fCompiler;  // backlink to owning compiler
+  std::list<bool> fInOwnershipTransferContext;
+  std::unordered_map<const MoveableBinding*, BindingsUse> fBindings;
   std::shared_ptr<Scope> fLastUsedScope;
   bool fRemoveNode = false;
   std::shared_ptr<AstNode> fNewNode;

@@ -21,7 +21,7 @@ void BlockNode::markReturnNode(std::shared_ptr<Scope> scope)
 {
   if (!fChildren.empty()) {
     auto lastExpr = fChildren.back();
-    if (std::dynamic_pointer_cast<SymbolNode>(lastExpr))
+    if (fChildren.size() > 1 && std::dynamic_pointer_cast<SymbolNode>(lastExpr))
       return;
 
     auto varName = uniqueName("retv");

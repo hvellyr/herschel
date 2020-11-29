@@ -1274,11 +1274,23 @@ void SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
   if (ofs < seq.size()) {
     if (seq[ofs] == kEllipsis)
       data.fFlags |= kFuncIsAbstract;
-    else if (!fCompiler.isParsingInterface())  // TODO: when inlining
-                                               // we actually need the
-                                               // body definition also
-                                               // in the header
-      data.fBody = singletonNodeListOrNull(parseExpr(seq[ofs]));
+    else if (!fCompiler.isParsingInterface()) {
+      // TODO: when inlining we actually need the body definition also in the header
+      auto bodyExpr = singletonNodeListOrNull(parseExpr(seq[ofs]));
+      if (auto snd = std::dynamic_pointer_cast<ScopeNode>(bodyExpr)) {
+        data.fBody = bodyExpr;
+      }
+      else if (auto snd = std::dynamic_pointer_cast<BlockNode>(bodyExpr)) {
+        data.fBody = bodyExpr;
+      }
+      else {
+        auto block = makeBlockNode(fScope, bodyExpr->srcpos());
+        block->appendNode(bodyExpr);
+        block->markReturnNode(fScope);
+
+        data.fBody = block;
+      }
+    }
     ofs++;
   }
 }

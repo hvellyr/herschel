@@ -1594,10 +1594,22 @@ public:
   }
 
   /*! takes the last expression node from the children (the "return
-      value"), assigns it to a new local variable, and returns that.
-      The local variable will be marked as "return value".  This is a
-      preparation for the finalizer generation. */
+   * value"), assigns it to a new local variable, and returns that.
+   * The local variable will be marked as "return value".  This is a
+   * preparation for the finalizer generation. */
   void markReturnNode(std::shared_ptr<Scope> scope);
+
+  /*! Adds @p exprs as finalizers to the list of expressions in the block
+   *
+   * Only valid if the list of expressions is not empty. */
+  void insertFinalizers(const NodeList& exprs)
+  {
+    auto& ndChildren = children();
+
+    hr_assert(!ndChildren.empty());
+
+    ndChildren.insert(prev(ndChildren.end()), begin(exprs), end(exprs));
+  }
 };
 
 inline std::shared_ptr<BlockNode> makeBlockNode(std::shared_ptr<Scope> scope,
