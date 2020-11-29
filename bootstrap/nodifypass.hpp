@@ -68,7 +68,7 @@ private:
   std::shared_ptr<AstNode> parseWhile(const Token& expr);
   std::shared_ptr<AstNode> parseSelect(const Token& expr);
   std::shared_ptr<AstNode> parseMatch(const Token& expr);
-  std::shared_ptr<AstNode> parseClosure(const Token& expr);
+  std::shared_ptr<AstNode> parseAnonFun(const Token& expr);
   std::shared_ptr<AstNode> parseBinary(const Token& expr);
   std::shared_ptr<AstNode> parseFunCall(const Token& expr);
   NodeList parseFunCallArgs(const TokenVector& args);
@@ -157,6 +157,7 @@ private:
     std::shared_ptr<AstNode> fBody;
   };
   void parseFundefClause(const TokenVector& seq, size_t& ofs, FundefClauseData& data);
+  std::shared_ptr<AstNode> parseFunctionBody(const Token& body);
 
   //! indicates whether the node list \p params (a list of ParamNodes)
   //! contains a parameter which is specialized (isSpecArg()).

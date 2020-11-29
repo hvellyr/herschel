@@ -1245,6 +1245,24 @@ std::shared_ptr<AstNode> SecondPass::parseVarDef(const Token& expr, VardefFlags 
 }
 
 
+std::shared_ptr<AstNode> SecondPass::parseFunctionBody(const Token& body)
+{
+  auto bodyExpr = singletonNodeListOrNull(parseExpr(body));
+  if (auto snd = std::dynamic_pointer_cast<ScopeNode>(bodyExpr)) {
+    return bodyExpr;
+  }
+  else if (auto snd = std::dynamic_pointer_cast<BlockNode>(bodyExpr)) {
+    return bodyExpr;
+  }
+
+  auto block = makeBlockNode(fScope, bodyExpr->srcpos());
+  block->appendNode(bodyExpr);
+  block->markReturnNode(fScope);
+
+  return block;
+}
+
+
 void SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
                                    FundefClauseData& data)
 {
@@ -1276,20 +1294,7 @@ void SecondPass::parseFundefClause(const TokenVector& seq, size_t& ofs,
       data.fFlags |= kFuncIsAbstract;
     else if (!fCompiler.isParsingInterface()) {
       // TODO: when inlining we actually need the body definition also in the header
-      auto bodyExpr = singletonNodeListOrNull(parseExpr(seq[ofs]));
-      if (auto snd = std::dynamic_pointer_cast<ScopeNode>(bodyExpr)) {
-        data.fBody = bodyExpr;
-      }
-      else if (auto snd = std::dynamic_pointer_cast<BlockNode>(bodyExpr)) {
-        data.fBody = bodyExpr;
-      }
-      else {
-        auto block = makeBlockNode(fScope, bodyExpr->srcpos());
-        block->appendNode(bodyExpr);
-        block->markReturnNode(fScope);
-
-        data.fBody = block;
-      }
+      data.fBody = parseFunctionBody(seq[ofs]);
     }
     ofs++;
   }
@@ -1708,7 +1713,7 @@ void SecondPass::parseParameters(NodeList* parameters, const TokenVector& seq)
 }
 
 
-std::shared_ptr<AstNode> SecondPass::parseClosure(const Token& expr)
+std::shared_ptr<AstNode> SecondPass::parseAnonFun(const Token& expr)
 {
   hr_assert(expr.isSeq());
   hr_assert(expr.count() >= 3);
@@ -1717,6 +1722,10 @@ std::shared_ptr<AstNode> SecondPass::parseClosure(const Token& expr)
 
   size_t ofs = 1;
   hr_assert(expr[ofs].isNested());
+
+  ScopeHelper scopeHelper(fScope, !K(doExport), K(isInnerScope), !K(doPropIntern),
+                          kScopeL_Function);
+  TSharedGenericScopeHelper SharedTable(fSharedGenericTable);
 
   NodeList params;
   parseParameters(&params, expr[1].children());
@@ -1731,7 +1740,7 @@ std::shared_ptr<AstNode> SecondPass::parseClosure(const Token& expr)
   }
 
   hr_assert(ofs < expr.count());
-  auto body = singletonNodeListOrNull(parseExpr(expr[ofs]));
+  auto body = parseFunctionBody(expr[ofs]);
 
   return makeFunctionNode(fScope, expr.srcpos(), params, type, body);
 }
@@ -2777,7 +2786,7 @@ NodeList SecondPass::parseSeq(const Token& expr)
   else if (first == kIfId)
     return makeNodeList(parseIf(expr));
   else if (first == kFunctionId)
-    return makeNodeList(parseClosure(expr));
+    return makeNodeList(parseAnonFun(expr));
   else if (first == kForId)
     return makeNodeList(parseFor(expr));
   else if (first == kWhileId)

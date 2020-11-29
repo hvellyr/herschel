@@ -317,6 +317,9 @@ template <>
 struct NodeTypifier<std::shared_ptr<FunctionNode>> {
   static void typify(Typifier* typf, std::shared_ptr<FunctionNode> node)
   {
+    ScopeGuard scopeGuard(typf->fLastUsedScope,
+                          makeScope(kScopeL_Function, typf->fLastUsedScope));
+
     typf->typifyNodeList(node->params());
     if (node->body()) {
       node->setBody(typf->typifyNode(node->body()));
