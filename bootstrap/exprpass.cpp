@@ -1650,6 +1650,7 @@ struct FuncallArgsParser {
             pass->nextToken();
 
             if (pass->fToken == kParanOpen) {
+              auto paranOpenToken = pass->fToken;
               pass->nextToken();
 
               if (const auto* macro = pass->fScope->lookupMacro(symbolToken.srcpos(),
@@ -1677,8 +1678,11 @@ struct FuncallArgsParser {
                   return Retry::kError;
                 }
               }
-              else
+              else {
                 pass->unreadToken(pass->fToken);
+                pass->unreadToken(paranOpenToken);
+                pass->fToken = symbolToken;
+              }
             }
             else {
               pass->unreadToken(pass->fToken);
