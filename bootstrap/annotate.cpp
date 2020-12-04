@@ -209,6 +209,38 @@ struct NodeAnnotator<std::shared_ptr<ParamNode>> {
 };
 
 
+namespace {
+  std::shared_ptr<AstNode> unrollSlotRefs(std::shared_ptr<AstNode> node,
+                                          const String& name, bool rootMustExist)
+  {
+    if (hasNamespace(name)) {
+      auto slotName = baseName(name);
+      auto rootName = nsName(name);
+
+      if (!slotName.isEmpty()) {
+        auto var = node->scope()->lookupVarOrFunc(node->srcpos(), rootName,
+                                                  K(showAmbiguouseSymDef));
+        if (auto slotrefNd = var ? makeSymbolNode(node->scope(), node->srcpos(), rootName)
+                                 : unrollSlotRefs(node, rootName, rootMustExist)) {
+          slotrefNd->setIsRemoveable(node->isRemoveable());
+          return makeSlotRefNode(node->scope(), node->srcpos(), slotrefNd, slotName);
+        }
+        return {};
+      }
+    }
+
+    if (rootMustExist) {
+      if (!node->scope()->lookupVarOrFunc(node->srcpos(), name, K(showAmbiguouseSymDef)))
+        return {};
+    }
+
+    auto symNd = makeSymbolNode(node->scope(), node->srcpos(), name);
+    symNd->setIsRemoveable(node->isRemoveable());
+    return symNd;
+  }
+}  // namespace
+
+
 template <>
 struct NodeAnnotator<std::shared_ptr<ApplyNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<ApplyNode> node)
@@ -222,30 +254,13 @@ struct NodeAnnotator<std::shared_ptr<ApplyNode>> {
       auto funcName = node->simpleCallName();
       auto varNode = node->scope()->lookupVarOrFunc(node->srcpos(), funcName,
                                                     !K(showAmbiguousSymDef));
-      // if not such binding is found, but the name looks like it has
-      // a namespace, and the lastName of this name is known, then
-      // let's rewrite this expression into a parameter passing
-      // function call.  E.g.
-      //
-      // foo.bar()     => bar(foo)
-      // foo.bar(gaz)  => bar(foo, gaz)
+      // if no such binding is found, but the name is a multipart
+      // symbol (i.e. contains a dot) rewrite the symbol into a
+      // slotref expression.
       if (!varNode && hasNamespace(funcName)) {
-        auto lastName = baseName(funcName);
-        if (auto varNode = node->scope()->lookupVarOrFunc(node->srcpos(), lastName,
-                                                          !K(showAmbiguousSymDef))) {
-
-          auto baseNode = makeSymbolNode(node->scope(), node->srcpos(), lastName);
-          baseNode->setIsRemoveable(node->isRemoveable());
-          node->setBase(baseNode);
-
-          auto funcNameNode =
-              makeSymbolNode(node->scope(), node->srcpos(), nsName(funcName));
-          funcNameNode->setIsRemoveable(node->isRemoveable());
-          node->children().insert(node->children().begin(), funcNameNode);
-
-          // re-annotate the rewritten code
-          node->setBase(ann->annotateNode(node->base()));
-          ann->annotateNodeList(node->children(), !K(markTailPos), K(markSingleType));
+        if (auto slotRefNd =
+                ann->annotateNode(unrollSlotRefs(node, funcName, K(rootMustExist)))) {
+          node->setBase(slotRefNd);
         }
       }
       else {
@@ -259,31 +274,6 @@ struct NodeAnnotator<std::shared_ptr<ApplyNode>> {
 };
 
 
-namespace {
-  std::shared_ptr<AstNode> unrollSlotRefs(std::shared_ptr<AstNode> node,
-                                          const String& name)
-  {
-    if (hasNamespace(name)) {
-      auto slotName = baseName(name);
-      auto rootName = nsName(name);
-
-      if (!slotName.isEmpty()) {
-        auto var = node->scope()->lookupVarOrFunc(node->srcpos(), rootName,
-                                                  K(showAmbiguouseSymDef));
-        auto slotrefNd = var ? makeSymbolNode(node->scope(), node->srcpos(), rootName)
-                             : unrollSlotRefs(node, rootName);
-        slotrefNd->setIsRemoveable(node->isRemoveable());
-        return makeSlotRefNode(node->scope(), node->srcpos(), slotrefNd, slotName);
-      }
-    }
-
-    auto symNd = makeSymbolNode(node->scope(), node->srcpos(), name);
-    symNd->setIsRemoveable(node->isRemoveable());
-    return symNd;
-  }
-}  // namespace
-
-
 template <>
 struct NodeAnnotator<std::shared_ptr<SymbolNode>> {
   static void annotate(Annotator* ann, std::shared_ptr<SymbolNode> node)
@@ -291,7 +281,8 @@ struct NodeAnnotator<std::shared_ptr<SymbolNode>> {
     auto var = node->scope()->lookupVarOrFunc(node->srcpos(), node->name(),
                                               K(showAmbiguousSymDef));
     if (!var && hasNamespace(node->name())) {
-      ann->replaceNode(ann->annotateNode(unrollSlotRefs(node, node->name())));
+      ann->replaceNode(
+          ann->annotateNode(unrollSlotRefs(node, node->name(), !K(rootMustExist))));
     }
   }
 };
