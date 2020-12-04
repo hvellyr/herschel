@@ -446,7 +446,7 @@ void FirstPass::parseAppArgs(TokenVector* argsVector)
 {
   Token args;
   parseSequence(AppKeysParser(), kParanOpen, kParanClose, K(hasSeparator),
-                E_BadParameterList, args, "funcall-args", !K(skipFirst));
+                E_BadParameterList, args, "app-args", !K(skipFirst));
 
   if (args.isSeq())
     *argsVector = args.children();
