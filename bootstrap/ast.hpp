@@ -335,6 +335,8 @@ public:
     return details::cloneScope(this, std::make_shared<StringNode>(fSrcPos, fValue));
   }
 
+  bool isTempValue() const override { return false; }
+
   //! Returns the (unicode) string value.
   const String& value() const { return fValue; }
 
@@ -366,6 +368,8 @@ public:
 
   //! Returns the keyword value.
   const String& value() const { return fValue; }
+
+  bool isTempValue() const override { return false; }
 
 private:
   String fValue;
@@ -541,6 +545,8 @@ public:
   //! Indicates whether the number is an imaginary constant number.
   bool isImaginary() const { return fIsImaginary; }
 
+  bool isTempValue() const override { return false; }
+
 protected:
   bool fIsImaginary;
 };
@@ -682,6 +688,8 @@ public:
   }
 
   bool value() const { return fValue; }
+
+  bool isTempValue() const override { return false; }
 
 private:
   bool fValue;
