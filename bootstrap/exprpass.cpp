@@ -1632,7 +1632,7 @@ Token FirstPass::parseAnonFun()
       returnType = makeAnySymbol(fToken.srcpos());
     }
 
-    Token body = parseExpr(!K(acceptComma));
+    Token body = parseExpr(!K(acceptComma), K(leftPrec));
     if (body.isSet())
       return Token() << funcToken << (Token(paranPos, kParanOpen, kParanClose) << params)
                      << returnTyToken << returnType << body;
@@ -2407,7 +2407,7 @@ Token FirstPass::parseAtomicExpr0()
   return Token();
 }
 
-Token FirstPass::parseAtomicExpr()
+Token FirstPass::parseAtomicExpr(bool leftPrec)
 {
   switch (fToken.tokenType()) {
   case kUninitialized: {
@@ -2431,7 +2431,7 @@ Token FirstPass::parseAtomicExpr()
   case kNestedExpr: return parseAccess(parseAtomicExpr0());
 
   case kIfId: return parseIf();
-  case kFunctionId: return parseAnonFun();
+  case kFunctionId: return parseAccess(parseAnonFun());
   case kNotId:  // unary not operator
   case kMinus:  // unary negate
     return parseUnaryOp(fToken);
@@ -2454,10 +2454,10 @@ Token FirstPass::parseAtomicExpr()
 
   case kLiteralArrayOpen: return parseAccess(parseLiteralArray());
 
-  case kParanOpen: nextToken(); return parseAccess(parseGroup());
-  case kBraceOpen: return parseAccess(parseBlock());
+  case kParanOpen: nextToken(); return leftPrec ? parseGroup() : parseAccess(parseGroup());
+  case kBraceOpen: return leftPrec ? parseBlock() : parseAccess(parseBlock());
 
-  case kContinuationExpr: nextToken(); return parseAtomicExpr();
+  case kContinuationExpr: nextToken(); return parseAtomicExpr(leftPrec);
 
   default:;
   }
@@ -2684,11 +2684,11 @@ Token FirstPass::parseExprRec(const TokenVector& exprs, OperatorType op1,
 }
 
 
-Token FirstPass::parseExpr(bool acceptComma)
+Token FirstPass::parseExpr(bool acceptComma, bool leftPrec)
 {
   Token expr1;
   if (!withRetryAfterMacroExpansion([&]() {
-        expr1 = parseAtomicExpr();
+        expr1 = parseAtomicExpr(leftPrec);
         return expr1.isContinuation() ? Retry::kRetry : Retry::kDone;
       }))
     return Token::sInvalid();

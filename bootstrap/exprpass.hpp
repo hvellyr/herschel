@@ -148,9 +148,9 @@ private:
   Token parseForTestClause();
   Token parseWhile();
 
-  Token parseExpr(bool acceptComma);
+  Token parseExpr(bool acceptComma, bool leftPrec = false);
   Token parseAtomicExpr0();
-  Token parseAtomicExpr();
+  Token parseAtomicExpr(bool leftPrec = false);
   Token parseUnitNumber(const Token& token);
   Token parseExplicitTypedNumber(const Token& token);
   Token parseExprRec(const TokenVector& exprs, OperatorType op1, const SrcPos& op1Srcpos,
