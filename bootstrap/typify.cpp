@@ -112,6 +112,95 @@ namespace {
 
     return {};
   }
+
+  Type getParamType(const std::shared_ptr<AstNode>& param)
+  {
+    if (auto p = std::dynamic_pointer_cast<ParamNode>(param))
+      return p->type();
+    return {};
+  }
+
+  Type getParamType(const FunctionParameter& param) { return param.type(); }
+
+
+  template <typename FunParam>
+  void typifyApplyArguments(Typifier* typf, std::shared_ptr<ApplyNode> node,
+                            const std::vector<FunParam>& funcParams)
+  {
+    //const NodeList& funcParams = funcNode->params();
+    NodeList& args = node->children();
+
+    hr_assert(args.size() == funcParams.size());
+
+    for (size_t i = 0; i < args.size(); i++) {
+      auto paramType = getParamType(funcParams[i]);
+      Typifier::OwnershipContext ctx{typf, paramType.isValueType()};
+      args[i] = typf->typifyNode(args[i]);
+      hr_assert(args[i] != nullptr);
+    }
+  }
+
+
+  template <typename FunParam>
+  std::shared_ptr<AstNode> liftApplyArgs(Typifier* typf, std::shared_ptr<ApplyNode> node,
+                                         const std::vector<FunParam>& funcParams)
+  {
+    NodeList& args = node->children();
+
+    hr_assert(args.size() == funcParams.size());
+
+    std::vector<int> liftedArgs;
+    for (size_t i = 0; i < args.size(); i++) {
+      auto paramType = getParamType(funcParams[i]);
+
+      if (paramType.isDef()) {
+        if (!paramType.isValueType()) {
+          if (!args[i]->type().isPlainType() && args[i]->isTempValue()) {
+            liftedArgs.push_back(i);
+          }
+        }
+      }
+    }
+
+    if (liftedArgs.empty())
+      return node;
+
+    auto scope = node->scope();
+    auto srcpos = node->srcpos();
+
+    ScopeHelper scopeHelper(scope, !K(doExport), K(isInnerScope), !K(doPropIntern),
+                            kScopeL_Local);
+    auto block = makeBlockNode(scope, srcpos);
+
+    for (auto argi : liftedArgs) {
+      auto argscope = args[argi]->scope();
+      auto argsrcpos = args[argi]->srcpos();
+
+      auto localVarSym = uniqueName("arginit");
+      auto localVar = makeVardefNode(argscope, argsrcpos, localVarSym, kNormalVar,
+                                     K(isLocal), args[argi]->type(), args[argi]);
+      scope->registerVar(argsrcpos, localVarSym, localVar);
+      auto localVarNd = makeLetNode(argscope, localVar);
+      block->appendNode(localVarNd);
+
+      args[argi] = makeSymbolNode(argscope, argsrcpos, localVarSym);
+    }
+
+    block->appendNode(node);
+    block->markReturnNode(scope);
+
+    std::shared_ptr<AstNode> resultNd;
+    {
+      Annotator an{typf->fCompiler};
+      resultNd = an.annotateNode(block);
+    }
+
+    auto replacnd = typf->typifyNode(resultNd);
+    typf->replaceNode(replacnd);
+
+    return replacnd;
+  }
+
 }  // namespace
 
 
@@ -388,7 +477,6 @@ struct NodeTypifier<std::shared_ptr<BlockNode>> {
     // of that binding
     hr_assert(node->children().size() >= 2);
 
-    //gck TODO
     {
       auto& exprs = node->children();
 
@@ -412,17 +500,6 @@ struct NodeTypifier<std::shared_ptr<BlockNode>> {
                                  [](const auto& nd) { return nd == nullptr; }),
                   exprs.end());
     }
-
-    // {
-    //   Typifier::OwnershipContext ctx{typf, false};
-    //   typf->typifyNodeList(node->children());
-    // }
-    // if (!node->children().empty()) {
-    //   // re-typify last expression to bring it into a ownership transfer context
-    //   Typifier::OwnershipContext ctx{typf, true};
-    //   node->children()[node->children().size() - 1] =
-    //       typf->typifyNode(node->children()[node->children().size() - 1]);
-    // }
 
     node->setType(node->children().back()->type());
 
@@ -652,7 +729,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
       if (funcNode) {
         if (funcNode->hasSpecializedParams()) {
           typf->reorderArguments(node, funcNode.get());
-          typf->typifyApplyArguments(node, funcNode.get());
+          typifyApplyArguments(typf, node, funcNode->params());
 
           Type type = typf->typifyMatchAndCheckParameters(
               node->srcpos(), node->children(), funcNode.get(), node->simpleCallName());
@@ -664,6 +741,10 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
           }
 
           node->setFunSign(funcNode->type().functionSignature());
+
+          auto replcdnd = liftApplyArgs(typf, node, funcNode->params());
+          typf->annotateTypeConv(replcdnd, replcdnd->type());
+          return;
         }
         else {
           if (auto bestFuncNode = node->scope()->lookupBestFunctionOverload(
@@ -685,7 +766,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             node->setFunSign(bestFuncNode.fNode->type().functionSignature());
 
             typf->reorderArguments(node, bestFuncNode.fNode.get());
-            typf->typifyApplyArguments(node, bestFuncNode.fNode.get());
+            typifyApplyArguments(typf, node, bestFuncNode.fNode->params());
 
             Type type = typf->typifyMatchAndCheckParameters(
                 node->srcpos(), node->children(), bestFuncNode.fNode.get(),
@@ -696,6 +777,10 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             if (node->simpleCallName() == Names::kLangAllocateArray) {
               typf->checkAllocateArraySignature(node);
             }
+
+            auto replcdnd = liftApplyArgs(typf, node, bestFuncNode.fNode->params());
+            typf->annotateTypeConv(replcdnd, replcdnd->type());
+            return;
           }
           else if (node->isRemoveable()) {
             node->setIsObsolete(true);
@@ -716,6 +801,14 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             // TODO: check function signature of the function type
             /// HR_LOG(kInfo, node->srcpos()) << "varNode->type()? [1] " << varNode->type().functionSignature();
             node->setFunSign(varNode->type().functionSignature());
+
+            typifyApplyArguments(typf, node,
+                                 varNode->type().functionSignature().parameters());
+
+            auto replcdnd = liftApplyArgs(
+                typf, node, varNode->type().functionSignature().parameters());
+            typf->annotateTypeConv(replcdnd, replcdnd->type());
+            return;
           }
           else if (varNode->type().isClassTypeOf()) {
             auto newObjAllocExpr = makeApplyNode(
@@ -758,10 +851,12 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
             node->setType(createNode->type());
             // HR_LOG(kInfo, node->srcpos()) << "varNode->type()? " << varNode->type().functionSignature();
             // node->setFunSign(varNode->type().functionSignature());
+
+            // TODO: do we have to liftApplyArgs here?
           }
           else {
             HR_LOG(kError, node->srcpos(), E_NoCallable)
-                << "Non callable in function call context";
+                << "Non callable in function call context (lookup var node)";
           }
         }
         else if (node->isRemoveable()) {
@@ -769,7 +864,7 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
         }
         else {
           HR_LOG(kError, node->srcpos(), E_UnknownSymbol)
-              << "unknown symbol: " << node->simpleCallName();
+              << "unknown symbol (apply): " << node->simpleCallName();
         }
       }
     }
@@ -778,34 +873,68 @@ struct NodeTypifier<std::shared_ptr<ApplyNode>> {
         node->setType(typeNode->type());
       }
       else if (auto symNode = std::dynamic_pointer_cast<SymbolNode>(node->base())) {
+        // TODO: the only way to come here seems to be a call like
+        // 'T(...), where 'T might be a function?
         node->setType(symNode->type());
       }
       else if (auto typeNode = std::dynamic_pointer_cast<TypeNode>(node->base())) {
         node->setType(typeNode->type());
       }
       else if (auto funNode = std::dynamic_pointer_cast<FunctionNode>(node->base())) {
-        // HR_LOG(kInfo, node->srcpos()) << "varNode->type()? [3] " << funNode->type().toString();
+        // case: function(a : Int){ ... }(42)
+
+        // TODO: check function signature
         node->setType(funNode->type());
+        node->setFunSign(funNode->type().functionSignature());
+
+        typifyApplyArguments(typf, node,
+                             funNode->type().functionSignature().parameters());
+
+        auto replcdnd =
+            liftApplyArgs(typf, node, funNode->type().functionSignature().parameters());
+        typf->annotateTypeConv(replcdnd, replcdnd->type());
+        return;
       }
       else if (auto applyNode = std::dynamic_pointer_cast<ApplyNode>(node->base())) {
         if (applyNode->type().isFunction()) {
-          // HR_LOG(kInfo, node->srcpos())
-          //   << "varNode->type()? [4a] ??? " << applyNode->type().functionSignature();
+          // case: foo()()
+
+          // TODO: check function signature
           node->setType(applyNode->type().functionSignature().returnType());
           node->setFunSign(applyNode->type().functionSignature());
+
+          typifyApplyArguments(typf, node,
+                               applyNode->type().functionSignature().parameters());
+
+          auto replcdnd = liftApplyArgs(
+              typf, node, applyNode->type().functionSignature().parameters());
+          typf->annotateTypeConv(replcdnd, replcdnd->type());
+          return;
         }
         else {
-          HR_LOG(kError, node->srcpos()) << "varNode->type()? [4b] ??? ";
+          HR_LOG(kError, applyNode->srcpos(), E_NoCallable)
+              << "Non callable in function call context (apply-node) ["
+              << applyNode->type() << "]";
           node->setType(applyNode->type());
         }
       }
       else if (auto srNode = std::dynamic_pointer_cast<SlotRefNode>(node->base())) {
-        node->setType(srNode->type());
+        if (srNode->type().isFunction()) {
+          // TODO: check function signature
+          HR_LOG(kInfo) << "TODO: SlotRefNode in function call pos " << srNode->type();
+          node->setType(srNode->type());
+          node->setFunSign(srNode->type().functionSignature());
+        }
+        else {
+          HR_LOG(kError, srNode->srcpos(), E_NoCallable)
+              << "Non callable in function call context (slotref-node)";
+          node->setType(srNode->type());
+        }
       }
       else {
-        // XmlRenderer out{std::make_shared<FilePort>(stderr)};
-        // out.render(node->base());
-        hr_invalid("Unhandled apply base node");
+        HR_LOG(kError, node->srcpos(), E_NoCallable)
+            << "Non callable in function call context";
+        node->setType(node->type());
       }
     }
 
@@ -2146,6 +2275,7 @@ void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node,
         }
         else {
           hr_assert(param->initExpr());
+          // add keyarg parameters with the default values
           newArgs.push_back(makeKeyargNode(param->scope(), param->srcpos(), param->key(),
                                            param->initExpr()->clone()));
         }
@@ -2166,22 +2296,6 @@ void Typifier::reorderArguments(std::shared_ptr<ApplyNode> node,
   }
 
   node->replaceChildren(newArgs);
-}
-
-
-void Typifier::typifyApplyArguments(std::shared_ptr<ApplyNode> node,
-                                    const FunctionNode* funcNode)
-{
-  const NodeList& funcParams = funcNode->params();
-  NodeList& args = node->children();
-
-  hr_assert(args.size() == funcParams.size());
-
-  for (size_t i = 0; i < args.size(); i++) {
-    Typifier::OwnershipContext ctx{this, funcParams[i]->type().isValueType()};
-    args[i] = typifyNode(args[i]);
-    hr_assert(args[i] != nullptr);
-  }
 }
 
 

@@ -82,8 +82,6 @@ public:
                          std::shared_ptr<AstNode> arg, int idx, const String& funcName);
 
   void reorderArguments(std::shared_ptr<ApplyNode> node, const FunctionNode* funcNode);
-  void typifyApplyArguments(std::shared_ptr<ApplyNode> node,
-                            const FunctionNode* funcNode);
 
   /*! Sequentially determine and check types for the arguments @p args
    * @p node which is to be applied to @p funcNode.

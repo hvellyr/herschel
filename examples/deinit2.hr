@@ -4,8 +4,18 @@ def foo = function(a : String) outln(a)
 
 def gaz = function(a : ^String) outln(a)
 
+def gaz2(a : ^String)
+  outln(a)
+
+def meta_gaz() -> Function(a : ^String) ...
+
 def app.main() {
   foo("42")
-  gaz("hello world")
+  gaz(String("hello world"))
+  gaz2(String("hello world"))
+
+  meta_gaz()(String("hello world"))
+
+  function(a : ^String) { outln(a) }(String("hello world"))
   0
 }
