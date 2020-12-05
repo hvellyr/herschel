@@ -2,9 +2,53 @@
 
 Herschel 2
 
-  - rethink copy and copy-assignment.  change generation of copy method generation to avoid on-copy hook calls
+  - generate finalizers
+    - for local variables in blocks  (DONE)
+    - for value-parameters in functions  (DONE)
+    - for constructed values pass to reference parameters in functions:
+
+        def foo(a : ^String) ...
+
+        foo(String("abc"))
+
+        >>>
+
+        let __tmp_1 : String
+        init-move(__tmp_1, "abc")
+        foo(__tmp_1)
+        deinit(__tmp_1)
+
+      this has to be done for default initializers, too
+
+  - finish record parsing/code generation
+
+    - add <generics> to macro
+    - rethink: do we really need a <generics> list on record types?
+      Wouldn't 'T usage in fields be more consistent?
+    - if so adapt the parser/type check to handle 'Ts in record defs
+
+    - rename record to __record, the macro xrecord to record
+
+    - add function/code attributes
+      - auto/volatile - such methods/functions will be dropped in
+        favour of user defined ones.  -> allows simple over writting
+        of methods/functions by the user
+
+    - doesn't parse in the moment:
+
+      def xrecord Xaz (
+        f : Function(a : ^String)
+      )
+
+      neither does:
+
+      def xrecord Xaz (
+        f = function(a : ^String) { unspecified }
+      )
 
   - memory management, reference types, ...
+    - rethink Any typed variables
+
     - document/take the following matrix
 
                                 var is on stack     var is ptr to heap
@@ -16,6 +60,10 @@ Herschel 2
        ref to record                                       x
        ref interface                                       x
        ref to any                                          x
+
+  - implement 'mut'
+  - implement '&' syntax
+  - implement syntax "let a : ^ = ^Foo()" and "let a : & = &Foo()"
 
 x   + remove inheritance from record types.  Only interfaces can inherit.
 x   + record types are always concrete types
@@ -75,7 +123,7 @@ x   + record types are always concrete types
       destructed of course (look for reference types, etc.!)
     + don't call allocate or deallocate in constructor/destructor
       calls.  Only init() and deinitialize()
-    - generateFinalizers for functions params
+    + generateFinalizers for functions params
 
   - reference types, ref-counted types, pointer dereferencation
   - "mut" modifier
