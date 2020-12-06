@@ -9,10 +9,14 @@ def gaz2(a : ^String)
 
 def meta_gaz() -> Function(a : ^String) ...
 
+def conv(x : ^String) -> ^String x
+
 def app.main() {
   foo("42")
   gaz(String("hello world"))
   gaz2(String("hello world"))
+
+  gaz2(conv(conv(String("ergo"))))
 
   meta_gaz()(String("hello world"))
 
