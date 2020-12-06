@@ -1,0 +1,12 @@
+def outln(s : ^String) ...
+
+def xrecord Xaz (
+  f : Int --= function(a : ^String) { unspecified }
+)
+
+def app.main() {
+  let x = Xaz(function(b : ^String) { outln(b) } )
+  x.f(String("hello world"))
+
+  0
+}
