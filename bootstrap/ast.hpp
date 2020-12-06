@@ -22,6 +22,7 @@
 #include <initializer_list>
 #include <list>
 #include <map>
+#include <set>
 #include <vector>
 
 
@@ -54,12 +55,13 @@ enum TypeConvKind {
 
 namespace details {
   template <typename T>
-  std::shared_ptr<T> cloneScope(const T* src, std::shared_ptr<T> dst)
+  std::shared_ptr<T> copyProps(const T* src, std::shared_ptr<T> dst)
   {
     dst->setScope(src->scope());
     dst->setType(src->type());
     dst->setDstType(src->dstType());
     dst->setTypeConv(src->typeConv());
+    dst->setMarkers(src->markers());
     return dst;
   }
 
@@ -176,6 +178,11 @@ public:
   //! Returns a (deep) copy of this node.
   virtual std::shared_ptr<AstNode> clone() const = 0;
 
+  void setMarkers(const std::set<String>& markers) { fMarkers = markers; }
+  std::set<String> markers() const { return fMarkers; }
+  void addMarker(const String& str) { fMarkers.insert(str); }
+  bool hasMarker(const String& str) const { return fMarkers.count(str) > 0; }
+
 protected:
   SrcPos fSrcPos;
   std::shared_ptr<Scope> fScope;
@@ -186,6 +193,7 @@ protected:
   bool fIsSingleTypeRequired;
   bool fIsRemoveable = false;
   bool fIsObsolete = false;
+  std::set<String> fMarkers;
 };
 
 
@@ -303,7 +311,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return std::make_shared<UndefNode>();
+    return details::copyProps(this, std::make_shared<UndefNode>());
   }
 };
 
@@ -332,7 +340,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(this, std::make_shared<StringNode>(fSrcPos, fValue));
+    return details::copyProps(this, std::make_shared<StringNode>(fSrcPos, fValue));
   }
 
   bool isTempValue() const override { return false; }
@@ -363,7 +371,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(this, std::make_shared<KeywordNode>(fSrcPos, fValue));
+    return details::copyProps(this, std::make_shared<KeywordNode>(fSrcPos, fValue));
   }
 
   //! Returns the keyword value.
@@ -424,7 +432,7 @@ public:
     auto newnd = std::make_shared<SymbolNode>(fSrcPos, fValue);
     newnd->setLinkage(linkage());
     newnd->setRefersTo(fRefersTo, fIsShared);
-    return details::cloneScope(this, newnd);
+    return details::copyProps(this, newnd);
   }
 
   bool isTempValue() const override { return false; }
@@ -491,7 +499,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(
+    return details::copyProps(
         this, std::make_shared<ArrayTypeNode>(fSrcPos, details::nodeClone(fTypeNode)));
   }
 
@@ -521,7 +529,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(this, std::make_shared<TypeNode>(fSrcPos, fType.clone()));
+    return details::copyProps(this, std::make_shared<TypeNode>(fSrcPos, fType.clone()));
   }
 };
 
@@ -585,7 +593,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(
+    return details::copyProps(
         this, std::make_shared<IntNode>(fSrcPos, fValue, fIsImaginary, fType.clone()));
   }
 };
@@ -608,7 +616,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(
+    return details::copyProps(
         this, std::make_shared<RealNode>(fSrcPos, fValue, fIsImaginary, fType.clone()));
   }
 };
@@ -632,7 +640,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(this, std::make_shared<RationalNode>(
+    return details::copyProps(this, std::make_shared<RationalNode>(
                                          fSrcPos, fValue, fIsImaginary, fType.clone()));
   }
 };
@@ -657,7 +665,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(this, std::make_shared<CharNode>(fSrcPos, fValue));
+    return details::copyProps(this, std::make_shared<CharNode>(fSrcPos, fValue));
   }
 
   Char value() const { return fValue; }
@@ -684,7 +692,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(this, std::make_shared<BoolNode>(fSrcPos, fValue));
+    return details::copyProps(this, std::make_shared<BoolNode>(fSrcPos, fValue));
   }
 
   bool value() const { return fValue; }
@@ -720,7 +728,7 @@ public:
     auto node = std::make_shared<ScopeNode>(fSrcPos, fDoExport, fIsInnerScope,
                                             fDoPropagateIntern, fLevel);
     details::copyNodes(&node->fChildren, &fChildren);
-    return details::cloneScope(this, std::move(node));
+    return details::copyProps(this, std::move(node));
   }
 
   bool fDoExport;
@@ -757,7 +765,7 @@ public:
   {
     auto node = std::make_shared<CompileUnitNode>(fSrcPos);
     details::copyNodes(&node->fChildren, &fChildren);
-    return details::cloneScope(this, std::move(node));
+    return details::copyProps(this, std::move(node));
   }
 };
 
@@ -781,7 +789,7 @@ public:
     auto node = std::make_shared<ApplicationNode>(fSrcPos);
     details::copyNodes(&node->fChildren, &fChildren);
     details::copyNodes(&node->fParams, &fParams);
-    return details::cloneScope(this, std::move(node));
+    return details::copyProps(this, std::move(node));
   }
 
   NodeList fParams;
@@ -824,7 +832,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(this,
+    return details::copyProps(this,
                                std::make_shared<LetNode>(details::nodeClone(fDefined)));
   }
 };
@@ -846,7 +854,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(this,
+    return details::copyProps(this,
                                std::make_shared<DefNode>(details::nodeClone(fDefined)));
   }
 };
@@ -932,7 +940,7 @@ public:
     auto n = std::make_shared<VardefNode>(fSrcPos, fSymbolName, fFlags, fIsLocal,
                                           fType.clone(), details::nodeClone(fInitExpr));
     n->setLinkage(fLinkage);
-    return details::cloneScope(this, std::move(n));
+    return details::copyProps(this, std::move(n));
   }
 
   bool isEnum() const { return fFlags == kEnumVar; }
@@ -988,7 +996,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(
+    return details::copyProps(
         this, std::make_shared<ParamNode>(fSrcPos, fKey, fSymbolName, fFlags,
                                           fType.clone(), details::nodeClone(fInitExpr)));
   }
@@ -1039,7 +1047,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(
+    return details::copyProps(
         this, std::make_shared<SlotdefNode>(fSrcPos, fSymbolName, fFlags, fType.clone(),
                                             details::nodeClone(fInitExpr)));
   }
@@ -1074,7 +1082,7 @@ public:
   {
     auto an = std::make_shared<ArrayNode>(fSrcPos);
     details::copyNodes(&an->fChildren, &fChildren);
-    return details::cloneScope(this, std::move(an));
+    return details::copyProps(this, std::move(an));
   }
 };
 
@@ -1097,7 +1105,7 @@ public:
   {
     auto vect = std::make_shared<VectorNode>(fSrcPos);
     details::copyNodes(&vect->fChildren, &fChildren);
-    return details::cloneScope(this, std::move(vect));
+    return details::copyProps(this, std::move(vect));
   }
 };
 
@@ -1135,7 +1143,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(
+    return details::copyProps(
         this, std::make_shared<BinaryNode>(fSrcPos, details::nodeClone(fLeft), fOp,
                                            details::nodeClone(fRight)));
   }
@@ -1192,7 +1200,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(
+    return details::copyProps(
         this, std::make_shared<UnaryNode>(fSrcPos, fOp, details::nodeClone(fBase)));
   }
 
@@ -1238,7 +1246,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(
+    return details::copyProps(
         this,
         std::make_shared<RangeNode>(fSrcPos, details::nodeClone(fFrom),
                                     details::nodeClone(fTo), details::nodeClone(fBy)));
@@ -1291,7 +1299,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(
+    return details::copyProps(
         this, std::make_shared<AssignNode>(fSrcPos, details::nodeClone(fLValue),
                                            details::nodeClone(fRValue)));
   }
@@ -1326,7 +1334,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(
+    return details::copyProps(
         this, std::make_shared<IfNode>(fSrcPos, details::nodeClone(fTest),
                                        details::nodeClone(fConsequent),
                                        details::nodeClone(fAlternate)));
@@ -1410,7 +1418,7 @@ public:
                         details::nodeClone(mapping.fConsequent)));
     }
 
-    return details::cloneScope(this, std::move(newNode));
+    return details::copyProps(this, std::move(newNode));
   }
 
   void addMapping(const NodeList& mappings, std::shared_ptr<AstNode> consequent)
@@ -1537,7 +1545,7 @@ public:
                                                 details::nodeClone(mapping.fConsequent)));
     }
 
-    return details::cloneScope(this, std::move(newNode));
+    return details::copyProps(this, std::move(newNode));
   }
 
   void addMapping(const SrcPos& srcpos, const String& varName, const Type& matchType,
@@ -1598,7 +1606,7 @@ public:
   {
     auto block = std::make_shared<BlockNode>(fSrcPos);
     details::copyNodes(&block->fChildren, &fChildren);
-    return details::cloneScope(this, std::move(block));
+    return details::copyProps(this, std::move(block));
   }
 
   /*! takes the last expression node from the children (the "return
@@ -1610,14 +1618,7 @@ public:
   /*! Adds @p exprs as finalizers to the list of expressions in the block
    *
    * Only valid if the list of expressions is not empty. */
-  void insertFinalizers(const NodeList& exprs)
-  {
-    auto& ndChildren = children();
-
-    hr_assert(!ndChildren.empty());
-
-    ndChildren.insert(prev(ndChildren.end()), begin(exprs), end(exprs));
-  }
+  void insertFinalizers(const NodeList& exprs);
 };
 
 inline std::shared_ptr<BlockNode> makeBlockNode(std::shared_ptr<Scope> scope,
@@ -1642,7 +1643,7 @@ public:
   {
     auto nd = std::make_shared<FunctionNode>(fSrcPos, details::copyNodes(fChildren),
                                              fRetType.clone(), details::nodeClone(fBody));
-    return details::cloneScope(this, nd);
+    return details::copyProps(this, nd);
   }
 
   const Type& retType() const { return fRetType; }
@@ -1715,7 +1716,7 @@ public:
                                            details::copyNodes(fChildren),
                                            fRetType.clone(), details::nodeClone(fBody));
     n->setLinkage(fLinkage);
-    return details::cloneScope(this, std::move(n));
+    return details::copyProps(this, std::move(n));
   }
 
   bool isTempValue() const override { return false; }
@@ -1778,7 +1779,7 @@ public:
     auto apply = std::make_shared<ApplyNode>(fSrcPos, details::nodeClone(fBase));
     details::copyNodes(&apply->fChildren, &fChildren);
     apply->fRefFunction = fRefFunction;
-    return details::cloneScope(this, std::move(apply));
+    return details::copyProps(this, std::move(apply));
   }
 
   NodeList child_nodes() override
@@ -1822,7 +1823,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(this,
+    return details::copyProps(this,
                                std::make_shared<WeakNode>(details::nodeClone(fRefNode)));
   }
 
@@ -1861,7 +1862,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(
+    return details::copyProps(
         this, std::make_shared<KeyargNode>(fSrcPos, fKey, details::nodeClone(fValue)));
   }
 
@@ -1903,7 +1904,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(
+    return details::copyProps(
         this, std::make_shared<WhileNode>(fSrcPos, details::nodeClone(fTest),
                                           details::nodeClone(fBody)));
   }
@@ -1947,7 +1948,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(
+    return details::copyProps(
         this, std::make_shared<TypeDefNode>(fSrcPos, fTypeName, fIsRecord, fIsa.clone(),
                                             details::copyNodes(fSlots)));
   }
@@ -1996,7 +1997,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(
+    return details::copyProps(
         this,
         std::make_shared<CastNode>(fSrcPos, details::nodeClone(fBase), fType.clone()));
   }
@@ -2032,7 +2033,7 @@ public:
 
   std::shared_ptr<AstNode> clone() const override
   {
-    return details::cloneScope(this, std::make_shared<SlotRefNode>(
+    return details::copyProps(this, std::make_shared<SlotRefNode>(
                                          fSrcPos, details::nodeClone(fBase), fSlotName));
   }
 
@@ -2081,7 +2082,7 @@ public:
   {
     auto dict = std::make_shared<DictNode>(fSrcPos);
     details::copyNodes(&dict->fChildren, &fChildren);
-    return details::cloneScope(this, std::move(dict));
+    return details::copyProps(this, std::move(dict));
   }
 };
 

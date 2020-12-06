@@ -12,6 +12,8 @@
 
 #include "ast.hpp"
 
+#include "predefined.hpp"
+
 #include <set>
 
 
@@ -32,6 +34,40 @@ void BlockNode::markReturnNode(std::shared_ptr<Scope> scope)
     fChildren.back() = makeLetNode(fScope, newVarNode);
     fChildren.push_back(makeSymbolNode(scope, lastExpr->srcpos(), varName));
   }
+}
+
+
+void BlockNode::insertFinalizers(const NodeList& exprs)
+{
+  auto& ndChildren = children();
+  hr_assert(!ndChildren.empty());
+
+  std::set<String> existingFinalizers;
+  for (auto& nd : ndChildren) {
+    for (const auto& mark : nd->markers()) {
+      if (mark.startsWith(Names::kFinalizerMarker)) {
+        existingFinalizers.insert(mark);
+      }
+    }
+  }
+
+  NodeList newFinalizers;
+  for (const auto& finalizer : exprs) {
+    auto finalizeExists = false;
+    for (const auto& mark : finalizer->markers()) {
+      if (mark.startsWith(Names::kFinalizerMarker)) {
+        if (existingFinalizers.count(mark) > 0) {
+          finalizeExists = true;
+        }
+      }
+    }
+
+    if (!finalizeExists) {
+      newFinalizers.push_back(finalizer);
+    }
+  }
+
+  ndChildren.insert(prev(ndChildren.end()), begin(newFinalizers), end(newFinalizers));
 }
 
 }  // namespace herschel

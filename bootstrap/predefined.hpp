@@ -374,6 +374,8 @@ public:
   const static String kOnDeinitFuncName;
   const static String kCopyFuncName;
   const static String kMoveFuncName;
+
+  const static String kFinalizerMarker;
 };
 
 }  // namespace herschel

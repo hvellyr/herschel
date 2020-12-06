@@ -122,4 +122,6 @@ const String Names::kOnDeinitFuncName = String("on-deinit");
 const String Names::kCopyFuncName = String("copy");
 const String Names::kMoveFuncName = String("move");
 
+const String Names::kFinalizerMarker = String("finalizer:");
+  
 }  // namespace herschel

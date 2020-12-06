@@ -58,6 +58,8 @@ namespace {
         return nullptr;
       }
 
+      auto finalizerMark = Names::kFinalizerMarker + binding->symbolName();
+
       std::shared_ptr<AstNode> freeExpr;
 
       auto ty = node->type();
@@ -107,7 +109,9 @@ namespace {
         expr = an.annotateNode(freeExpr);
       }
 
-      return typf->typifyNode(expr);
+      auto result = typf->typifyNode(expr);
+      result->addMarker(finalizerMark);
+      return result;
     }
 
     return {};

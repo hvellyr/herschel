@@ -52,6 +52,8 @@ public:
   void displayType(zstring tagName, const Type& type, bool shortForm = true);
   void displayTypeVector(zstring tagName, const TypeVector& types, bool shortForm = true);
 
+  String markers(const AstNode& node) const;
+
   std::shared_ptr<Port<Octet>> fPort;
   bool fShowNodeType;
   std::map<String, Type> fReferencedTypes;
