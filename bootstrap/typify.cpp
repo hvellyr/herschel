@@ -159,7 +159,8 @@ namespace {
 
       if (paramType.isDef()) {
         if (!paramType.isValueType()) {
-          if (!args[i]->type().isPlainType() && args[i]->isTempValue()) {
+          if (!args[i]->type().isPlainType() && args[i]->isTempValue() &&
+              args[i]->type().isValueType()) {
             liftedArgs.push_back(i);
           }
         }
