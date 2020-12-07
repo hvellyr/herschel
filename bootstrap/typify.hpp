@@ -150,6 +150,26 @@ public:
     ~GenCode() { fTypifier->fGenerateCode = fLastValue; }
   };
 
+  struct BlockNodeGuard {
+    Typifier* fTypifier;
+    std::shared_ptr<BlockNode> fLastOwningBlock;
+    NodeList fLastCurrentBlockChildren;
+
+    BlockNodeGuard(Typifier* typf, std::shared_ptr<BlockNode> block)
+        : fTypifier(typf)
+        , fLastOwningBlock(typf->fInnerOwningBlock)
+        , fLastCurrentBlockChildren(typf->fCurrentBlockChildren)
+    {
+      typf->fInnerOwningBlock = std::move(block);
+      typf->fCurrentBlockChildren = {};
+    }
+
+    ~BlockNodeGuard() {
+      fTypifier->fInnerOwningBlock = std::move(fLastOwningBlock);
+      fTypifier->fCurrentBlockChildren = std::move(fLastCurrentBlockChildren);
+    }
+  };
+
   Compiler& fCompiler;  // backlink to owning compiler
   std::list<bool> fInOwnershipTransferContext;
   bool fGenerateCode = true;
@@ -157,6 +177,8 @@ public:
   std::shared_ptr<Scope> fLastUsedScope;
   bool fRemoveNode = false;
   std::shared_ptr<AstNode> fNewNode;
+  std::shared_ptr<BlockNode> fInnerOwningBlock;
+  NodeList fCurrentBlockChildren;
 };
 
 

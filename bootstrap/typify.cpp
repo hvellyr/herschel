@@ -171,12 +171,11 @@ namespace {
       return node;
 
     auto scope = node->scope();
-    auto srcpos = node->srcpos();
 
     ScopeHelper scopeHelper(scope, !K(doExport), K(isInnerScope), !K(doPropIntern),
                             kScopeL_Local);
-    auto block = makeBlockNode(scope, srcpos);
 
+    auto liftedInits = NodeList{};
     for (auto argi : liftedArgs) {
       auto argscope = args[argi]->scope();
       auto argsrcpos = args[argi]->srcpos();
@@ -186,24 +185,27 @@ namespace {
                                      K(isLocal), args[argi]->type(), args[argi]);
       scope->registerVar(argsrcpos, localVarSym, localVar);
       auto localVarNd = makeLetNode(argscope, localVar);
-      block->appendNode(localVarNd);
+      liftedInits.push_back(localVarNd);
 
       args[argi] = makeSymbolNode(argscope, argsrcpos, localVarSym);
     }
 
-    block->appendNode(node);
-    block->markReturnNode(scope);
+    // inject initializer node into inner owning block.
+    hr_assert(typf->fInnerOwningBlock);
 
-    std::shared_ptr<AstNode> resultNd;
-    {
-      Annotator an{typf->fCompiler};
-      resultNd = an.annotateNode(block);
+    for (auto i = 0u; i < liftedInits.size(); ++i) {
+      std::shared_ptr<AstNode> resultNd;
+      {
+        Annotator an{typf->fCompiler};
+        resultNd = an.annotateNode(liftedInits[i]);
+      }
+
+      auto newNd = typf->typifyNode(resultNd);
+      if (newNd)
+        typf->fCurrentBlockChildren.push_back(newNd);
     }
 
-    auto replacnd = typf->typifyNode(resultNd);
-    typf->replaceNode(replacnd);
-
-    return replacnd;
+    return node;
   }
 
 }  // namespace
@@ -478,32 +480,36 @@ template <>
 struct NodeTypifier<std::shared_ptr<BlockNode>> {
   static void typify(Typifier* typf, std::shared_ptr<BlockNode> node)
   {
-    // there's at least a local (return) variable binding and a return
-    // of that binding
-    hr_assert(node->children().size() >= 2);
-
     {
+      Typifier::BlockNodeGuard blockNodeGuard(typf, node);
+
+      // there's at least a local (return) variable binding and a return
+      // of that binding
+      hr_assert(node->children().size() >= 2);
+
       auto& exprs = node->children();
 
-      bool stripRemoved = false;
       for (size_t i = 0; i < exprs.size() - 1; i++) {
         Typifier::OwnershipContext ctx{typf, false};
-        exprs[i] = typf->typifyNode(exprs[i]);
-        stripRemoved |= (exprs[i] == nullptr);
+
+        auto newNd = typf->typifyNode(exprs[i]);
+        if (newNd) {
+          typf->fCurrentBlockChildren.push_back(newNd);
+        }
       }
 
       {
         auto lastExprIdx = exprs.size() - 1;
-        Typifier::OwnershipContext ctx{typf, true};
-        exprs[lastExprIdx] = typf->typifyNode(exprs[lastExprIdx]);
 
+        Typifier::OwnershipContext ctx{typf, true};
+        auto newNd = typf->typifyNode(exprs[lastExprIdx]);
         // leaving out the last expression in a block is questionable
-        hr_assert(exprs[lastExprIdx] != nullptr);
+        hr_assert(newNd != nullptr);
+
+        typf->fCurrentBlockChildren.push_back(newNd);
       }
 
-      exprs.erase(std::remove_if(exprs.begin(), exprs.end(),
-                                 [](const auto& nd) { return nd == nullptr; }),
-                  exprs.end());
+      node->replaceChildren(typf->fCurrentBlockChildren);
     }
 
     node->setType(node->children().back()->type());
@@ -1868,10 +1874,8 @@ void Typifier::typifyNodeList(NodeList& nl)
 {
   const size_t nlsize = nl.size();
 
-  bool stripRemoved = false;
   for (size_t i = 0; i < nlsize; i++) {
     nl[i] = typifyNode(nl[i]);
-    stripRemoved |= (nl[i] == nullptr);
   }
 
   nl.erase(
