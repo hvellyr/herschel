@@ -532,6 +532,7 @@ struct NodeTypifier<std::shared_ptr<BlockNode>> {
         }
       }
 
+      std::reverse(begin(finalizers), end(finalizers));
       node->insertFinalizers(finalizers);
     }
   }
